@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pseudoscience QBank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* ============ design tokens ============ */
+  :root{
+    --bg:#0b0908;
+    --bg-deep:#050403;
+    --panel:#14100a;
+    --panel-2:#1b150d;
+    --gold:#b8923f;
+    --gold-bright:#e0bd6d;
+    --gold-dim:#6e5726;
+    --oxblood:#6b1620;
+    --oxblood-bright:#9c2735;
+    --sapphire:#33507a;
+    --parchment:#ece4cf;
+    --text-dim:#a89a7c;
+    --danger:#c0394a;
+    --ok:#4a8f5c;
+    --radius:6px;
+    --font-display:'Cinzel Decorative', serif;
+    --font-head:'Cinzel', serif;
+    --font-body:'Cairo', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(107,22,32,.25), transparent 60%),
+      radial-gradient(ellipse at 100% 100%, rgba(51,80,122,.12), transparent 55%),
+      var(--bg-deep);
+    color:var(--parchment);
+    font-family:var(--font-body);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+
+  ::selection{background:var(--gold-dim);color:#fff;}
+
+  /* ============ layout shell ============ */
+  #app{max-width:720px;margin:0 auto;min-height:100vh;padding:20px 16px 60px;position:relative;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .brandmini{font-family:var(--font-head);font-size:14px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;}
+  .gearBtn{
+    background:transparent;border:1px solid var(--gold-dim);color:var(--text-dim);
+    width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:15px;transition:.2s;
+  }
+  .gearBtn:hover{border-color:var(--gold);color:var(--gold-bright);}
+
+  /* ============ ornate divider (signature element) ============ */
+  .divider{display:flex;align-items:center;gap:10px;margin:22px 0;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;
+    background:linear-gradient(90deg, transparent, var(--gold-dim) 40%, var(--gold-dim) 60%, transparent);}
+  .divider .gem{width:8px;height:8px;background:var(--gold);transform:rotate(45deg);
+    box-shadow:0 0 10px 1px rgba(184,146,63,.7);flex:none;}
+
+  /* ============ hero / emblem ============ */
+  .hero{text-align:center;padding:26px 10px 8px;}
+  .emblem{width:78px;height:78px;margin:0 auto 14px;position:relative;}
+  .emblem svg{width:100%;height:100%;filter:drop-shadow(0 0 10px rgba(184,146,63,.35));}
+  .wordmark{
+    font-family:var(--font-display);
+    font-size:30px;color:var(--oxblood-bright);
+    text-shadow:0 0 18px rgba(156,39,53,.45), 0 1px 0 rgba(0,0,0,.6);
+    letter-spacing:.02em;
+  }
+  .subtitle{font-family:var(--font-head);font-size:12.5px;letter-spacing:.18em;color:var(--text-dim);
+    text-transform:uppercase;margin-top:6px;}
+
+  /* ============ breadcrumb ============ */
+  .crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--text-dim);margin-bottom:14px;min-height:20px;}
+  .crumbs button{background:none;border:none;color:var(--gold-bright);font-size:13px;padding:0;}
+  .crumbs button:hover{text-decoration:underline;}
+  .crumbs .sep{color:var(--gold-dim);}
+
+  /* ============ ledger cards ============ */
+  .ledger{display:flex;flex-direction:column;gap:10px;}
+  .plaque{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--gold-dim);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    transition:.18s ease;
+  }
+  .plaque.clickable{cursor:pointer;}
+  .plaque.clickable:hover{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-dim), 0 6px 18px -8px rgba(184,146,63,.35);transform:translateY(-1px);}
+  .plaque .label{font-weight:700;font-size:15.5px;color:var(--parchment);}
+  .plaque .meta{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .plaque .chev{color:var(--gold-dim);font-size:18px;}
+
+  .emptyState{text-align:center;padding:40px 16px;color:var(--text-dim);font-size:14px;line-height:1.9;}
+
+  /* ============ buttons ============ */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 20px;border-radius:var(--radius);font-weight:700;font-size:14.5px;
+    border:1px solid var(--gold-dim);background:transparent;color:var(--gold-bright);
+    transition:.18s;
+  }
+  .btn:hover{border-color:var(--gold);background:rgba(184,146,63,.08);}
+  .btn.primary{background:linear-gradient(180deg, var(--oxblood-bright), var(--oxblood));border-color:var(--oxblood-bright);color:#fff;}
+  .btn.primary:hover{filter:brightness(1.08);}
+  .btn.gold{background:linear-gradient(180deg, var(--gold-bright), var(--gold));border-color:var(--gold-bright);color:#1a1206;}
+  .btn.ghost{border-color:transparent;color:var(--text-dim);}
+  .btn.danger{border-color:var(--danger);color:var(--danger);}
+  .btn.danger:hover{background:rgba(192,57,74,.1);}
+  .btn.block{width:100%;}
+  .btn.sm{padding:7px 12px;font-size:13px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  .startBar{margin-top:8px;padding:16px;border:1px dashed var(--gold-dim);border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(184,146,63,.04);}
+  .startBar .count{font-size:13px;color:var(--text-dim);}
+
+  /* ============ quiz ============ */
+  .quizHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .progressWrap{flex:1;height:6px;background:var(--panel-2);border-radius:6px;margin:0 14px;overflow:hidden;border:1px solid var(--gold-dim);}
+  .progressBar{height:100%;background:linear-gradient(90deg, var(--gold-dim), var(--gold-bright));transition:.3s;}
+  .qCounter{font-family:var(--font-head);font-size:13px;color:var(--gold);white-space:nowrap;}
+
+  .questionCard{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--gold-dim);border-radius:var(--radius);
+    padding:22px 18px;margin-bottom:16px;
+  }
+  .questionText{font-size:17px;font-weight:700;line-height:1.8;color:var(--parchment);}
+
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .optionBtn{
+    text-align:right;padding:13px 16px;border-radius:var(--radius);
+    border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);
+    font-size:14.5px;line-height:1.6;transition:.15s;
+  }
+  .optionBtn:hover:not(:disabled){border-color:var(--gold);}
+  .optionBtn.correct{border-color:var(--ok);background:rgba(74,143,92,.15);color:#c9f0d1;}
+  .optionBtn.wrong{border-color:var(--danger);background:rgba(192,57,74,.15);color:#f5c3ca;}
+  .optionBtn:disabled{cursor:default;}
+
+  .explainBox{margin-top:14px;padding:12px 14px;border-radius:var(--radius);background:rgba(51,80,122,.12);
+    border:1px solid var(--sapphire);font-size:13.5px;color:#c7d5ea;line-height:1.8;}
+
+  .quizFooter{display:flex;justify-content:flex-end;margin-top:6px;}
+
+  /* ============ results ============ */
+  .resultHero{text-align:center;padding:20px 10px;}
+  .scoreRing{font-family:var(--font-head);font-size:44px;color:var(--gold-bright);font-weight:700;}
+  .scoreLabel{color:var(--text-dim);font-size:13px;margin-top:4px;}
+  .wrongList{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+  .wrongItem{border:1px solid var(--danger);border-radius:var(--radius);padding:12px 14px;background:rgba(192,57,74,.07);}
+  .wrongItem .qt{font-weight:700;font-size:14px;margin-bottom:8px;}
+  .wrongItem .ans{font-size:13px;color:#c9f0d1;}
+  .resultActions{display:flex;gap:10px;margin-top:20px;}
+
+  /* ============ forms / admin ============ */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;font-weight:600;}
+  .field input[type=text],.field input[type=email],.field input[type=password],.field select,.field textarea{
+    width:100%;padding:11px 12px;border-radius:var(--radius);border:1px solid var(--gold-dim);
+    background:var(--panel-2);color:var(--parchment);font-size:14px;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold-dim);border-color:var(--gold);}
+  .field textarea{min-height:160px;resize:vertical;font-family:'Courier New',monospace;font-size:13.5px;line-height:1.6;}
+
+  .tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--gold-dim);}
+  .tabBtn{background:none;border:none;padding:10px 14px;color:var(--text-dim);font-weight:700;font-size:13.5px;
+    border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .tabBtn.active{color:var(--gold-bright);border-color:var(--gold-bright);}
+
+  .treeNode{margin-inline-start:0;}
+  .treeRow{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--gold-dim);
+    border-radius:var(--radius);background:var(--panel-2);margin-bottom:6px;}
+  .treeRow .name{flex:1;font-size:14px;font-weight:600;}
+  .treeChildren{margin-inline-start:22px;border-inline-start:1px dashed var(--gold-dim);padding-inline-start:12px;}
+  .iconBtn{background:none;border:none;color:var(--text-dim);font-size:14px;padding:4px 6px;border-radius:4px;}
+  .iconBtn:hover{color:var(--gold-bright);background:rgba(184,146,63,.1);}
+  .iconBtn.danger:hover{color:var(--danger);}
+
+  .previewCard{border:1px solid var(--gold-dim);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;background:var(--panel-2);}
+  .previewCard .qn{font-weight:700;font-size:13.5px;margin-bottom:6px;}
+  .previewCard .op{font-size:12.5px;color:var(--text-dim);padding:2px 0;}
+  .previewCard .op.correct{color:var(--ok);font-weight:700;}
+  .previewCard .rm{float:left;}
+
+  .notice{padding:12px 14px;border-radius:var(--radius);font-size:13.5px;margin-bottom:14px;}
+  .notice.err{background:rgba(192,57,74,.12);border:1px solid var(--danger);color:#f5c3ca;}
+  .notice.ok{background:rgba(74,143,92,.12);border:1px solid var(--ok);color:#c9f0d1;}
+  .notice.info{background:rgba(51,80,122,.12);border:1px solid var(--sapphire);color:#c7d5ea;}
+
+  .loadingDots{text-align:center;color:var(--text-dim);padding:40px 0;font-size:13px;letter-spacing:.1em;}
+
+  .footNote{text-align:center;font-size:11px;color:var(--gold-dim);margin-top:30px;letter-spacing:.08em;}
+
+  @media (max-width:420px){
+    .wordmark{font-size:24px;}
+    .questionText{font-size:15.5px;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   إعدادات الاتصال — عدّل هذين السطرين فقط بعد إنشاء مشروع Supabase
+   (راجع دليل التفعيل المرفق للحصول على القيمتين)
+   ══════════════════════════════════════════════════════════════════ */
+const SUPABASE_URL      = "https://hqpoqldmuyfrxkbbczql.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxcG9xbGRtdXlmcnhrYmJjenFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NDE0ODMsImV4cCI6MjA5OTExNzQ4M30.cM_JjWiRjzjbjERSPdeOXYkvSZxneYkd5jrvd8yBlBc";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ══════════════════════════════════════════════════════════════════
+   حالة التطبيق (كل شيء في الذاكرة فقط — لا حفظ لبيانات المستخدم)
+   ══════════════════════════════════════════════════════════════════ */
+const state = {
+  view: "loading",           // loading | home | quiz | results | adminLogin | admin
+  categories: [],            // كل الأقسام (مسطّحة) من Supabase
+  questionCategoryIds: [],   // category_id لكل سؤال موجود (لمعرفة أين توجد أسئلة)
+  path: [],                  // مسار التصفح الحالي [{id,name}, ...]
+  quiz: null,                // {questions, index, correct, wrongList}
+  adminTab: "tree",          // tree | add
+  adminSession: null,
+  notice: null,
+};
+
+function byId(id){ return state.categories.find(c => c.id === id); }
+function childrenOf(parentId){
+  return state.categories
+    .filter(c => c.parent_id === parentId)
+    .sort((a,b) => (a.sort_order||0) - (b.sort_order||0) || a.name.localeCompare(b.name,'ar'));
+}
+function descendantIds(rootId){
+  const out = [rootId];
+  const stack = [rootId];
+  while(stack.length){
+    const cur = stack.pop();
+    for(const c of childrenOf(cur)){ out.push(c.id); stack.push(c.id); }
+  }
+  return out;
+}
+function nodeHasQuestions(id){
+  const ids = new Set(descendantIds(id));
+  return state.questionCategoryIds.some(qid => ids.has(qid));
+}
+function nodeQuestionCount(id){
+  const ids = new Set(descendantIds(id));
+  return state.questionCategoryIds.filter(qid => ids.has(qid)).length;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   تحميل البيانات
+   ══════════════════════════════════════════════════════════════════ */
+async function loadAll(){
+  state.view = "loading"; render();
+  try{
+    const [{data:cats, error:e1}, {data:qids, error:e2}] = await Promise.all([
+      sb.from("categories").select("id,parent_id,name,sort_order"),
+      sb.from("questions").select("category_id"),
+    ]);
+    if(e1) throw e1;
+    if(e2) throw e2;
+    // توحيد نوع المعرّفات إلى نصوص دائماً — Supabase قد يُعيد id كرقم (bigint)
+    // بينما كل معرّف يمرّ عبر onclick في HTML يتحوّل تلقائياً إلى نص،
+    // فيفشل التطابق الصارم (===) بين رقم ونص ويتسبب بأعطال صامتة (لا شيء يحدث عند الضغط).
+    state.categories = (cats || []).map(c => ({
+      ...c,
+      id: String(c.id),
+      parent_id: (c.parent_id === null || c.parent_id === undefined) ? null : String(c.parent_id),
+    }));
+    state.questionCategoryIds = (qids || []).map(q => String(q.category_id));
+    state.view = "home";
+  }catch(err){
+    state.view = "connectionError";
+    state.notice = err.message || String(err);
+  }
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   محلّل النصوص إلى أسئلة (مستوحى من منطق بوت البايثون)
+   يدعم: ترقيم اختياري، خيارات عربية (أ.ب.ج.د) أو لاتينية (A B C D)،
+   سطر إجابة صريح (الإجابة:/Answer:)، وأسئلة صح/خطأ
+   ══════════════════════════════════════════════════════════════════ */
+function parseQuestionsFromText(raw){
+  const AR_MAP = {"أ":0,"ا":0,"ب":1,"ج":2,"د":3,"هـ":4,"ه":4,"و":5};
+  const OPT_LATIN = /^([A-Ja-j])\s*[.)\-:]\s*(.*)$/;
+  const OPT_ARABIC = /^(أ|ا|ب|ج|د|هـ|ه|و)\s*[.)\-:]\s*(.*)$/;
+  const ANSWER_KEY = /^(?:Answer|Ans|Correct(?:\s*Answer)?|الإجابة(?:\s*الصحيحة)?|الجواب|الحل)\s*[:=\-]\s*(.+)$/i;
+  const QNUM = /^(?:Q(?:uestion)?\.?\s*)?(\d+)\s*[.)\-:]\s*(.*)$/i;
+  const TF_WORD = /^(صح|خطأ|True|False)$/i;
+  const LONE_LETTER_LATIN = /^([A-Ja-j])$/;
+  const LONE_LETTER_ARABIC = /^(أ|ا|ب|ج|د|هـ|ه|و)$/;
+
+  function answerToIndex(ansRaw, optCount){
+    const s = ansRaw.trim();
+    const mLat = s.match(/^([A-Ja-j])\b/);
+    if(mLat) return mLat[1].toUpperCase().charCodeAt(0) - 65;
+    for(const [ar, idx] of Object.entries(AR_MAP)){
+      if(s === ar || s.startsWith(ar+" ") || s.startsWith(ar+".")) return idx;
+    }
+    if(/^(صح|True|نعم)$/i.test(s)) return 0;
+    if(/^(خطأ|False|لا)$/i.test(s)) return 1;
+    const n = parseInt(s,10);
+    if(!isNaN(n) && n>=1 && n<=optCount) return n-1;
+    return null;
+  }
+
+  const lines = raw.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+  const questions = [];
+  let cur = null; // {text, options:[], correct:null}
+
+  function flush(){
+    if(cur && cur.text.trim() && cur.options.length>=2 && cur.correct!==null && cur.correct < cur.options.length){
+      questions.push({
+        question: cur.text.trim(),
+        options: cur.options.map(o=>o.trim()),
+        correct: cur.correct,
+      });
+    }
+    cur = null;
+  }
+
+  for(let raw_line of lines){
+    const line = raw_line.trim();
+
+    if(!line){ continue; } // فواصل فارغة لا تنهي السؤال (بعض الملفات فيها أسطر فارغة داخل نفس السؤال)
+
+    const mAns = line.match(ANSWER_KEY);
+    if(mAns && cur){
+      const idx = answerToIndex(mAns[1], cur.options.length);
+      if(idx !== null) cur.correct = idx;
+      flush();
+      continue;
+    }
+
+    const mOptLat = line.match(OPT_LATIN);
+    const mOptAr  = !mOptLat ? line.match(OPT_ARABIC) : null;
+    if((mOptLat || mOptAr) && cur){
+      const text = (mOptLat ? mOptLat[2] : mOptAr[2]).trim();
+      cur.options.push(text);
+      continue;
+    }
+
+    if(cur && cur.options.length>=2 && cur.correct===null){
+      const mLone = line.match(LONE_LETTER_LATIN);
+      const mLoneAr = !mLone ? line.match(LONE_LETTER_ARABIC) : null;
+      if(mLone){ cur.correct = mLone[1].toUpperCase().charCodeAt(0)-65; flush(); continue; }
+      if(mLoneAr){ cur.correct = AR_MAP[mLoneAr[1]]; flush(); continue; }
+    }
+
+    if(cur && cur.options.length===0 && TF_WORD.test(line)){
+      cur.options = [/^(صح|True)$/i.test(line) ? "صح ✅" : "خطأ ❌",
+                      /^(صح|True)$/i.test(line) ? "خطأ ❌" : "صح ✅"];
+      continue;
+    }
+    if(cur && cur.correct===null && TF_WORD.test(line) && cur.options.length===2){
+      continue; // سطر صح/خطأ مكرر، تم إنشاء الخيارين مسبقاً
+    }
+
+    // سطر عادي: إما بداية سؤال جديد أو استمرار للسؤال الحالي
+    if(!cur || (cur.options.length===0)){
+      if(!cur){
+        const mQ = line.match(QNUM);
+        cur = { text: mQ ? mQ[2] : line, options: [], correct: null };
+      } else {
+        // استمرار نص السؤال (سطر تالٍ بدون خيارات بعد)
+        const mQ = line.match(QNUM);
+        cur.text += " " + (mQ ? mQ[2] : line);
+      }
+      continue;
+    }
+
+    // إذا وصلنا هنا: عندنا سؤال حالي فيه خيارات لكن بلا إجابة بعد، وسطر لا يطابق شيئاً معروفاً
+    // نفترض أنه استكمال لآخر خيار
+    if(cur.options.length){
+      cur.options[cur.options.length-1] += " " + line;
+    }
+  }
+  flush();
+  return questions;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   منطق الاختبار (في الذاكرة فقط)
+   ══════════════════════════════════════════════════════════════════ */
+function shuffleArray(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+async function startQuiz(nodeId){
+  try{
+    const ids = Array.from(new Set(descendantIds(String(nodeId))));
+    const { data, error } = await sb.from("questions").select("*").in("category_id", ids);
+    if(error){ console.error("startQuiz error:", error); state.notice = "خطأ أثناء تحميل الأسئلة: " + error.message; render(); return; }
+    if(!data || !data.length){ state.notice = "لا توجد أسئلة في هذا القسم بعد."; render(); return; }
+    const questions = shuffleArray(data);
+    state.quiz = { questions, index:0, correct:0, wrongList:[], answered:false, selected:null };
+    state.view = "quiz";
+    state.notice = null;
+    render();
+  }catch(err){
+    console.error("startQuiz exception:", err);
+    state.notice = "حدث خطأ غير متوقع أثناء بدء الاختبار: " + (err.message || String(err));
+    render();
+  }
+}
+
+function answerQuestion(optIndex){
+  const q = state.quiz;
+  if(q.answered) return;
+  q.answered = true;
+  q.selected = optIndex;
+  const question = q.questions[q.index];
+  if(optIndex === question.correct){
+    q.correct++;
+  } else {
+    q.wrongList.push({ question, chosen: optIndex });
+  }
+  render();
+}
+
+function nextQuestion(){
+  const q = state.quiz;
+  if(q.index+1 < q.questions.length){
+    q.index++; q.answered=false; q.selected=null;
+    render();
+  } else {
+    state.view = "results";
+    render();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: تسجيل الدخول
+   ══════════════════════════════════════════════════════════════════ */
+async function adminLogin(email, password){
+  state.notice = null;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ state.notice = "بيانات الدخول غير صحيحة."; render(); return; }
+  state.adminSession = data.session;
+  state.view = "admin";
+  state.adminTab = "tree";
+  render();
+}
+async function adminLogout(){
+  await sb.auth.signOut();
+  state.adminSession = null;
+  state.view = "home";
+  state.path = [];
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: إدارة الأقسام (شجرة مرنة بلا حدود)
+   ══════════════════════════════════════════════════════════════════ */
+async function addCategory(parentId, name){
+  if(!name || !name.trim()) return;
+  const siblings = childrenOf(parentId);
+  const sort_order = siblings.length;
+  const { error } = await sb.from("categories").insert({ parent_id: parentId, name: name.trim(), sort_order });
+  if(error){ state.notice = error.message; render(); return; }
+  await loadAll();
+  state.view = "admin"; render();
+}
+async function renameCategory(id, name){
+  if(!name || !name.trim()) return;
+  const { error } = await sb.from("categories").update({ name: name.trim() }).eq("id", id);
+  if(error){ state.notice = error.message; }
+  await loadAll();
+  state.view = "admin"; render();
+}
+async function deleteCategory(id){
+  const ok = confirm("سيتم حذف هذا القسم وكل ما بداخله (أقسام فرعية وأسئلة). متابعة؟");
+  if(!ok) return;
+  const { error } = await sb.from("categories").delete().eq("id", id);
+  if(error){ state.notice = error.message; }
+  await loadAll();
+  state.view = "admin"; render();
+}
+async function moveCategory(id, dir){
+  const cat = byId(id);
+  const siblings = childrenOf(cat.parent_id);
+  const idx = siblings.findIndex(s=>s.id===id);
+  const swapWith = siblings[idx+dir];
+  if(!swapWith) return;
+  await sb.from("categories").update({ sort_order: swapWith.sort_order ?? idx+dir }).eq("id", cat.id);
+  await sb.from("categories").update({ sort_order: cat.sort_order ?? idx }).eq("id", swapWith.id);
+  await loadAll();
+  state.view = "admin"; render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: إضافة أسئلة
+   ══════════════════════════════════════════════════════════════════ */
+let pendingParsed = []; // معاينة قبل الحفظ
+
+function runParse(text){
+  pendingParsed = parseQuestionsFromText(text);
+  render();
+}
+function removePendingAt(i){
+  pendingParsed.splice(i,1);
+  render();
+}
+async function savePendingQuestions(categoryId){
+  if(!categoryId){ state.notice = "اختر القسم أولاً."; render(); return; }
+  if(!pendingParsed.length){ state.notice = "لا توجد أسئلة مستخرجة للحفظ."; render(); return; }
+  const rows = pendingParsed.map(q => ({
+    category_id: categoryId,
+    question_text: q.question,
+    options: q.options,
+    correct_index: q.correct,
+  }));
+  const { error } = await sb.from("questions").insert(rows);
+  if(error){ state.notice = error.message; render(); return; }
+  state.notice = `تم حفظ ${rows.length} سؤال بنجاح.`;
+  pendingParsed = [];
+  await loadAll();
+  state.view = "admin"; state.adminTab = "add";
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   العرض (Render) — كل شاشة كدالة تُعيد HTML كنص
+   ══════════════════════════════════════════════════════════════════ */
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function renderTopbar(showAdminGear=true){
+  return `
+    <div class="topbar">
+      <div class="brandmini">Pseudoscience QBank</div>
+      ${showAdminGear ? `<button class="gearBtn" onclick="goAdmin()" title="لوحة الإدارة">⚙</button>` : `<span></span>`}
+    </div>`;
+}
+
+function renderNoticeBlock(){
+  if(!state.notice) return "";
+  return `<div class="notice info">${esc(state.notice)}</div>`;
+}
+
+function renderHome(){
+  const parentId = state.path.length ? state.path[state.path.length-1].id : null;
+  const kids = childrenOf(parentId);
+  const isRoot = state.path.length === 0;
+
+  const crumbs = `
+    <div class="crumbs">
+      <button onclick="goHomeRoot()">🏠 الرئيسية</button>
+      ${state.path.map((p,i)=>`<span class="sep">/</span><button onclick="goToCrumb(${i})">${esc(p.name)}</button>`).join("")}
+    </div>`;
+
+  let hero = "";
+  if(isRoot){
+    hero = `
+      <div class="hero">
+        <div class="emblem">${emblemSVG()}</div>
+        <div class="wordmark">Pseudoscience</div>
+        <div class="subtitle">Question Bank — بنك أسئلة الطلبة</div>
+      </div>
+      <div class="divider"><span class="gem"></span></div>`;
+  }
+
+  const startBar = (!isRoot && nodeHasQuestions(parentId)) ? `
+      <div class="startBar">
+        <div>
+          <div style="font-weight:700;font-size:14.5px;">ابدأ حل الأسئلة في هذا القسم</div>
+          <div class="count">${nodeQuestionCount(parentId)} سؤال متاح</div>
+        </div>
+        <button class="btn primary" onclick="startQuiz('${parentId}')">ابدأ الاختبار</button>
+      </div>` : "";
+
+  const list = kids.length ? `
+    <div class="ledger" style="margin-top:14px;">
+      ${kids.map(k => `
+        <div class="plaque clickable" onclick="enterCategory('${k.id}','${escAttr(k.name)}')">
+          <div>
+            <div class="label">${esc(k.name)}</div>
+            <div class="meta">${nodeHasQuestions(k.id) ? nodeQuestionCount(k.id)+" سؤال" : "بدون أسئلة بعد"}</div>
+          </div>
+          <div class="chev">‹</div>
+        </div>`).join("")}
+    </div>` : `
+    <div class="emptyState">
+      ${isRoot ? "لا توجد أقسام بعد. سيقوم المشرف بإضافتها قريباً." : "لا توجد أقسام فرعية هنا."}
+    </div>`;
+
+  return `
+    ${renderTopbar()}
+    ${crumbs}
+    ${hero}
+    ${renderNoticeBlock()}
+    ${startBar}
+    ${list}
+    <div class="footNote">Pseudoscience © — بنك أسئلة الطلاب الجامعيين</div>
+  `;
+}
+
+function escAttr(s){ return String(s).replace(/'/g, "\\'"); }
+
+function emblemSVG(){
+  return `
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#b8923f" stroke-width="1.5">
+      <path d="M50 6 L94 50 L50 94 L6 50 Z"/>
+      <path d="M50 18 L82 50 L50 82 L18 50 Z"/>
+    </g>
+    <circle cx="50" cy="50" r="6" fill="#9c2735"/>
+    <circle cx="26" cy="50" r="3" fill="#33507a"/>
+    <circle cx="74" cy="50" r="3" fill="#33507a"/>
+    <circle cx="50" cy="26" r="3" fill="#9c2735"/>
+    <circle cx="50" cy="74" r="3" fill="#9c2735"/>
+  </svg>`;
+}
+
+function renderQuiz(){
+  const q = state.quiz;
+  const question = q.questions[q.index];
+  const pct = Math.round(((q.index)/q.questions.length)*100);
+
+  const optsHtml = question.options.map((opt,i)=>{
+    let cls = "optionBtn";
+    if(q.answered){
+      if(i===question.correct) cls += " correct";
+      else if(i===q.selected) cls += " wrong";
+    }
+    return `<button class="${cls}" ${q.answered?"disabled":""} onclick="answerQuestion(${i})">${esc(opt)}</button>`;
+  }).join("");
+
+  return `
+    ${renderTopbar(false)}
+    <div class="quizHead">
+      <button class="btn ghost sm" onclick="exitQuizToHome()">✕ خروج</button>
+      <div class="progressWrap"><div class="progressBar" style="width:${pct}%"></div></div>
+      <div class="qCounter">${q.index+1} / ${q.questions.length}</div>
+    </div>
+    <div class="questionCard">
+      <div class="questionText">${esc(question.question)}</div>
+    </div>
+    <div class="options">${optsHtml}</div>
+    ${q.answered ? `
+      <div class="quizFooter" style="margin-top:16px;">
+        <button class="btn gold" onclick="nextQuestion()">${q.index+1 < q.questions.length ? "السؤال التالي ›" : "عرض النتيجة ›"}</button>
+      </div>` : ""}
+  `;
+}
+
+function renderResults(){
+  const q = state.quiz;
+  const total = q.questions.length;
+  const wrong = q.wrongList.length;
+  return `
+    ${renderTopbar(false)}
+    <div class="resultHero">
+      <div class="scoreRing">${q.correct} / ${total}</div>
+      <div class="scoreLabel">إجابات صحيحة</div>
+    </div>
+    <div class="divider"><span class="gem"></span></div>
+    ${wrong ? `
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;">الأخطاء (${wrong})</div>
+      <div class="wrongList">
+        ${q.wrongList.map(w => `
+          <div class="wrongItem">
+            <div class="qt">${esc(w.question.question)}</div>
+            <div class="ans">✅ الإجابة الصحيحة: ${esc(w.question.options[w.question.correct])}</div>
+          </div>`).join("")}
+      </div>` : `<div class="emptyState">🌟 إجابات مثالية بلا أخطاء!</div>`}
+    <div class="resultActions">
+      <button class="btn primary block" onclick="exitQuizToHome()">العودة للرئيسية</button>
+    </div>
+  `;
+}
+
+function renderAdminLogin(){
+  return `
+    ${renderTopbar(false)}
+    <div class="hero"><div class="wordmark" style="font-size:22px;">لوحة الإدارة</div></div>
+    ${renderNoticeBlock()}
+    <div class="field"><label>البريد الإلكتروني</label><input type="email" id="loginEmail"></div>
+    <div class="field"><label>كلمة المرور</label><input type="password" id="loginPass"></div>
+    <button class="btn primary block" onclick="doAdminLogin()">دخول</button>
+    <div style="margin-top:14px;text-align:center;"><button class="btn ghost sm" onclick="goHomeRoot()">‹ العودة للتطبيق</button></div>
+  `;
+}
+
+function renderTreeNode(node, depth){
+  const kids = childrenOf(node.id);
+  return `
+    <div class="treeNode">
+      <div class="treeRow">
+        <span class="name">${esc(node.name)}</span>
+        <span style="font-size:11px;color:var(--text-dim);">${nodeQuestionCount(node.id)} سؤال</span>
+        <button class="iconBtn" title="إضافة قسم فرعي" onclick="promptAddCategory('${node.id}')">➕</button>
+        <button class="iconBtn" title="إعادة تسمية" onclick="promptRenameCategory('${node.id}','${escAttr(node.name)}')">✎</button>
+        <button class="iconBtn" title="تحريك لأعلى" onclick="moveCategory('${node.id}',-1)">↑</button>
+        <button class="iconBtn" title="تحريك لأسفل" onclick="moveCategory('${node.id}',1)">↓</button>
+        <button class="iconBtn danger" title="حذف" onclick="deleteCategory('${node.id}')">🗑</button>
+      </div>
+      ${kids.length ? `<div class="treeChildren">${kids.map(k=>renderTreeNode(k, depth+1)).join("")}</div>` : ""}
+    </div>`;
+}
+
+function renderAdminTree(){
+  const roots = childrenOf(null);
+  return `
+    <div class="field" style="display:flex;gap:8px;">
+      <input type="text" id="newRootName" placeholder="اسم قسم رئيسي جديد (مثال: Pre-clinic)">
+      <button class="btn gold sm" onclick="addRootCategory()">إضافة</button>
+    </div>
+    ${roots.length ? roots.map(r=>renderTreeNode(r,0)).join("") : `<div class="emptyState">لا توجد أقسام بعد. أضف أول قسم رئيسي أعلاه.</div>`}
+  `;
+}
+
+function catOptionsHtml(selectedId){
+  // قائمة مسطّحة لكل الأقسام بمسافات بادئة تمثل العمق — مرنة بلا حدود
+  function walk(parentId, depth){
+    let out = [];
+    for(const c of childrenOf(parentId)){
+      out.push(`<option value="${c.id}" ${c.id===selectedId?"selected":""}>${"— ".repeat(depth)}${esc(c.name)}</option>`);
+      out = out.concat(walk(c.id, depth+1));
+    }
+    return out;
+  }
+  return walk(null,0).join("");
+}
+
+function renderAdminAdd(){
+  const previewHtml = pendingParsed.length ? `
+    <div class="divider"><span class="gem"></span></div>
+    <div style="font-weight:700;margin-bottom:10px;">معاينة (${pendingParsed.length} سؤال مستخرج)</div>
+    ${pendingParsed.map((q,i)=>`
+      <div class="previewCard">
+        <button class="iconBtn danger rm" onclick="removePendingAt(${i})">✕</button>
+        <div class="qn">${i+1}. ${esc(q.question)}</div>
+        ${q.options.map((o,j)=>`<div class="op ${j===q.correct?'correct':''}">${j===q.correct?'✔':'•'} ${esc(o)}</div>`).join("")}
+      </div>`).join("")}
+  ` : "";
+
+  return `
+    <div class="field">
+      <label>القسم الذي ستُضاف إليه الأسئلة</label>
+      <select id="targetCategory">
+        <option value="">— اختر القسم —</option>
+        ${catOptionsHtml(null)}
+      </select>
+    </div>
+    <div class="field">
+      <label>الصق نص الأسئلة هنا</label>
+      <textarea id="pasteText" placeholder="1. نص السؤال؟&#10;أ. خيار أول&#10;ب. خيار ثاني&#10;ج. خيار ثالث&#10;د. خيار رابع&#10;الإجابة: ب"></textarea>
+    </div>
+    <div class="field">
+      <label>أو ارفع ملف نصي (txt)</label>
+      <input type="file" id="fileInput" accept=".txt">
+    </div>
+    <button class="btn gold block" onclick="handleParseClick()">استخراج الأسئلة من النص</button>
+    ${previewHtml}
+    ${pendingParsed.length ? `
+      <button class="btn primary block" style="margin-top:14px;" onclick="handleSaveClick()">حفظ الأسئلة في القسم المختار</button>
+    ` : ""}
+  `;
+}
+
+function renderAdmin(){
+  return `
+    ${renderTopbar(false)}
+    <div class="topbar" style="margin-top:-8px;">
+      <div class="wordmark" style="font-size:20px;">لوحة الإدارة</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost sm" onclick="goHomeRoot()">عرض التطبيق</button>
+        <button class="btn danger sm" onclick="adminLogout()">خروج</button>
+      </div>
+    </div>
+    ${renderNoticeBlock()}
+    <div class="tabs">
+      <button class="tabBtn ${state.adminTab==='tree'?'active':''}" onclick="setAdminTab('tree')">الأقسام</button>
+      <button class="tabBtn ${state.adminTab==='add'?'active':''}" onclick="setAdminTab('add')">إضافة أسئلة</button>
+    </div>
+    ${state.adminTab==='tree' ? renderAdminTree() : renderAdminAdd()}
+  `;
+}
+
+function renderConnectionError(){
+  return `
+    ${renderTopbar(false)}
+    <div class="notice err">
+      تعذّر الاتصال بقاعدة البيانات.<br>
+      تأكد من ضبط SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الكود، ومن اتصالك بالإنترنت.<br>
+      <span style="opacity:.7;font-size:12px;">${esc(state.notice||"")}</span>
+    </div>
+    <button class="btn primary" onclick="loadAll()">إعادة المحاولة</button>
+  `;
+}
+
+function render(){
+  const app = document.getElementById("app");
+  let html = "";
+  switch(state.view){
+    case "loading": html = `${renderTopbar(false)}<div class="loadingDots">...جارٍ التحميل</div>`; break;
+    case "connectionError": html = renderConnectionError(); break;
+    case "home": html = renderHome(); break;
+    case "quiz": html = renderQuiz(); break;
+    case "results": html = renderResults(); break;
+    case "adminLogin": html = renderAdminLogin(); break;
+    case "admin": html = renderAdmin(); break;
+  }
+  app.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   معالجات أحداث مربوطة بـ onclick (تُعرَّف على window لتعمل من HTML مُولَّد)
+   ══════════════════════════════════════════════════════════════════ */
+window.enterCategory = (id, name) => {
+  state.path.push({ id, name });
+  state.notice = null;
+  render();
+};
+window.goToCrumb = (i) => {
+  state.path = state.path.slice(0, i+1);
+  state.notice = null;
+  render();
+};
+window.goHomeRoot = () => {
+  state.path = [];
+  state.view = "home";
+  state.notice = null;
+  render();
+};
+window.startQuiz = (nodeId) => { startQuiz(nodeId); };
+window.answerQuestion = (i) => { answerQuestion(i); };
+window.nextQuestion = () => { nextQuestion(); };
+window.exitQuizToHome = () => {
+  state.quiz = null;
+  state.view = "home";
+  render();
+};
+window.goAdmin = async () => {
+  const { data } = await sb.auth.getSession();
+  if(data.session){
+    state.adminSession = data.session;
+    state.view = "admin";
+  } else {
+    state.view = "adminLogin";
+  }
+  state.notice = null;
+  render();
+};
+window.doAdminLogin = () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  adminLogin(email, pass);
+};
+window.adminLogout = () => { adminLogout(); };
+window.setAdminTab = (tab) => { state.adminTab = tab; pendingParsed = []; render(); };
+
+window.addRootCategory = () => {
+  const val = document.getElementById("newRootName").value;
+  addCategory(null, val);
+};
+window.promptAddCategory = (parentId) => {
+  const name = prompt("اسم القسم الفرعي الجديد:");
+  if(name) addCategory(parentId, name);
+};
+window.promptRenameCategory = (id, current) => {
+  const name = prompt("الاسم الجديد:", current);
+  if(name) renameCategory(id, name);
+};
+window.deleteCategory = (id) => { deleteCategory(id); };
+window.moveCategory = (id, dir) => { moveCategory(id, dir); };
+
+window.handleParseClick = () => {
+  const fileInput = document.getElementById("fileInput");
+  const textArea = document.getElementById("pasteText");
+  if(fileInput.files && fileInput.files[0]){
+    const reader = new FileReader();
+    reader.onload = (e) => runParse(e.target.result);
+    reader.readAsText(fileInput.files[0], "UTF-8");
+  } else {
+    runParse(textArea.value);
+  }
+};
+window.removePendingAt = (i) => { removePendingAt(i); };
+window.handleSaveClick = () => {
+  const sel = document.getElementById("targetCategory");
+  savePendingQuestions(sel.value || null);
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   بدء التشغيل
+   ══════════════════════════════════════════════════════════════════ */
+loadAll();
+</script>
+</body>
+</html>
