@@ -900,9 +900,9 @@ window.goHomeRoot = () => {
   state.notice = null;
   render();
 };
-window.startQuiz = (nodeId) => { startQuiz(nodeId); };
-window.answerQuestion = (i) => { answerQuestion(i); };
-window.nextQuestion = () => { nextQuestion(); };
+window.startQuiz = startQuiz;
+window.answerQuestion = answerQuestion;
+window.nextQuestion = nextQuestion;
 window.exitQuizToHome = () => {
   state.quiz = null;
   state.view = "home";
@@ -924,7 +924,7 @@ window.doAdminLogin = () => {
   const pass = document.getElementById("loginPass").value;
   adminLogin(email, pass);
 };
-window.adminLogout = () => { adminLogout(); };
+window.adminLogout = adminLogout;
 window.setAdminTab = (tab) => { state.adminTab = tab; pendingParsed = []; render(); };
 
 window.addRootCategory = () => {
@@ -939,8 +939,8 @@ window.promptRenameCategory = (id, current) => {
   const name = prompt("الاسم الجديد:", current);
   if(name) renameCategory(id, name);
 };
-window.deleteCategory = (id) => { deleteCategory(id); };
-window.moveCategory = (id, dir) => { moveCategory(id, dir); };
+window.deleteCategory = deleteCategory;
+window.moveCategory = moveCategory;
 
 window.handleParseClick = () => {
   const fileInput = document.getElementById("fileInput");
@@ -953,7 +953,7 @@ window.handleParseClick = () => {
     runParse(textArea.value);
   }
 };
-window.removePendingAt = (i) => { removePendingAt(i); };
+window.removePendingAt = removePendingAt;
 window.handleSaveClick = () => {
   const sel = document.getElementById("targetCategory");
   savePendingQuestions(sel.value || null);
