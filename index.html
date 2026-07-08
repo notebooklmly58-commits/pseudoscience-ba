@@ -270,11 +270,17 @@ function childrenOf(parentId){
     .sort((a,b) => (a.sort_order||0) - (b.sort_order||0) || a.name.localeCompare(b.name,'ar'));
 }
 function descendantIds(rootId){
+  const seen = new Set([rootId]);
   const out = [rootId];
   const stack = [rootId];
   while(stack.length){
     const cur = stack.pop();
-    for(const c of childrenOf(cur)){ out.push(c.id); stack.push(c.id); }
+    for(const c of childrenOf(cur)){
+      if(seen.has(c.id)) continue; // يمنع الحلقات الدائرية (بيانات تالفة) من التسبب بحلقة لا نهائية
+      seen.add(c.id);
+      out.push(c.id);
+      stack.push(c.id);
+    }
   }
   return out;
 }
@@ -737,7 +743,14 @@ function renderAdminLogin(){
   `;
 }
 
-function renderTreeNode(node, depth){
+function renderTreeNode(node, depth, visited){
+  visited = visited || new Set();
+  if(visited.has(node.id) || depth > 50){
+    window.__debugLog('تم اكتشاف حلقة دائرية (Circular Reference) في الأقسام عند: ' + node.name + ' (id=' + node.id + '). تحقق من عمود parent_id لهذا القسم في Supabase.');
+    return `<div class="treeNode"><div class="treeRow"><span class="name" style="color:var(--danger);">⚠ ${esc(node.name)} — خطأ: هذا القسم جزء من حلقة دائرية في الأقسام (parent_id غير صحيح)</span></div></div>`;
+  }
+  visited = new Set(visited);
+  visited.add(node.id);
   const kids = childrenOf(node.id);
   return `
     <div class="treeNode">
@@ -750,7 +763,7 @@ function renderTreeNode(node, depth){
         <button class="iconBtn" title="تحريك لأسفل" onclick="moveCategory('${node.id}',1)">↓</button>
         <button class="iconBtn danger" title="حذف" onclick="deleteCategory('${node.id}')">🗑</button>
       </div>
-      ${kids.length ? `<div class="treeChildren">${kids.map(k=>renderTreeNode(k, depth+1)).join("")}</div>` : ""}
+      ${kids.length ? `<div class="treeChildren">${kids.map(k=>renderTreeNode(k, depth+1, visited)).join("")}</div>` : ""}
     </div>`;
 }
 
@@ -767,10 +780,18 @@ function renderAdminTree(){
 
 function catOptionsHtml(selectedId){
   // قائمة مسطّحة لكل الأقسام بمسافات بادئة تمثل العمق — مرنة بلا حدود
-  function walk(parentId, depth){
+  function walk(parentId, depth, visited){
+    visited = visited || new Set();
     let out = [];
     for(const c of childrenOf(parentId)){
+      if(visited.has(c.id) || depth > 50){
+        window.__debugLog('تم اكتشاف حلقة دائرية (Circular Reference) في الأقسام عند: ' + c.name + ' (id=' + c.id + ').');
+        continue;
+      }
       out.push(`<option value="${c.id}" ${c.id===selectedId?"selected":""}>${"— ".repeat(depth)}${esc(c.name)}</option>`);
+      const nextVisited = new Set(visited);
+      nextVisited.add(c.id);
+      out = out.concat(walk(c.id, depth+1, nextVisited));
       out = out.concat(walk(c.id, depth+1));
     }
     return out;
