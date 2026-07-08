@@ -217,8 +217,13 @@
    شريط تشخيص الأخطاء المرئي — يظهر أي خطأ برمجي أو خطأ من Supabase
    مباشرة على الشاشة (مفيد جداً لأن لا يوجد وصول لأدوات المطوّر على الموبايل)
    ══════════════════════════════════════════════════════════════════ */
+// كل رسائل التشخيص تُسجَّل دائماً في console المتصفح (متاحة لك عبر أدوات المطوّر F12)،
+// لكن الشريط المرئي على الشاشة لا يظهر إلا إذا كانت هناك جلسة أدمن مسجّلة دخول حالياً،
+// حتى لا يرى المستخدمون العاديون أي رسائل خطأ تقنية.
 window.__debugLog = function(msg){
+  try{ console.warn('[QBank]', msg); }catch(e){ /* noop */ }
   try{
+    if(typeof state === "undefined" || !state.adminSession) return; // ليس أدمن → لا نعرض شيئاً
     let bar = document.getElementById('debugBar');
     if(!bar){
       bar = document.createElement('div');
@@ -318,7 +323,7 @@ async function loadAll(){
     state.view = "home";
   }catch(err){
     state.view = "connectionError";
-    state.notice = err.message || String(err);
+    state.notice = state.adminSession ? (err.message || String(err)) : "تعذّر تحميل البيانات حالياً، حاول مرة أخرى بعد قليل.";
     window.__debugLog('loadAll error: ' + (err.message || JSON.stringify(err)));
   }
   render();
@@ -444,14 +449,22 @@ async function startQuiz(nodeId){
   try{
     const ids = Array.from(new Set(descendantIds(String(nodeId))));
     const { data, error } = await sb.from("questions").select("*").in("category_id", ids);
-    if(error){ console.error("startQuiz error:", error); window.__debugLog('startQuiz supabase error: ' + error.message + ' | code: ' + (error.code||'')); state.notice = "خطأ أثناء تحميل الأسئلة: " + error.message; render(); return; }
+    if(error){ console.error("startQuiz error:", error); window.__debugLog('startQuiz supabase error: ' + error.message + ' | code: ' + (error.code||'')); state.notice = state.adminSession ? ("خطأ أثناء تحميل الأسئلة: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
     if(!data || !data.length){
       window.__debugLog('startQuiz: query succeeded but returned 0 rows. category ids queried: [' + ids.join(', ') + ']. If you added questions to this section and expected results here, this is very likely a Supabase Row Level Security (RLS) policy silently blocking the SELECT — check Authentication > Policies for the "questions" table.');
       state.notice = "لا توجد أسئلة في هذا القسم بعد.";
       render();
       return;
     }
-    const questions = shuffleArray(data);
+    // أعمدة قاعدة البيانات اسمها question_text و correct_index،
+    // بينما بقية الكود (شاشة الاختبار والنتائج) يتوقع question و correct.
+    // نوحّد الأسماء هنا فور وصول البيانات لمنع ظهور "undefined" في كل مكان.
+    const questions = shuffleArray(data).map(row => ({
+      id: row.id,
+      question: row.question_text,
+      options: row.options,
+      correct: row.correct_index,
+    }));
     state.quiz = { questions, index:0, correct:0, wrongList:[], answered:false, selected:null };
     state.view = "quiz";
     state.notice = null;
@@ -459,7 +472,7 @@ async function startQuiz(nodeId){
   }catch(err){
     console.error("startQuiz exception:", err);
     window.__debugLog('startQuiz exception: ' + (err.message || JSON.stringify(err)));
-    state.notice = "حدث خطأ غير متوقع أثناء بدء الاختبار: " + (err.message || String(err));
+    state.notice = state.adminSession ? ("حدث خطأ غير متوقع أثناء بدء الاختبار: " + (err.message || String(err))) : "حدث خطأ غير متوقع، حاول مرة أخرى.";
     render();
   }
 }
@@ -792,7 +805,6 @@ function catOptionsHtml(selectedId){
       const nextVisited = new Set(visited);
       nextVisited.add(c.id);
       out = out.concat(walk(c.id, depth+1, nextVisited));
-      out = out.concat(walk(c.id, depth+1));
     }
     return out;
   }
