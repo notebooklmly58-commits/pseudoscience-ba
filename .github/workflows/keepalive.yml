@@ -11,12 +11,20 @@ jobs:
     steps:
       - name: Ping Supabase REST API
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/categories?select=id&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
-          echo "Supabase responded with HTTP status: $STATUS"
+          CLEAN_URL="${SUPABASE_URL%/}"
+          RESP=$(curl -s -w "\n%{http_code}" \
+            "${CLEAN_URL}/rest/v1/categories?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          STATUS=$(echo "$RESP" | tail -n1)
+          BODY=$(echo "$RESP" | sed '$d')
+          echo "Requested URL: ${CLEAN_URL}/rest/v1/categories?select=id&limit=1"
+          echo "HTTP status: $STATUS"
+          echo "Response body: $BODY"
           if [ "$STATUS" -ge 400 ]; then
-            echo "::error::Supabase ping failed with status $STATUS"
+            echo "::error::Supabase ping failed with status $STATUS. تحقق أولاً هل مشروع Supabase متوقف (Paused) من لوحة التحكم، ثم تحقق من صحة SUPABASE_URL."
             exit 1
           fi
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
