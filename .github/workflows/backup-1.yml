@@ -1,0 +1,87 @@
+name: Supabase Backup
+
+on:
+  schedule:
+    # كل يوم أحد الساعة 3 فجراً بتوقيت UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch: {}
+    # يسمح بتشغيله يدوياً من تبويب Actions في أي وقت
+
+permissions:
+  contents: write   # مطلوب حتى يستطيع هذا الملف حفظ (commit + push) النسخة الاحتياطية داخل نفس المستودع
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq (JSON processor)
+        run: sudo apt-get update -y && sudo apt-get install -y jq
+
+      - name: Fetch all rows from Supabase (with pagination)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -e
+          mkdir -p backups
+
+          fetch_all() {
+            table="$1"
+            page_size=1000
+            offset=0
+            echo "[]" > "/tmp/${table}.json"
+
+            while true; do
+              resp=$(curl -sS \
+                -H "apikey: ${SUPABASE_ANON_KEY}" \
+                -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+                -H "Range: ${offset}-$((offset + page_size - 1))" \
+                "${SUPABASE_URL}/rest/v1/${table}?select=*&order=id.asc")
+
+              # تأكد أن الرد فعلاً مصفوفة JSON صالحة، وإلا أوقف مع رسالة خطأ واضحة
+              if ! echo "$resp" | jq -e 'type == "array"' > /dev/null 2>&1; then
+                echo "::error::فشل جلب جدول ${table} من Supabase. الرد: $resp"
+                exit 1
+              fi
+
+              count=$(echo "$resp" | jq 'length')
+              echo "  ${table}: تم جلب دفعة من ${count} صف (offset=${offset})"
+
+              if [ "$count" -eq 0 ]; then
+                break
+              fi
+
+              jq -s '.[0] + .[1]' "/tmp/${table}.json" <(echo "$resp") > "/tmp/${table}_merged.json"
+              mv "/tmp/${table}_merged.json" "/tmp/${table}.json"
+
+              if [ "$count" -lt "$page_size" ]; then
+                break
+              fi
+              offset=$((offset + page_size))
+            done
+
+            jq '.' "/tmp/${table}.json" > "backups/${table}.json"
+            total=$(jq 'length' "backups/${table}.json")
+            echo "  ${table}: إجمالي ${total} صف محفوظ."
+          }
+
+          fetch_all categories
+          fetch_all questions
+
+          # ملف صغير يوثّق تاريخ آخر نسخة احتياطية ناجحة
+          date -u +'%Y-%m-%dT%H:%M:%SZ' > backups/last_backup_utc.txt
+
+      - name: Commit backup if anything changed
+        run: |
+          git config user.name "Backup Bot"
+          git config user.email "actions@github.com"
+          git add backups/
+          if git diff --staged --quiet; then
+            echo "لا يوجد تغيير في البيانات منذ آخر نسخة — تم تخطي الحفظ."
+          else
+            git commit -m "نسخة احتياطية تلقائية: $(date -u +'%Y-%m-%d')"
+            git push
+          fi
