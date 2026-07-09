@@ -220,21 +220,90 @@
 // كل رسائل التشخيص تُسجَّل دائماً في console المتصفح (متاحة لك عبر أدوات المطوّر F12)،
 // لكن الشريط المرئي على الشاشة لا يظهر إلا إذا كانت هناك جلسة أدمن مسجّلة دخول حالياً،
 // حتى لا يرى المستخدمون العاديون أي رسائل خطأ تقنية.
+// كل رسائل التشخيص تُسجَّل دائماً في console المتصفح (متاحة لك عبر أدوات المطوّر F12)،
+// وتُخزَّن أيضاً في مصفوفة، لكنها لا تُعرض على الشاشة إلا لجلسة أدمن مسجّلة دخول،
+// وحتى في تلك الحالة تظهر كزر صغير قابل للطي وليس كشريط يغطي الواجهة.
+window.__debugLogs = [];
+
+function ensureDebugPanel(){
+  let wrap = document.getElementById('debugWrap');
+  if(wrap) return wrap;
+
+  wrap = document.createElement('div');
+  wrap.id = 'debugWrap';
+  wrap.style.cssText = 'position:fixed;bottom:14px;left:14px;z-index:99999;direction:ltr;font-family:monospace;';
+
+  const toggle = document.createElement('button');
+  toggle.id = 'debugToggle';
+  toggle.type = 'button';
+  toggle.style.cssText = 'width:38px;height:38px;border-radius:50%;border:1px solid #9c2735;background:#3a0000;color:#fff;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.5);position:relative;';
+  toggle.textContent = '⚠';
+  const badge = document.createElement('span');
+  badge.id = 'debugCount';
+  badge.style.cssText = 'position:absolute;top:-6px;right:-6px;background:#c0394a;color:#fff;border-radius:10px;min-width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px;';
+  badge.textContent = '0';
+  toggle.appendChild(badge);
+
+  const panel = document.createElement('div');
+  panel.id = 'debugPanel';
+  panel.style.cssText = 'display:none;position:fixed;bottom:60px;left:14px;right:14px;max-width:460px;max-height:42vh;overflow:auto;background:#2a0000;color:#fff;font-size:11px;line-height:1.5;border:1px solid #9c2735;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.6);';
+
+  const header = document.createElement('div');
+  header.style.cssText = 'position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;background:#3a0000;padding:8px 10px;border-bottom:1px solid #660000;';
+  header.innerHTML = '<span style="font-weight:bold;">سجل الأخطاء (أدمن)</span>';
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:6px;';
+  const clearBtn = document.createElement('button');
+  clearBtn.type = 'button'; clearBtn.textContent = 'مسح';
+  clearBtn.style.cssText = 'background:none;border:1px solid #9c2735;color:#fff;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;';
+  clearBtn.onclick = () => { window.__debugLogs = []; renderDebugLines(); updateDebugBadge(); };
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button'; closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'background:none;border:1px solid #9c2735;color:#fff;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;';
+  closeBtn.onclick = () => { panel.style.display = 'none'; };
+  btns.appendChild(clearBtn); btns.appendChild(closeBtn);
+  header.appendChild(btns);
+
+  const lines = document.createElement('div');
+  lines.id = 'debugLines';
+  lines.style.cssText = 'padding:8px;';
+
+  panel.appendChild(header);
+  panel.appendChild(lines);
+
+  toggle.onclick = () => {
+    panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+  };
+
+  wrap.appendChild(panel);
+  wrap.appendChild(toggle);
+  (document.body || document.documentElement).appendChild(wrap);
+  return wrap;
+}
+
+function updateDebugBadge(){
+  const badge = document.getElementById('debugCount');
+  if(badge) badge.textContent = String(window.__debugLogs.length);
+}
+
+function renderDebugLines(){
+  const lines = document.getElementById('debugLines');
+  if(!lines) return;
+  lines.innerHTML = window.__debugLogs.map(m =>
+    `<div style="border-bottom:1px solid #660000;padding:5px 0;white-space:pre-wrap;word-break:break-word;">⚠ ${m.time} — ${m.msg}</div>`
+  ).join('') || '<div style="color:#c9a; padding:6px 0;">لا توجد رسائل.</div>';
+}
+
 window.__debugLog = function(msg){
   try{ console.warn('[QBank]', msg); }catch(e){ /* noop */ }
+  const text = String(msg);
+  window.__debugLogs.push({ time: new Date().toLocaleTimeString(), msg: text });
+  if(window.__debugLogs.length > 200) window.__debugLogs.shift(); // يمنع تراكماً لا نهائياً
   try{
     if(typeof state === "undefined" || !state.adminSession) return; // ليس أدمن → لا نعرض شيئاً
-    let bar = document.getElementById('debugBar');
-    if(!bar){
-      bar = document.createElement('div');
-      bar.id = 'debugBar';
-      bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:45vh;overflow:auto;background:#3a0000;color:#fff;font-size:11px;line-height:1.5;padding:8px;z-index:99999;direction:ltr;text-align:left;font-family:monospace;box-shadow:0 -2px 10px rgba(0,0,0,.5);';
-      (document.body || document.documentElement).appendChild(bar);
-    }
-    const line = document.createElement('div');
-    line.style.cssText = 'border-bottom:1px solid #660000;padding:5px 0;white-space:pre-wrap;word-break:break-word;';
-    line.textContent = '⚠ ' + new Date().toLocaleTimeString() + ' — ' + msg;
-    bar.appendChild(line);
+    ensureDebugPanel();
+    renderDebugLines();
+    updateDebugBadge();
   }catch(e){ /* noop */ }
 };
 window.addEventListener('error', function(e){
@@ -530,6 +599,8 @@ async function adminLogout(){
   state.adminSession = null;
   state.view = "home";
   state.path = [];
+  const wrap = document.getElementById('debugWrap');
+  if(wrap) wrap.remove();
   render();
 }
 
