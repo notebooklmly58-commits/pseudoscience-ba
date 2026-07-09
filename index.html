@@ -293,6 +293,9 @@ function nodeHasQuestions(id){
   const ids = new Set(descendantIds(id));
   return state.questionCategoryIds.some(qid => ids.has(qid));
 }
+function directQuestionCount(id){
+  return state.questionCategoryIds.filter(qid => qid === id).length;
+}
 function nodeQuestionCount(id){
   const ids = new Set(descendantIds(id));
   return state.questionCategoryIds.filter(qid => ids.has(qid)).length;
@@ -445,13 +448,21 @@ function shuffleArray(arr){
   return a;
 }
 
-async function startQuiz(nodeId){
+async function startQuiz(nodeId, includeSub){
   try{
-    const ids = Array.from(new Set(descendantIds(String(nodeId))));
-    const { data, error } = await sb.from("questions").select("*").in("category_id", ids);
+    let query = sb.from("questions").select("*");
+    if(includeSub){
+      const ids = Array.from(new Set(descendantIds(String(nodeId))));
+      query = query.in("category_id", ids);
+    } else {
+      // الوضع الافتراضي: فقط الأسئلة المضافة مباشرة إلى هذا القسم بالذات،
+      // بدون خلطها مع أسئلة أي قسم فرعي — هذا ما يحافظ على فصل كل مجموعة أسئلة عن غيرها.
+      query = query.eq("category_id", String(nodeId));
+    }
+    const { data, error } = await query;
     if(error){ console.error("startQuiz error:", error); window.__debugLog('startQuiz supabase error: ' + error.message + ' | code: ' + (error.code||'')); state.notice = state.adminSession ? ("خطأ أثناء تحميل الأسئلة: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
     if(!data || !data.length){
-      window.__debugLog('startQuiz: query succeeded but returned 0 rows. category ids queried: [' + ids.join(', ') + ']. If you added questions to this section and expected results here, this is very likely a Supabase Row Level Security (RLS) policy silently blocking the SELECT — check Authentication > Policies for the "questions" table.');
+      window.__debugLog('startQuiz: query succeeded but returned 0 rows. mode: ' + (includeSub?'includeSub':'direct') + ', node id: ' + nodeId + '. If you added questions here and expected results, this is very likely a Supabase Row Level Security (RLS) policy silently blocking the SELECT — check Authentication > Policies for the "questions" table.');
       state.notice = "لا توجد أسئلة في هذا القسم بعد.";
       render();
       return;
@@ -634,13 +645,26 @@ function renderHome(){
       <div class="divider"><span class="gem"></span></div>`;
   }
 
-  const startBar = (!isRoot && nodeHasQuestions(parentId)) ? `
+  const directCount = !isRoot ? directQuestionCount(parentId) : 0;
+  const totalCount = !isRoot ? nodeQuestionCount(parentId) : 0;
+  const nestedOnlyCount = totalCount - directCount;
+
+  const startBar = (!isRoot && directCount > 0) ? `
       <div class="startBar">
         <div>
           <div style="font-weight:700;font-size:14.5px;">ابدأ حل الأسئلة في هذا القسم</div>
-          <div class="count">${nodeQuestionCount(parentId)} سؤال متاح</div>
+          <div class="count">${directCount} سؤال متاح</div>
         </div>
-        <button class="btn primary" onclick="startQuiz('${parentId}')">ابدأ الاختبار</button>
+        <button class="btn primary" onclick="startQuiz('${parentId}', false)">ابدأ الاختبار</button>
+      </div>` : "";
+
+  const combinedBar = (!isRoot && nestedOnlyCount > 0) ? `
+      <div class="startBar" style="border-style:solid;opacity:.9;">
+        <div>
+          <div style="font-weight:700;font-size:14.5px;">اختبار شامل لكل ما تحت هذا القسم</div>
+          <div class="count">${totalCount} سؤال (يشمل كل الأقسام الفرعية)</div>
+        </div>
+        <button class="btn gold sm" onclick="startQuiz('${parentId}', true)">ابدأ الشامل</button>
       </div>` : "";
 
   const list = kids.length ? `
@@ -649,7 +673,11 @@ function renderHome(){
         <div class="plaque clickable" onclick="enterCategory('${k.id}','${escAttr(k.name)}')">
           <div>
             <div class="label">${esc(k.name)}</div>
-            <div class="meta">${nodeHasQuestions(k.id) ? nodeQuestionCount(k.id)+" سؤال" : "بدون أسئلة بعد"}</div>
+            <div class="meta">${
+              directQuestionCount(k.id) > 0 ? directQuestionCount(k.id)+" سؤال"
+              : nodeHasQuestions(k.id) ? "يحتوي على أقسام فرعية بها أسئلة"
+              : "بدون أسئلة بعد"
+            }</div>
           </div>
           <div class="chev">‹</div>
         </div>`).join("")}
@@ -664,6 +692,7 @@ function renderHome(){
     ${hero}
     ${renderNoticeBlock()}
     ${startBar}
+    ${combinedBar}
     ${list}
     <div class="footNote">Pseudoscience © — بنك أسئلة الطلاب الجامعيين</div>
   `;
@@ -769,7 +798,7 @@ function renderTreeNode(node, depth, visited){
     <div class="treeNode">
       <div class="treeRow">
         <span class="name">${esc(node.name)}</span>
-        <span style="font-size:11px;color:var(--text-dim);">${nodeQuestionCount(node.id)} سؤال</span>
+        <span style="font-size:11px;color:var(--text-dim);">${(()=>{const d=directQuestionCount(node.id),t=nodeQuestionCount(node.id);return t>d? `${d} سؤال مباشر (${t} شاملاً الفروع)` : `${d} سؤال`;})()}</span>
         <button class="iconBtn" title="إضافة قسم فرعي" onclick="promptAddCategory('${node.id}')">➕</button>
         <button class="iconBtn" title="إعادة تسمية" onclick="promptRenameCategory('${node.id}','${escAttr(node.name)}')">✎</button>
         <button class="iconBtn" title="تحريك لأعلى" onclick="moveCategory('${node.id}',-1)">↑</button>
