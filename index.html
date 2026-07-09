@@ -217,12 +217,6 @@
    شريط تشخيص الأخطاء المرئي — يظهر أي خطأ برمجي أو خطأ من Supabase
    مباشرة على الشاشة (مفيد جداً لأن لا يوجد وصول لأدوات المطوّر على الموبايل)
    ══════════════════════════════════════════════════════════════════ */
-// كل رسائل التشخيص تُسجَّل دائماً في console المتصفح (متاحة لك عبر أدوات المطوّر F12)،
-// لكن الشريط المرئي على الشاشة لا يظهر إلا إذا كانت هناك جلسة أدمن مسجّلة دخول حالياً،
-// حتى لا يرى المستخدمون العاديون أي رسائل خطأ تقنية.
-// كل رسائل التشخيص تُسجَّل دائماً في console المتصفح (متاحة لك عبر أدوات المطوّر F12)،
-// وتُخزَّن أيضاً في مصفوفة، لكنها لا تُعرض على الشاشة إلا لجلسة أدمن مسجّلة دخول،
-// وحتى في تلك الحالة تظهر كزر صغير قابل للطي وليس كشريط يغطي الواجهة.
 window.__debugLogs = [];
 
 function ensureDebugPanel(){
@@ -298,9 +292,9 @@ window.__debugLog = function(msg){
   try{ console.warn('[QBank]', msg); }catch(e){ /* noop */ }
   const text = String(msg);
   window.__debugLogs.push({ time: new Date().toLocaleTimeString(), msg: text });
-  if(window.__debugLogs.length > 200) window.__debugLogs.shift(); // يمنع تراكماً لا نهائياً
+  if(window.__debugLogs.length > 200) window.__debugLogs.shift();
   try{
-    if(typeof state === "undefined" || !state.adminSession) return; // ليس أدمن → لا نعرض شيئاً
+    if(typeof state === "undefined" || !state.adminSession) return;
     ensureDebugPanel();
     renderDebugLines();
     updateDebugBadge();
@@ -315,8 +309,7 @@ window.addEventListener('unhandledrejection', function(e){
 });
 
 /* ══════════════════════════════════════════════════════════════════
-   إعدادات الاتصال — عدّل هذين السطرين فقط بعد إنشاء مشروع Supabase
-   (راجع دليل التفعيل المرفق للحصول على القيمتين)
+   إعدادات الاتصال
    ══════════════════════════════════════════════════════════════════ */
 const SUPABASE_URL      = "https://hqpoqldmuyfrxkbbczql.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxcG9xbGRtdXlmcnhrYmJjenFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NDE0ODMsImV4cCI6MjA5OTExNzQ4M30.cM_JjWiRjzjbjERSPdeOXYkvSZxneYkd5jrvd8yBlBc";
@@ -324,44 +317,72 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ══════════════════════════════════════════════════════════════════
-   حالة التطبيق (كل شيء في الذاكرة فقط — لا حفظ لبيانات المستخدم)
+   طبقة التخزين المؤقت (Cache) — تقلّل الضغط على قاعدة البيانات
+   تخزّن قائمة الأقسام وعدد الأسئلة محليًا بمتصفح كل مستخدم لمدة محددة،
+   فبدل ما كل طالب يرسل طلب لقاعدة البيانات عند كل فتح للتطبيق،
+   يقرأ من نسخة محفوظة عنده لو لسه صالحة (غير منتهية الصلاحية).
+   ══════════════════════════════════════════════════════════════════ */
+const CACHE_KEY = "qbank_cache_v1";
+// الكاش دائم بجهاز الطالب. عند كل فتح للتطبيق، نقارن "علامة آخر تحديث"
+// المخزّنة بجدول app_meta (سطر واحد فقط بقاعدة البيانات، طلب خفيف جدًا)
+// مع العلامة المحفوظة بالكاش المحلي. إن تطابقتا نستخدم الكاش مباشرة،
+// وإن اختلفتا (لأن الأدمن عدّل شيئاً) نجلب البيانات الكاملة ونحدّث الكاش.
+
+function readCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed || !parsed.updatedAt) return null;
+    return parsed;
+  }catch(e){ return null; } // أي خطأ بالقراءة (متصفح يمنع التخزين مثلاً) → تجاهل الكاش بأمان
+}
+function writeCache(categories, questionCategoryIds, updatedAt){
+  try{
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      updatedAt,
+      categories,
+      questionCategoryIds,
+    }));
+  }catch(e){ /* لو فشل الحفظ (خصوصية المتصفح مثلاً) نتجاهل بصمت، التطبيق يشتغل بدون كاش فقط */ }
+}
+function clearCache(){
+  try{ localStorage.removeItem(CACHE_KEY); }catch(e){ /* noop */ }
+}
+
+// يقرأ "علامة آخر تحديث" من قاعدة البيانات فقط (طلب خفيف جدًا، سطر واحد)
+async function fetchServerUpdatedAt(){
+  const { data, error } = await sb.from("app_meta").select("updated_at").eq("id", 1).single();
+  if(error) throw error;
+  return data.updated_at;
+}
+
+// يُستدعى من كل دوال الأدمن بعد أي تعديل ناجح — يحدّث علامة التحديث
+// بقاعدة البيانات فيجعل كل الأجهزة (الطلاب) تكتشف التغيير تلقائيًا
+// بالمرة التالية اللي يفتحوا فيها التطبيق أو يتنقلوا بالأقسام.
+async function bumpServerUpdatedAt(){
+  try{
+    await sb.from("app_meta").update({ updated_at: new Date().toISOString() }).eq("id", 1);
+  }catch(e){
+    window.__debugLog('bumpServerUpdatedAt error: ' + (e.message || JSON.stringify(e)) + ' — تأكد من إنشاء جدول app_meta بالخطوات المرفقة.');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   حالة التطبيق
    ══════════════════════════════════════════════════════════════════ */
 const state = {
-  view: "loading",           // loading | home | quiz | results | adminLogin | admin
-  categories: [],            // كل الأقسام (مسطّحة) من Supabase
-  questionCategoryIds: [],   // category_id لكل سؤال موجود (لمعرفة أين توجد أسئلة)
-  path: [],                  // مسار التصفح الحالي [{id,name}, ...]
-  quiz: null,                // {questions, index, correct, wrongList}
-  adminTab: "tree",          // tree | add
+  view: "loading",
+  categories: [],
+  questionCategoryIds: [],
+  path: [],
+  quiz: null,
+  adminTab: "tree",
   adminSession: null,
   notice: null,
 };
 
 function byId(id){ return state.categories.find(c => c.id === id); }
-
-/* ══════════════════════════════════════════════════════════════════
-   جلب صفحات (Pagination) — Supabase/PostgREST يرجع حداً أقصى من الصفوف
-   بالطلب الواحد (غالباً 1000). هذه الدالة تكرر الطلب تلقائياً صفحة بعد
-   صفحة حتى تجمع كل الصفوف، مهما كان حجم بنك الأسئلة كبيراً.
-   applyFilter: دالة اختيارية تستقبل الاستعلام وتضيف عليه شروطاً (eq/in/...)
-   ══════════════════════════════════════════════════════════════════ */
-const PAGE_SIZE = 1000;
-async function fetchAllRows(table, select, applyFilter){
-  let all = [];
-  let from = 0;
-  while(true){
-    let q = sb.from(table).select(select);
-    if(applyFilter) q = applyFilter(q);
-    q = q.range(from, from + PAGE_SIZE - 1);
-    const { data, error } = await q;
-    if(error) throw error;
-    if(!data || !data.length) break;
-    all = all.concat(data);
-    if(data.length < PAGE_SIZE) break; // آخر صفحة
-    from += PAGE_SIZE;
-  }
-  return all;
-}
 function childrenOf(parentId){
   return state.categories
     .filter(c => c.parent_id === parentId)
@@ -374,7 +395,7 @@ function descendantIds(rootId){
   while(stack.length){
     const cur = stack.pop();
     for(const c of childrenOf(cur)){
-      if(seen.has(c.id)) continue; // يمنع الحلقات الدائرية (بيانات تالفة) من التسبب بحلقة لا نهائية
+      if(seen.has(c.id)) continue;
       seen.add(c.id);
       out.push(c.id);
       stack.push(c.id);
@@ -395,25 +416,48 @@ function nodeQuestionCount(id){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   تحميل البيانات
+   تحميل البيانات — يستخدم الكاش المحلي أولاً إن وُجد وصالح،
+   وإلا يجلب من Supabase ثم يحفظ نسخة جديدة بالكاش.
+   forceRefresh=true تتجاوز الكاش (تُستخدم بعد أي تعديل إداري).
    ══════════════════════════════════════════════════════════════════ */
-async function loadAll(){
+async function loadAll(forceRefresh){
   state.view = "loading"; render();
+
+  const cached = readCache();
+
+  if(!forceRefresh && cached){
+    try{
+      const serverUpdatedAt = await fetchServerUpdatedAt();
+      if(serverUpdatedAt === cached.updatedAt){
+        state.categories = cached.categories;
+        state.questionCategoryIds = cached.questionCategoryIds;
+        state.view = "home";
+        window.__debugLog('loadAll: لا يوجد تحديث جديد — تم استخدام الكاش المحلي مباشرة.');
+        render();
+        return;
+      }
+      window.__debugLog('loadAll: تم رصد تحديث جديد من الأدمن — سيتم تحميل البيانات الكاملة.');
+    }catch(err){
+      window.__debugLog('fetchServerUpdatedAt error: ' + (err.message || JSON.stringify(err)) + ' — سيتم تحميل البيانات كاملة كإجراء احتياطي. تأكد من إنشاء جدول app_meta.');
+    }
+  }
+
   try{
-    const [cats, qids] = await Promise.all([
-      fetchAllRows("categories", "id,parent_id,name,sort_order"),
-      fetchAllRows("questions", "category_id"),
+    const [{data:cats, error:e1}, {data:qids, error:e2}, latestUpdatedAt] = await Promise.all([
+      sb.from("categories").select("id,parent_id,name,sort_order"),
+      sb.from("questions").select("category_id"),
+      fetchServerUpdatedAt().catch(()=>null),
     ]);
-    // توحيد نوع المعرّفات إلى نصوص دائماً — Supabase قد يُعيد id كرقم (bigint)
-    // بينما كل معرّف يمرّ عبر onclick في HTML يتحوّل تلقائياً إلى نص،
-    // فيفشل التطابق الصارم (===) بين رقم ونص ويتسبب بأعطال صامتة (لا شيء يحدث عند الضغط).
+    if(e1) throw e1;
+    if(e2) throw e2;
     state.categories = (cats || []).map(c => ({
       ...c,
       id: String(c.id),
       parent_id: (c.parent_id === null || c.parent_id === undefined) ? null : String(c.parent_id),
     }));
     state.questionCategoryIds = (qids || []).map(q => String(q.category_id));
-    window.__debugLog('loadAll ok — categories: ' + state.categories.length + ', question rows visible: ' + state.questionCategoryIds.length + '. (إذا كان لديك أسئلة مضافة فعلياً في Supabase لكن هذا الرقم أقل مما تتوقع، فالسبب على الأغلب RLS.)');
+    writeCache(state.categories, state.questionCategoryIds, latestUpdatedAt);
+    window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', question rows visible: ' + state.questionCategoryIds.length + '.');
     state.view = "home";
   }catch(err){
     state.view = "connectionError";
@@ -424,9 +468,7 @@ async function loadAll(){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   محلّل النصوص إلى أسئلة (مستوحى من منطق بوت البايثون)
-   يدعم: ترقيم اختياري، خيارات عربية (أ.ب.ج.د) أو لاتينية (A B C D)،
-   سطر إجابة صريح (الإجابة:/Answer:)، وأسئلة صح/خطأ
+   محلّل النصوص إلى أسئلة
    ══════════════════════════════════════════════════════════════════ */
 function parseQuestionsFromText(raw){
   const AR_MAP = {"أ":0,"ا":0,"ب":1,"ج":2,"د":3,"هـ":4,"ه":4,"و":5};
@@ -454,7 +496,7 @@ function parseQuestionsFromText(raw){
 
   const lines = raw.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
   const questions = [];
-  let cur = null; // {text, options:[], correct:null}
+  let cur = null;
 
   function flush(){
     if(cur && cur.text.trim() && cur.options.length>=2 && cur.correct!==null && cur.correct < cur.options.length){
@@ -469,8 +511,7 @@ function parseQuestionsFromText(raw){
 
   for(let raw_line of lines){
     const line = raw_line.trim();
-
-    if(!line){ continue; } // فواصل فارغة لا تنهي السؤال (بعض الملفات فيها أسطر فارغة داخل نفس السؤال)
+    if(!line){ continue; }
 
     const mAns = line.match(ANSWER_KEY);
     if(mAns && cur){
@@ -501,24 +542,20 @@ function parseQuestionsFromText(raw){
       continue;
     }
     if(cur && cur.correct===null && TF_WORD.test(line) && cur.options.length===2){
-      continue; // سطر صح/خطأ مكرر، تم إنشاء الخيارين مسبقاً
+      continue;
     }
 
-    // سطر عادي: إما بداية سؤال جديد أو استمرار للسؤال الحالي
     if(!cur || (cur.options.length===0)){
       if(!cur){
         const mQ = line.match(QNUM);
         cur = { text: mQ ? mQ[2] : line, options: [], correct: null };
       } else {
-        // استمرار نص السؤال (سطر تالٍ بدون خيارات بعد)
         const mQ = line.match(QNUM);
         cur.text += " " + (mQ ? mQ[2] : line);
       }
       continue;
     }
 
-    // إذا وصلنا هنا: عندنا سؤال حالي فيه خيارات لكن بلا إجابة بعد، وسطر لا يطابق شيئاً معروفاً
-    // نفترض أنه استكمال لآخر خيار
     if(cur.options.length){
       cur.options[cur.options.length-1] += " " + line;
     }
@@ -528,7 +565,7 @@ function parseQuestionsFromText(raw){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   منطق الاختبار (في الذاكرة فقط)
+   منطق الاختبار
    ══════════════════════════════════════════════════════════════════ */
 function shuffleArray(arr){
   const a = arr.slice();
@@ -541,22 +578,22 @@ function shuffleArray(arr){
 
 async function startQuiz(nodeId, includeSub){
   try{
-    const data = await fetchAllRows("questions", "*", (q) => includeSub
-      // وضع "الشامل": يجمع أسئلة القسم وكل الأقسام الفرعية تحته
-      ? q.in("category_id", Array.from(new Set(descendantIds(String(nodeId)))))
-      // الوضع الافتراضي: فقط الأسئلة المضافة مباشرة إلى هذا القسم بالذات،
-      // بدون خلطها مع أسئلة أي قسم فرعي — هذا ما يحافظ على فصل كل مجموعة أسئلة عن غيرها.
-      : q.eq("category_id", String(nodeId))
-    );
+    // نطلب فقط الأعمدة المطلوبة فعليًا بدل "*" لتقليل الحمل على قاعدة البيانات
+    let query = sb.from("questions").select("id,category_id,question_text,options,correct_index");
+    if(includeSub){
+      const ids = Array.from(new Set(descendantIds(String(nodeId))));
+      query = query.in("category_id", ids);
+    } else {
+      query = query.eq("category_id", String(nodeId));
+    }
+    const { data, error } = await query;
+    if(error){ console.error("startQuiz error:", error); window.__debugLog('startQuiz supabase error: ' + error.message + ' | code: ' + (error.code||'')); state.notice = state.adminSession ? ("خطأ أثناء تحميل الأسئلة: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
     if(!data || !data.length){
-      window.__debugLog('startQuiz: query succeeded but returned 0 rows. mode: ' + (includeSub?'includeSub':'direct') + ', node id: ' + nodeId + '. If you added questions here and expected results, this is very likely a Supabase Row Level Security (RLS) policy silently blocking the SELECT — check Authentication > Policies for the "questions" table.');
+      window.__debugLog('startQuiz: query succeeded but returned 0 rows. mode: ' + (includeSub?'includeSub':'direct') + ', node id: ' + nodeId + '.');
       state.notice = "لا توجد أسئلة في هذا القسم بعد.";
       render();
       return;
     }
-    // أعمدة قاعدة البيانات اسمها question_text و correct_index،
-    // بينما بقية الكود (شاشة الاختبار والنتائج) يتوقع question و correct.
-    // نوحّد الأسماء هنا فور وصول البيانات لمنع ظهور "undefined" في كل مكان.
     const questions = shuffleArray(data).map(row => ({
       id: row.id,
       question: row.question_text,
@@ -623,7 +660,9 @@ async function adminLogout(){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   أدمن: إدارة الأقسام (شجرة مرنة بلا حدود)
+   أدمن: إدارة الأقسام
+   ملاحظة: كل دالة تعديل هنا تستدعي loadAll(true) بدل loadAll()
+   لتتجاوز الكاش المحلي وتجلب أحدث بيانات فورًا بعد أي تعديل إداري.
    ══════════════════════════════════════════════════════════════════ */
 async function addCategory(parentId, name){
   if(!name || !name.trim()) return;
@@ -631,14 +670,18 @@ async function addCategory(parentId, name){
   const sort_order = siblings.length;
   const { error } = await sb.from("categories").insert({ parent_id: parentId, name: name.trim(), sort_order });
   if(error){ state.notice = error.message; render(); return; }
-  await loadAll();
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
   state.view = "admin"; render();
 }
 async function renameCategory(id, name){
   if(!name || !name.trim()) return;
   const { error } = await sb.from("categories").update({ name: name.trim() }).eq("id", id);
   if(error){ state.notice = error.message; }
-  await loadAll();
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
   state.view = "admin"; render();
 }
 async function deleteCategory(id){
@@ -646,7 +689,9 @@ async function deleteCategory(id){
   if(!ok) return;
   const { error } = await sb.from("categories").delete().eq("id", id);
   if(error){ state.notice = error.message; }
-  await loadAll();
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
   state.view = "admin"; render();
 }
 async function moveCategory(id, dir){
@@ -657,14 +702,16 @@ async function moveCategory(id, dir){
   if(!swapWith) return;
   await sb.from("categories").update({ sort_order: swapWith.sort_order ?? idx+dir }).eq("id", cat.id);
   await sb.from("categories").update({ sort_order: cat.sort_order ?? idx }).eq("id", swapWith.id);
-  await loadAll();
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
   state.view = "admin"; render();
 }
 
 /* ══════════════════════════════════════════════════════════════════
    أدمن: إضافة أسئلة
    ══════════════════════════════════════════════════════════════════ */
-let pendingParsed = []; // معاينة قبل الحفظ
+let pendingParsed = [];
 
 function runParse(text){
   pendingParsed = parseQuestionsFromText(text);
@@ -683,33 +730,19 @@ async function savePendingQuestions(categoryId){
     options: q.options,
     correct_index: q.correct,
   }));
-  const SAVE_CHUNK = 200; // إرسال الحفظ على دفعات يمنع فشل/تجمّد الطلب عند لصق آلاف الأسئلة دفعة واحدة
-  let saved = 0;
-  try{
-    for(let i=0; i<rows.length; i+=SAVE_CHUNK){
-      const chunk = rows.slice(i, i+SAVE_CHUNK);
-      const { error } = await sb.from("questions").insert(chunk);
-      if(error) throw error;
-      saved += chunk.length;
-      state.notice = `جارٍ الحفظ… (${saved} / ${rows.length})`;
-      render();
-    }
-    state.notice = `تم حفظ ${rows.length} سؤال بنجاح.`;
-    pendingParsed = [];
-    await loadAll();
-    state.view = "admin"; state.adminTab = "add";
-    render();
-  }catch(error){
-    window.__debugLog('savePendingQuestions error: ' + (error.message || JSON.stringify(error)));
-    state.notice = saved > 0
-      ? `تم حفظ ${saved} من ${rows.length} سؤال فقط قبل حدوث خطأ: ${error.message}. الأسئلة المتبقية لم تُحفظ — احذف المحفوظ سابقاً إذا لزم ثم أعد المحاولة.`
-      : `فشل الحفظ: ${error.message}`;
-    render();
-  }
+  const { error } = await sb.from("questions").insert(rows);
+  if(error){ state.notice = error.message; render(); return; }
+  state.notice = `تم حفظ ${rows.length} سؤال بنجاح.`;
+  pendingParsed = [];
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "add";
+  render();
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   العرض (Render) — كل شاشة كدالة تُعيد HTML كنص
+   العرض (Render)
    ══════════════════════════════════════════════════════════════════ */
 function esc(s){
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -893,7 +926,7 @@ function renderAdminLogin(){
 function renderTreeNode(node, depth, visited){
   visited = visited || new Set();
   if(visited.has(node.id) || depth > 50){
-    window.__debugLog('تم اكتشاف حلقة دائرية (Circular Reference) في الأقسام عند: ' + node.name + ' (id=' + node.id + '). تحقق من عمود parent_id لهذا القسم في Supabase.');
+    window.__debugLog('تم اكتشاف حلقة دائرية (Circular Reference) في الأقسام عند: ' + node.name + ' (id=' + node.id + ').');
     return `<div class="treeNode"><div class="treeRow"><span class="name" style="color:var(--danger);">⚠ ${esc(node.name)} — خطأ: هذا القسم جزء من حلقة دائرية في الأقسام (parent_id غير صحيح)</span></div></div>`;
   }
   visited = new Set(visited);
@@ -926,7 +959,6 @@ function renderAdminTree(){
 }
 
 function catOptionsHtml(selectedId){
-  // قائمة مسطّحة لكل الأقسام بمسافات بادئة تمثل العمق — مرنة بلا حدود
   function walk(parentId, depth, visited){
     visited = visited || new Set();
     let out = [];
@@ -1008,7 +1040,7 @@ function renderConnectionError(){
       تأكد من ضبط SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الكود، ومن اتصالك بالإنترنت.<br>
       <span style="opacity:.7;font-size:12px;">${esc(state.notice||"")}</span>
     </div>
-    <button class="btn primary" onclick="loadAll()">إعادة المحاولة</button>
+    <button class="btn primary" onclick="loadAll(true)">إعادة المحاولة</button>
   `;
 }
 
@@ -1028,7 +1060,7 @@ function render(){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   معالجات أحداث مربوطة بـ onclick (تُعرَّف على window لتعمل من HTML مُولَّد)
+   معالجات أحداث onclick
    ══════════════════════════════════════════════════════════════════ */
 window.enterCategory = (id, name) => {
   state.path.push({ id, name });
