@@ -337,12 +337,13 @@ function readCache(){
     return parsed;
   }catch(e){ return null; } // أي خطأ بالقراءة (متصفح يمنع التخزين مثلاً) → تجاهل الكاش بأمان
 }
-function writeCache(categories, questionCategoryIds, updatedAt){
+function writeCache(categories, questionCategoryIds, examGroups, updatedAt){
   try{
     localStorage.setItem(CACHE_KEY, JSON.stringify({
       updatedAt,
       categories,
       questionCategoryIds,
+      examGroups,
     }));
   }catch(e){ /* لو فشل الحفظ (خصوصية المتصفح مثلاً) نتجاهل بصمت، التطبيق يشتغل بدون كاش فقط */ }
 }
@@ -375,6 +376,7 @@ const state = {
   view: "loading",
   categories: [],
   questionCategoryIds: [],
+  examGroups: [],
   path: [],
   quiz: null,
   adminTab: "tree",
@@ -414,6 +416,17 @@ function nodeQuestionCount(id){
   const ids = new Set(descendantIds(id));
   return state.questionCategoryIds.filter(qid => ids.has(qid)).length;
 }
+// إيجاد كل الامتحانات الشاملة المرتبطة بقسم معيّن (أو null لصفحة الرئيسية)
+function examGroupsFor(categoryId){
+  return state.examGroups
+    .filter(g => (g.attach_to || null) === (categoryId || null))
+    .sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+}
+// عدد الأسئلة الكلي لامتحان شامل معيّن (مجموع الأسئلة المباشرة بكل الأقسام المختارة فيه)
+function examGroupQuestionCount(group){
+  const ids = new Set(group.category_ids || []);
+  return state.questionCategoryIds.filter(qid => ids.has(qid)).length;
+}
 
 /* ══════════════════════════════════════════════════════════════════
    تحميل البيانات — يستخدم الكاش المحلي أولاً إن وُجد وصالح،
@@ -431,6 +444,7 @@ async function loadAll(forceRefresh){
       if(serverUpdatedAt === cached.updatedAt){
         state.categories = cached.categories;
         state.questionCategoryIds = cached.questionCategoryIds;
+        state.examGroups = cached.examGroups || [];
         state.view = "home";
         window.__debugLog('loadAll: لا يوجد تحديث جديد — تم استخدام الكاش المحلي مباشرة.');
         render();
@@ -443,21 +457,29 @@ async function loadAll(forceRefresh){
   }
 
   try{
-    const [{data:cats, error:e1}, {data:qids, error:e2}, latestUpdatedAt] = await Promise.all([
+    const [{data:cats, error:e1}, {data:qids, error:e2}, {data:groups, error:e3}, latestUpdatedAt] = await Promise.all([
       sb.from("categories").select("id,parent_id,name,sort_order"),
       sb.from("questions").select("category_id"),
+      sb.from("exam_groups").select("id,title,attach_to,category_ids,sort_order"),
       fetchServerUpdatedAt().catch(()=>null),
     ]);
     if(e1) throw e1;
     if(e2) throw e2;
+    if(e3) throw e3;
     state.categories = (cats || []).map(c => ({
       ...c,
       id: String(c.id),
       parent_id: (c.parent_id === null || c.parent_id === undefined) ? null : String(c.parent_id),
     }));
     state.questionCategoryIds = (qids || []).map(q => String(q.category_id));
-    writeCache(state.categories, state.questionCategoryIds, latestUpdatedAt);
-    window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', question rows visible: ' + state.questionCategoryIds.length + '.');
+    state.examGroups = (groups || []).map(g => ({
+      ...g,
+      id: String(g.id),
+      attach_to: (g.attach_to === null || g.attach_to === undefined) ? null : String(g.attach_to),
+      category_ids: (g.category_ids || []).map(String),
+    }));
+    writeCache(state.categories, state.questionCategoryIds, state.examGroups, latestUpdatedAt);
+    window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', question rows visible: ' + state.questionCategoryIds.length + ', exam groups: ' + state.examGroups.length + '.');
     state.view = "home";
   }catch(err){
     state.view = "connectionError";
@@ -610,6 +632,97 @@ async function startQuiz(nodeId, includeSub){
     state.notice = state.adminSession ? ("حدث خطأ غير متوقع أثناء بدء الاختبار: " + (err.message || String(err))) : "حدث خطأ غير متوقع، حاول مرة أخرى.";
     render();
   }
+}
+
+async function startCustomExam(groupId){
+  const group = state.examGroups.find(g => g.id === groupId);
+  if(!group || !group.category_ids || !group.category_ids.length){
+    state.notice = "هذا الامتحان الشامل غير مُعد بشكل صحيح.";
+    render();
+    return;
+  }
+  try{
+    const { data, error } = await sb.from("questions")
+      .select("id,category_id,question_text,options,correct_index")
+      .in("category_id", group.category_ids);
+    if(error){ window.__debugLog('startCustomExam supabase error: ' + error.message); state.notice = state.adminSession ? ("خطأ: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
+    if(!data || !data.length){
+      state.notice = "لا توجد أسئلة بعد بهذا الامتحان الشامل.";
+      render();
+      return;
+    }
+    const questions = shuffleArray(data).map(row => ({
+      id: row.id,
+      question: row.question_text,
+      options: row.options,
+      correct: row.correct_index,
+    }));
+    state.quiz = { questions, index:0, correct:0, wrongList:[], answered:false, selected:null };
+    state.view = "quiz";
+    state.notice = null;
+    render();
+  }catch(err){
+    window.__debugLog('startCustomExam exception: ' + (err.message || JSON.stringify(err)));
+    state.notice = "حدث خطأ غير متوقع، حاول مرة أخرى.";
+    render();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: إدارة الامتحانات الشاملة المخصصة
+   ══════════════════════════════════════════════════════════════════ */
+let examBuilder = { id: null, title: "", attachTo: null, selected: new Set() };
+
+function resetExamBuilder(){
+  examBuilder = { id: null, title: "", attachTo: null, selected: new Set() };
+}
+function loadExamIntoBuilder(id){
+  const g = state.examGroups.find(x => x.id === id);
+  if(!g) return;
+  examBuilder = {
+    id: g.id,
+    title: g.title,
+    attachTo: g.attach_to || null,
+    selected: new Set(g.category_ids || []),
+  };
+  render();
+}
+function toggleExamBuilderCategory(id){
+  if(examBuilder.selected.has(id)) examBuilder.selected.delete(id);
+  else examBuilder.selected.add(id);
+  render();
+}
+async function saveExamGroup(){
+  const title = (examBuilder.title || "").trim();
+  const attachTo = examBuilder.attachTo || null;
+  if(!title){ state.notice = "أدخل اسمًا للامتحان الشامل."; render(); return; }
+  if(!examBuilder.selected.size){ state.notice = "اختر قسمًا واحدًا على الأقل."; render(); return; }
+  const category_ids = Array.from(examBuilder.selected);
+  if(examBuilder.id){
+    const { error } = await sb.from("exam_groups").update({ title, attach_to: attachTo, category_ids }).eq("id", examBuilder.id);
+    if(error){ state.notice = error.message; render(); return; }
+  } else {
+    const { error } = await sb.from("exam_groups").insert({ title, attach_to: attachTo, category_ids, sort_order: state.examGroups.length });
+    if(error){ state.notice = error.message; render(); return; }
+  }
+  resetExamBuilder();
+  state.notice = "تم حفظ الامتحان الشامل بنجاح.";
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "exams";
+  render();
+}
+async function deleteExamGroup(id){
+  const ok = confirm("سيتم حذف هذا الامتحان الشامل (لن يحذف الأسئلة أو الأقسام نفسها). متابعة؟");
+  if(!ok) return;
+  const { error } = await sb.from("exam_groups").delete().eq("id", id);
+  if(error){ state.notice = error.message; }
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "exams";
+  render();
 }
 
 function answerQuestion(optIndex){
@@ -784,8 +897,6 @@ function renderHome(){
   }
 
   const directCount = !isRoot ? directQuestionCount(parentId) : 0;
-  const totalCount = !isRoot ? nodeQuestionCount(parentId) : 0;
-  const nestedOnlyCount = totalCount - directCount;
 
   const startBar = (!isRoot && directCount > 0) ? `
       <div class="startBar">
@@ -796,14 +907,16 @@ function renderHome(){
         <button class="btn primary" onclick="startQuiz('${parentId}', false)">ابدأ الاختبار</button>
       </div>` : "";
 
-  const combinedBar = (!isRoot && nestedOnlyCount > 0) ? `
+  // الامتحانات الشاملة المخصصة اللي ربطها الأدمن بهذه الصفحة تحديدًا
+  const groupsHere = examGroupsFor(parentId);
+  const combinedBar = groupsHere.map(g => `
       <div class="startBar" style="border-style:solid;opacity:.9;">
         <div>
-          <div style="font-weight:700;font-size:14.5px;">اختبار شامل لكل ما تحت هذا القسم</div>
-          <div class="count">${totalCount} سؤال (يشمل كل الأقسام الفرعية)</div>
+          <div style="font-weight:700;font-size:14.5px;">${esc(g.title)}</div>
+          <div class="count">${examGroupQuestionCount(g)} سؤال</div>
         </div>
-        <button class="btn gold sm" onclick="startQuiz('${parentId}', true)">ابدأ الشامل</button>
-      </div>` : "";
+        <button class="btn gold sm" onclick="startCustomExam('${g.id}')">ابدأ</button>
+      </div>`).join("");
 
   const list = kids.length ? `
     <div class="ledger" style="margin-top:14px;">
@@ -1013,6 +1126,73 @@ function renderAdminAdd(){
   `;
 }
 
+function renderExamCheckTree(node, depth, visited){
+  visited = visited || new Set();
+  if(visited.has(node.id) || depth > 50) return "";
+  visited = new Set(visited);
+  visited.add(node.id);
+  const kids = childrenOf(node.id);
+  const checked = examBuilder.selected.has(node.id);
+  return `
+    <div class="treeNode">
+      <div class="treeRow">
+        <input type="checkbox" ${checked?"checked":""} onchange="toggleExamBuilderCategory('${node.id}')" style="width:18px;height:18px;">
+        <span class="name">${esc(node.name)}</span>
+        <span style="font-size:11px;color:var(--text-dim);">${directQuestionCount(node.id)} سؤال</span>
+      </div>
+      ${kids.length ? `<div class="treeChildren">${kids.map(k=>renderExamCheckTree(k, depth+1, visited)).join("")}</div>` : ""}
+    </div>`;
+}
+
+function renderAdminExams(){
+  const roots = childrenOf(null);
+  const builderTitle = examBuilder.id ? "تعديل الامتحان الشامل" : "إنشاء امتحان شامل جديد";
+  const groupsList = state.examGroups.length ? `
+    <div class="ledger" style="margin-bottom:20px;">
+      ${state.examGroups.map(g => {
+        const attachName = g.attach_to ? (byId(g.attach_to)?.name || "قسم محذوف") : "الصفحة الرئيسية";
+        return `
+        <div class="plaque">
+          <div>
+            <div class="label">${esc(g.title)}</div>
+            <div class="meta">يظهر في: ${esc(attachName)} — ${examGroupQuestionCount(g)} سؤال من ${(g.category_ids||[]).length} قسم</div>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="iconBtn" title="تعديل" onclick="loadExamIntoBuilder('${g.id}')">✎</button>
+            <button class="iconBtn danger" title="حذف" onclick="deleteExamGroup('${g.id}')">🗑</button>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>` : `<div class="emptyState" style="padding:20px 16px;">لا توجد امتحانات شاملة بعد.</div>`;
+
+  return `
+    <div style="font-weight:700;font-size:14.5px;margin-bottom:10px;">الامتحانات الشاملة الحالية</div>
+    ${groupsList}
+    <div class="divider"><span class="gem"></span></div>
+    <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;">${builderTitle}</div>
+    <div class="field">
+      <label>اسم الامتحان الشامل (يظهر للطالب)</label>
+      <input type="text" id="examTitle" value="${escAttr(examBuilder.title)}" oninput="examBuilder.title=this.value" placeholder="مثال: امتحان شامل - أنظمة الجسم">
+    </div>
+    <div class="field">
+      <label>أين يظهر زر هذا الامتحان؟</label>
+      <select id="examAttachTo" onchange="examBuilder.attachTo=this.value||null">
+        <option value="">— الصفحة الرئيسية —</option>
+        ${catOptionsHtml(examBuilder.attachTo)}
+      </select>
+    </div>
+    <div class="field">
+      <label>اختر الأقسام التي يشملها هذا الامتحان (اختر أي عدد، حتى لو غير مرتبطة ببعضها)</label>
+      ${roots.length ? roots.map(r=>renderExamCheckTree(r,0)).join("") : `<div class="emptyState">لا توجد أقسام بعد.</div>`}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn primary block" onclick="saveExamGroup()">${examBuilder.id ? "حفظ التعديلات" : "إنشاء الامتحان الشامل"}</button>
+      ${examBuilder.id ? `<button class="btn ghost sm" onclick="cancelExamBuilder()">إلغاء</button>` : ""}
+    </div>
+  `;
+}
+
+
 function renderAdmin(){
   return `
     ${renderTopbar(false)}
@@ -1027,8 +1207,9 @@ function renderAdmin(){
     <div class="tabs">
       <button class="tabBtn ${state.adminTab==='tree'?'active':''}" onclick="setAdminTab('tree')">الأقسام</button>
       <button class="tabBtn ${state.adminTab==='add'?'active':''}" onclick="setAdminTab('add')">إضافة أسئلة</button>
+      <button class="tabBtn ${state.adminTab==='exams'?'active':''}" onclick="setAdminTab('exams')">الامتحانات الشاملة</button>
     </div>
-    ${state.adminTab==='tree' ? renderAdminTree() : renderAdminAdd()}
+    ${state.adminTab==='tree' ? renderAdminTree() : state.adminTab==='add' ? renderAdminAdd() : renderAdminExams()}
   `;
 }
 
@@ -1103,7 +1284,13 @@ window.doAdminLogin = () => {
   adminLogin(email, pass);
 };
 window.adminLogout = adminLogout;
-window.setAdminTab = (tab) => { state.adminTab = tab; pendingParsed = []; render(); };
+window.setAdminTab = (tab) => { state.adminTab = tab; pendingParsed = []; resetExamBuilder(); render(); };
+window.startCustomExam = startCustomExam;
+window.loadExamIntoBuilder = loadExamIntoBuilder;
+window.toggleExamBuilderCategory = toggleExamBuilderCategory;
+window.saveExamGroup = saveExamGroup;
+window.deleteExamGroup = deleteExamGroup;
+window.cancelExamBuilder = () => { resetExamBuilder(); render(); };
 
 window.addRootCategory = () => {
   const val = document.getElementById("newRootName").value;
