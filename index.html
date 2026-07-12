@@ -337,12 +337,11 @@ function readCache(){
     return parsed;
   }catch(e){ return null; } // أي خطأ بالقراءة (متصفح يمنع التخزين مثلاً) → تجاهل الكاش بأمان
 }
-function writeCache(categories, questionCategoryIds, examGroups, updatedAt){
+function writeCache(categories, examGroups, updatedAt){
   try{
     localStorage.setItem(CACHE_KEY, JSON.stringify({
       updatedAt,
       categories,
-      questionCategoryIds,
       examGroups,
     }));
   }catch(e){ /* لو فشل الحفظ (خصوصية المتصفح مثلاً) نتجاهل بصمت، التطبيق يشتغل بدون كاش فقط */ }
@@ -375,13 +374,13 @@ async function bumpServerUpdatedAt(){
 const state = {
   view: "loading",
   categories: [],
-  questionCategoryIds: [],
   examGroups: [],
   path: [],
   quiz: null,
   adminTab: "tree",
   adminSession: null,
   notice: null,
+  resumeAvailable: null,
 };
 
 function byId(id){ return state.categories.find(c => c.id === id); }
@@ -406,15 +405,14 @@ function descendantIds(rootId){
   return out;
 }
 function nodeHasQuestions(id){
-  const ids = new Set(descendantIds(id));
-  return state.questionCategoryIds.some(qid => ids.has(qid));
+  return nodeQuestionCount(id) > 0;
 }
 function directQuestionCount(id){
-  return state.questionCategoryIds.filter(qid => qid === id).length;
+  const c = byId(id);
+  return c ? (c.direct_question_count || 0) : 0;
 }
 function nodeQuestionCount(id){
-  const ids = new Set(descendantIds(id));
-  return state.questionCategoryIds.filter(qid => ids.has(qid)).length;
+  return descendantIds(id).reduce((sum, id2) => sum + directQuestionCount(id2), 0);
 }
 // إيجاد كل الامتحانات الشاملة المرتبطة بقسم معيّن (أو null لصفحة الرئيسية)
 function examGroupsFor(categoryId){
@@ -425,7 +423,7 @@ function examGroupsFor(categoryId){
 // عدد الأسئلة الكلي لامتحان شامل معيّن (مجموع الأسئلة المباشرة بكل الأقسام المختارة فيه)
 function examGroupQuestionCount(group){
   const ids = new Set(group.category_ids || []);
-  return state.questionCategoryIds.filter(qid => ids.has(qid)).length;
+  return Array.from(ids).reduce((sum, id) => sum + directQuestionCount(id), 0);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -443,9 +441,9 @@ async function loadAll(forceRefresh){
       const serverUpdatedAt = await fetchServerUpdatedAt();
       if(serverUpdatedAt === cached.updatedAt){
         state.categories = cached.categories;
-        state.questionCategoryIds = cached.questionCategoryIds;
         state.examGroups = cached.examGroups || [];
         state.view = "home";
+        state.resumeAvailable = readProgress();
         window.__debugLog('loadAll: لا يوجد تحديث جديد — تم استخدام الكاش المحلي مباشرة.');
         render();
         return;
@@ -457,30 +455,33 @@ async function loadAll(forceRefresh){
   }
 
   try{
-    const [{data:cats, error:e1}, {data:qids, error:e2}, {data:groups, error:e3}, latestUpdatedAt] = await Promise.all([
-      sb.from("categories").select("id,parent_id,name,sort_order"),
-      sb.from("questions").select("category_id"),
+    // ملاحظة أداء مهمة: لا نجلب أبدًا كل صفوف جدول questions هنا.
+    // عدد الأسئلة لكل قسم مخزّن مباشرة بعمود direct_question_count بجدول categories
+    // (يتحدّث تلقائيًا بواسطة Trigger بقاعدة البيانات)، فهذا يلغي الحاجة لتحميل
+    // آلاف الصفوف فقط لحساب عددها — طلب واحد خفيف بدل طلب ثقيل بحجم الجدول كامل.
+    const [{data:cats, error:e1}, {data:groups, error:e3}, latestUpdatedAt] = await Promise.all([
+      sb.from("categories").select("id,parent_id,name,sort_order,direct_question_count"),
       sb.from("exam_groups").select("id,title,attach_to,category_ids,sort_order"),
       fetchServerUpdatedAt().catch(()=>null),
     ]);
     if(e1) throw e1;
-    if(e2) throw e2;
     if(e3) throw e3;
     state.categories = (cats || []).map(c => ({
       ...c,
       id: String(c.id),
       parent_id: (c.parent_id === null || c.parent_id === undefined) ? null : String(c.parent_id),
+      direct_question_count: c.direct_question_count || 0,
     }));
-    state.questionCategoryIds = (qids || []).map(q => String(q.category_id));
     state.examGroups = (groups || []).map(g => ({
       ...g,
       id: String(g.id),
       attach_to: (g.attach_to === null || g.attach_to === undefined) ? null : String(g.attach_to),
       category_ids: (g.category_ids || []).map(String),
     }));
-    writeCache(state.categories, state.questionCategoryIds, state.examGroups, latestUpdatedAt);
-    window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', question rows visible: ' + state.questionCategoryIds.length + ', exam groups: ' + state.examGroups.length + '.');
+    writeCache(state.categories, state.examGroups, latestUpdatedAt);
+    window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', exam groups: ' + state.examGroups.length + '.');
     state.view = "home";
+    state.resumeAvailable = readProgress();
   }catch(err){
     state.view = "connectionError";
     state.notice = state.adminSession ? (err.message || String(err)) : "تعذّر تحميل البيانات حالياً، حاول مرة أخرى بعد قليل.";
@@ -497,6 +498,7 @@ function parseQuestionsFromText(raw){
   const OPT_LATIN = /^([A-Ja-j])\s*[.)\-:]\s*(.*)$/;
   const OPT_ARABIC = /^(أ|ا|ب|ج|د|هـ|ه|و)\s*[.)\-:]\s*(.*)$/;
   const ANSWER_KEY = /^(?:Answer|Ans|Correct(?:\s*Answer)?|الإجابة(?:\s*الصحيحة)?|الجواب|الحل)\s*[:=\-]\s*(.+)$/i;
+  const EXPLANATION_KEY = /^(?:Explanation|Explain|التوضيح|توضيح|الشرح|شرح)\s*[:=\-]\s*(.+)$/i;
   const QNUM = /^(?:Q(?:uestion)?\.?\s*)?(\d+)\s*[.)\-:]\s*(.*)$/i;
   const TF_WORD = /^(صح|خطأ|True|False)$/i;
   const LONE_LETTER_LATIN = /^([A-Ja-j])$/;
@@ -526,6 +528,7 @@ function parseQuestionsFromText(raw){
         question: cur.text.trim(),
         options: cur.options.map(o=>o.trim()),
         correct: cur.correct,
+        explanation: cur.explanation ? cur.explanation.trim() : null,
       });
     }
     cur = null;
@@ -535,12 +538,27 @@ function parseQuestionsFromText(raw){
     const line = raw_line.trim();
     if(!line){ continue; }
 
+    // إذا كان عندنا سؤال اكتملت إجابته (correct محدد) ووصل سطر شرح — نلحقه بنفس السؤال وننهيه
+    const mExp = line.match(EXPLANATION_KEY);
+    if(mExp && cur && cur.correct !== null){
+      cur.explanation = mExp[1];
+      flush();
+      continue;
+    }
+
     const mAns = line.match(ANSWER_KEY);
     if(mAns && cur){
       const idx = answerToIndex(mAns[1], cur.options.length);
       if(idx !== null) cur.correct = idx;
-      flush();
+      // لا نُنهي السؤال فورًا هنا — ننتظر سطر شرح محتمل بالسطر التالي.
+      // لو السطر التالي مو شرح، سينهي نفسه تلقائيًا عند بداية سؤال جديد بالأسفل.
       continue;
+    }
+
+    // لو عندنا سؤال سابق اكتملت إجابته ولم يصل شرح، وهذا السطر ليس شرحًا →
+    // فهذا يعني بداية سؤال جديد، فننهي (flush) السؤال السابق أولاً
+    if(cur && cur.correct !== null){
+      flush();
     }
 
     const mOptLat = line.match(OPT_LATIN);
@@ -554,8 +572,8 @@ function parseQuestionsFromText(raw){
     if(cur && cur.options.length>=2 && cur.correct===null){
       const mLone = line.match(LONE_LETTER_LATIN);
       const mLoneAr = !mLone ? line.match(LONE_LETTER_ARABIC) : null;
-      if(mLone){ cur.correct = mLone[1].toUpperCase().charCodeAt(0)-65; flush(); continue; }
-      if(mLoneAr){ cur.correct = AR_MAP[mLoneAr[1]]; flush(); continue; }
+      if(mLone){ cur.correct = mLone[1].toUpperCase().charCodeAt(0)-65; continue; }
+      if(mLoneAr){ cur.correct = AR_MAP[mLoneAr[1]]; continue; }
     }
 
     if(cur && cur.options.length===0 && TF_WORD.test(line)){
@@ -570,7 +588,7 @@ function parseQuestionsFromText(raw){
     if(!cur || (cur.options.length===0)){
       if(!cur){
         const mQ = line.match(QNUM);
-        cur = { text: mQ ? mQ[2] : line, options: [], correct: null };
+        cur = { text: mQ ? mQ[2] : line, options: [], correct: null, explanation: null };
       } else {
         const mQ = line.match(QNUM);
         cur.text += " " + (mQ ? mQ[2] : line);
@@ -589,6 +607,45 @@ function parseQuestionsFromText(raw){
 /* ══════════════════════════════════════════════════════════════════
    منطق الاختبار
    ══════════════════════════════════════════════════════════════════ */
+const PROGRESS_KEY = "qbank_progress_v1";
+
+// يُحفظ محليًا بجهاز الطالب فقط (لا يُرسل لقاعدة البيانات) — يسمح باستئناف
+// الاختبار من نفس النقطة لو أغلق الطالب التطبيق بمنتصف الحل.
+function saveProgress(){
+  if(!state.quiz) return;
+  try{
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      quiz: state.quiz,
+    }));
+  }catch(e){ /* noop — فشل الحفظ لا يوقف الاختبار، فقط لن يُستأنف لاحقًا */ }
+}
+function clearProgress(){
+  try{ localStorage.removeItem(PROGRESS_KEY); }catch(e){ /* noop */ }
+}
+function readProgress(){
+  try{
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed || !parsed.quiz || !parsed.quiz.questions || !parsed.quiz.questions.length) return null;
+    return parsed;
+  }catch(e){ return null; }
+}
+window.resumeProgress = () => {
+  const p = readProgress();
+  if(!p){ state.resumeAvailable = null; render(); return; }
+  state.quiz = p.quiz;
+  state.view = "quiz";
+  state.notice = null;
+  render();
+};
+window.discardProgress = () => {
+  clearProgress();
+  state.resumeAvailable = null;
+  render();
+};
+
 function shuffleArray(arr){
   const a = arr.slice();
   for(let i=a.length-1;i>0;i--){
@@ -601,7 +658,7 @@ function shuffleArray(arr){
 async function startQuiz(nodeId, includeSub){
   try{
     // نطلب فقط الأعمدة المطلوبة فعليًا بدل "*" لتقليل الحمل على قاعدة البيانات
-    let query = sb.from("questions").select("id,category_id,question_text,options,correct_index");
+    let query = sb.from("questions").select("id,category_id,question_text,options,correct_index,explanation");
     if(includeSub){
       const ids = Array.from(new Set(descendantIds(String(nodeId))));
       query = query.in("category_id", ids);
@@ -621,10 +678,18 @@ async function startQuiz(nodeId, includeSub){
       question: row.question_text,
       options: row.options,
       correct: row.correct_index,
+      explanation: row.explanation || null,
     }));
-    state.quiz = { questions, index:0, correct:0, wrongList:[], answered:false, selected:null };
+    const catName = (byId(String(nodeId)) || {}).name || "";
+    state.quiz = {
+      questions, index:0, correct:0, wrongList:[], answered:false, selected:null,
+      userAnswers: new Array(questions.length).fill(null),
+      sourceLabel: catName + (includeSub ? " (شامل)" : ""),
+      sourceType: "category", sourceNodeId: String(nodeId), sourceIncludeSub: !!includeSub,
+    };
     state.view = "quiz";
     state.notice = null;
+    saveProgress();
     render();
   }catch(err){
     console.error("startQuiz exception:", err);
@@ -643,7 +708,7 @@ async function startCustomExam(groupId){
   }
   try{
     const { data, error } = await sb.from("questions")
-      .select("id,category_id,question_text,options,correct_index")
+      .select("id,category_id,question_text,options,correct_index,explanation")
       .in("category_id", group.category_ids);
     if(error){ window.__debugLog('startCustomExam supabase error: ' + error.message); state.notice = state.adminSession ? ("خطأ: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
     if(!data || !data.length){
@@ -656,10 +721,17 @@ async function startCustomExam(groupId){
       question: row.question_text,
       options: row.options,
       correct: row.correct_index,
+      explanation: row.explanation || null,
     }));
-    state.quiz = { questions, index:0, correct:0, wrongList:[], answered:false, selected:null };
+    state.quiz = {
+      questions, index:0, correct:0, wrongList:[], answered:false, selected:null,
+      userAnswers: new Array(questions.length).fill(null),
+      sourceLabel: group.title,
+      sourceType: "examGroup", sourceGroupId: groupId,
+    };
     state.view = "quiz";
     state.notice = null;
+    saveProgress();
     render();
   }catch(err){
     window.__debugLog('startCustomExam exception: ' + (err.message || JSON.stringify(err)));
@@ -731,11 +803,14 @@ function answerQuestion(optIndex){
   q.answered = true;
   q.selected = optIndex;
   const question = q.questions[q.index];
+  if(!q.userAnswers) q.userAnswers = new Array(q.questions.length).fill(null);
+  q.userAnswers[q.index] = optIndex;
   if(optIndex === question.correct){
     q.correct++;
   } else {
     q.wrongList.push({ question, chosen: optIndex });
   }
+  saveProgress();
   render();
 }
 
@@ -743,9 +818,11 @@ function nextQuestion(){
   const q = state.quiz;
   if(q.index+1 < q.questions.length){
     q.index++; q.answered=false; q.selected=null;
+    saveProgress();
     render();
   } else {
     state.view = "results";
+    clearProgress(); // الاختبار انتهى بالكامل — لا داعي لبقاء تقدم محفوظ
     render();
   }
 }
@@ -845,6 +922,7 @@ async function savePendingQuestions(categoryId){
     question_text: q.question,
     options: q.options,
     correct_index: q.correct,
+    explanation: q.explanation || null,
   }));
   const { error } = await sb.from("questions").insert(rows);
   if(error){ state.notice = error.message; render(); return; }
@@ -881,6 +959,18 @@ function renderHome(){
   const parentId = state.path.length ? state.path[state.path.length-1].id : null;
   const kids = childrenOf(parentId);
   const isRoot = state.path.length === 0;
+
+  const resumeBar = (isRoot && state.resumeAvailable) ? `
+    <div class="startBar" style="border-color:var(--sapphire);background:rgba(51,80,122,.1);">
+      <div>
+        <div style="font-weight:700;font-size:14.5px;">لديك اختبار غير مكتمل</div>
+        <div class="count">${esc(state.resumeAvailable.quiz.sourceLabel || "")} — سؤال ${state.resumeAvailable.quiz.index+1} من ${state.resumeAvailable.quiz.questions.length}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn gold sm" onclick="resumeProgress()">متابعة</button>
+        <button class="btn ghost sm" onclick="discardProgress()">تجاهل</button>
+      </div>
+    </div>` : "";
 
   const crumbs = `
     <div class="crumbs">
@@ -942,6 +1032,7 @@ function renderHome(){
 
   return `
     ${renderTopbar()}
+    ${resumeBar}
     ${crumbs}
     ${hero}
     ${renderNoticeBlock()}
@@ -994,6 +1085,8 @@ function renderQuiz(){
       <div class="questionText">${esc(question.question)}</div>
     </div>
     <div class="options">${optsHtml}</div>
+    ${q.answered && question.explanation ? `
+      <div class="explainBox">💡 ${esc(question.explanation)}</div>` : ""}
     ${q.answered ? `
       <div class="quizFooter" style="margin-top:16px;">
         <button class="btn gold" onclick="nextQuestion()">${q.index+1 < q.questions.length ? "السؤال التالي ›" : "عرض النتيجة ›"}</button>
@@ -1021,6 +1114,38 @@ function renderResults(){
             <div class="ans">✅ الإجابة الصحيحة: ${esc(w.question.options[w.question.correct])}</div>
           </div>`).join("")}
       </div>` : `<div class="emptyState">🌟 إجابات مثالية بلا أخطاء!</div>`}
+    <div class="resultActions">
+      <button class="btn gold block" onclick="enterReviewMode()">مراجعة كل الأسئلة</button>
+      <button class="btn primary block" onclick="exitQuizToHome()">العودة للرئيسية</button>
+    </div>
+  `;
+}
+
+function renderReview(){
+  const q = state.quiz;
+  return `
+    ${renderTopbar(false)}
+    <div class="topbar" style="margin-top:-8px;">
+      <div class="wordmark" style="font-size:20px;">مراجعة الأسئلة</div>
+      <button class="btn ghost sm" onclick="exitReviewToResults()">‹ رجوع للنتيجة</button>
+    </div>
+    <div class="wrongList">
+      ${q.questions.map((question, i) => {
+        const userIdx = (q.userAnswers || [])[i];
+        const wasCorrect = userIdx === question.correct;
+        return `
+        <div class="wrongItem" style="${wasCorrect ? 'border-color:var(--ok);background:rgba(74,143,92,.07);' : ''}">
+          <div class="qt">${i+1}. ${esc(question.question)}</div>
+          ${question.options.map((opt,j) => {
+            let style = "";
+            if(j === question.correct) style = "color:var(--ok);font-weight:700;";
+            else if(j === userIdx) style = "color:var(--danger);font-weight:700;";
+            return `<div style="font-size:13px;padding:2px 0;${style}">${j===question.correct?'✔':(j===userIdx?'✖':'•')} ${esc(opt)}</div>`;
+          }).join("")}
+          ${question.explanation ? `<div class="explainBox" style="margin-top:10px;">💡 ${esc(question.explanation)}</div>` : ""}
+        </div>`;
+      }).join("")}
+    </div>
     <div class="resultActions">
       <button class="btn primary block" onclick="exitQuizToHome()">العودة للرئيسية</button>
     </div>
@@ -1119,6 +1244,7 @@ function renderAdminAdd(){
         <button class="iconBtn danger rm" onclick="removePendingAt(${i})">✕</button>
         <div class="qn">${i+1}. ${esc(q.question)}</div>
         ${q.options.map((o,j)=>`<div class="op ${j===q.correct?'correct':''}">${j===q.correct?'✔':'•'} ${esc(o)}</div>`).join("")}
+        ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;">💡 ${esc(q.explanation)}</div>` : ""}
       </div>`).join("")}
   ` : "";
 
@@ -1131,8 +1257,8 @@ function renderAdminAdd(){
       </select>
     </div>
     <div class="field">
-      <label>الصق نص الأسئلة هنا</label>
-      <textarea id="pasteText" placeholder="1. نص السؤال؟&#10;أ. خيار أول&#10;ب. خيار ثاني&#10;ج. خيار ثالث&#10;د. خيار رابع&#10;الإجابة: ب"></textarea>
+      <label>الصق نص الأسئلة هنا (يمكن إضافة سطر Explanation: بعد الإجابة لشرح اختياري)</label>
+      <textarea id="pasteText" placeholder="1. نص السؤال؟&#10;أ. خيار أول&#10;ب. خيار ثاني&#10;ج. خيار ثالث&#10;د. خيار رابع&#10;الإجابة: ب&#10;Explanation: سبب كون ب هي الإجابة الصحيحة"></textarea>
     </div>
     <div class="field">
       <label>أو ارفع ملف نصي (txt)</label>
@@ -1260,6 +1386,7 @@ function render(){
     case "home": html = renderHome(); break;
     case "quiz": html = renderQuiz(); break;
     case "results": html = renderResults(); break;
+    case "review": html = renderReview(); break;
     case "adminLogin": html = renderAdminLogin(); break;
     case "admin": html = renderAdmin(); break;
   }
@@ -1291,6 +1418,15 @@ window.nextQuestion = nextQuestion;
 window.exitQuizToHome = () => {
   state.quiz = null;
   state.view = "home";
+  state.resumeAvailable = readProgress(); // لو خرج بمنتصف اختبار، يبقى محفوظًا ويظهر شريط الاستئناف
+  render();
+};
+window.enterReviewMode = () => {
+  state.view = "review";
+  render();
+};
+window.exitReviewToResults = () => {
+  state.view = "results";
   render();
 };
 window.goAdmin = async () => {
