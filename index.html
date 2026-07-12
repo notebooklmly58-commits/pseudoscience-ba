@@ -783,6 +783,7 @@ async function addCategory(parentId, name){
   const sort_order = siblings.length;
   const { error } = await sb.from("categories").insert({ parent_id: parentId, name: name.trim(), sort_order });
   if(error){ state.notice = error.message; render(); return; }
+  if(parentId) treeExpanded.add(parentId);
   clearCache();
   await bumpServerUpdatedAt();
   await loadAll(true);
@@ -825,6 +826,8 @@ async function moveCategory(id, dir){
    أدمن: إضافة أسئلة
    ══════════════════════════════════════════════════════════════════ */
 let pendingParsed = [];
+let treeExpanded = new Set();      // الأقسام المفتوحة حاليًا بتبويب "الأقسام"
+let examTreeExpanded = new Set();  // الأقسام المفتوحة حاليًا بشجرة اختيار الامتحان الشامل
 
 function runParse(text){
   pendingParsed = parseQuestionsFromText(text);
@@ -1045,10 +1048,16 @@ function renderTreeNode(node, depth, visited){
   visited = new Set(visited);
   visited.add(node.id);
   const kids = childrenOf(node.id);
+  const hasKids = kids.length > 0;
+  const isOpen = treeExpanded.has(node.id);
+  const toggleBtn = hasKids
+    ? `<button class="iconBtn" title="${isOpen?'طي':'فتح'}" onclick="toggleTreeExpand('${node.id}')" style="font-size:12px;width:22px;">${isOpen?'▾':'▸'}</button>`
+    : `<span style="width:22px;display:inline-block;"></span>`;
   return `
     <div class="treeNode">
       <div class="treeRow">
-        <span class="name">${esc(node.name)}</span>
+        ${toggleBtn}
+        <span class="name" ${hasKids?`style="cursor:pointer;" onclick="toggleTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
         <span style="font-size:11px;color:var(--text-dim);">${(()=>{const d=directQuestionCount(node.id),t=nodeQuestionCount(node.id);return t>d? `${d} سؤال مباشر (${t} شاملاً الفروع)` : `${d} سؤال`;})()}</span>
         <button class="iconBtn" title="إضافة قسم فرعي" onclick="promptAddCategory('${node.id}')">➕</button>
         <button class="iconBtn" title="إعادة تسمية" onclick="promptRenameCategory('${node.id}','${escAttr(node.name)}')">✎</button>
@@ -1056,8 +1065,19 @@ function renderTreeNode(node, depth, visited){
         <button class="iconBtn" title="تحريك لأسفل" onclick="moveCategory('${node.id}',1)">↓</button>
         <button class="iconBtn danger" title="حذف" onclick="deleteCategory('${node.id}')">🗑</button>
       </div>
-      ${kids.length ? `<div class="treeChildren">${kids.map(k=>renderTreeNode(k, depth+1, visited)).join("")}</div>` : ""}
+      ${hasKids && isOpen ? `<div class="treeChildren">${kids.map(k=>renderTreeNode(k, depth+1, visited)).join("")}</div>` : ""}
     </div>`;
+}
+
+function toggleTreeExpand(id){
+  if(treeExpanded.has(id)) treeExpanded.delete(id);
+  else treeExpanded.add(id);
+  render();
+}
+function toggleExamTreeExpand(id){
+  if(examTreeExpanded.has(id)) examTreeExpanded.delete(id);
+  else examTreeExpanded.add(id);
+  render();
 }
 
 function renderAdminTree(){
@@ -1132,15 +1152,21 @@ function renderExamCheckTree(node, depth, visited){
   visited = new Set(visited);
   visited.add(node.id);
   const kids = childrenOf(node.id);
+  const hasKids = kids.length > 0;
+  const isOpen = examTreeExpanded.has(node.id);
   const checked = examBuilder.selected.has(node.id);
+  const toggleBtn = hasKids
+    ? `<button class="iconBtn" title="${isOpen?'طي':'فتح'}" onclick="toggleExamTreeExpand('${node.id}')" style="font-size:12px;width:22px;">${isOpen?'▾':'▸'}</button>`
+    : `<span style="width:22px;display:inline-block;"></span>`;
   return `
     <div class="treeNode">
       <div class="treeRow">
+        ${toggleBtn}
         <input type="checkbox" ${checked?"checked":""} onchange="toggleExamBuilderCategory('${node.id}')" style="width:18px;height:18px;">
-        <span class="name">${esc(node.name)}</span>
+        <span class="name" ${hasKids?`style="cursor:pointer;" onclick="toggleExamTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
         <span style="font-size:11px;color:var(--text-dim);">${directQuestionCount(node.id)} سؤال</span>
       </div>
-      ${kids.length ? `<div class="treeChildren">${kids.map(k=>renderExamCheckTree(k, depth+1, visited)).join("")}</div>` : ""}
+      ${hasKids && isOpen ? `<div class="treeChildren">${kids.map(k=>renderExamCheckTree(k, depth+1, visited)).join("")}</div>` : ""}
     </div>`;
 }
 
@@ -1306,6 +1332,8 @@ window.promptRenameCategory = (id, current) => {
 };
 window.deleteCategory = deleteCategory;
 window.moveCategory = moveCategory;
+window.toggleTreeExpand = toggleTreeExpand;
+window.toggleExamTreeExpand = toggleExamTreeExpand;
 
 window.handleParseClick = () => {
   const fileInput = document.getElementById("fileInput");
