@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
   /* ============ design tokens ============ */
   :root{
@@ -81,7 +82,7 @@
 
   /* ============ breadcrumb ============ */
   .crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--text-dim);margin-bottom:14px;min-height:20px;}
-  .crumbs button{background:none;border:none;color:var(--gold-bright);font-size:13px;padding:0;}
+  .crumbs button{background:none;border:none;color:var(--gold-bright);font-size:13px;padding:0;display:inline-flex;align-items:center;gap:4px;}
   .crumbs button:hover{text-decoration:underline;}
   .crumbs .sep{color:var(--gold-dim);}
 
@@ -99,7 +100,7 @@
   .plaque.clickable:hover{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-dim), 0 6px 18px -8px rgba(184,146,63,.35);transform:translateY(-1px);}
   .plaque .label{font-weight:700;font-size:15.5px;color:var(--parchment);}
   .plaque .meta{font-size:12px;color:var(--text-dim);margin-top:2px;}
-  .plaque .chev{color:var(--gold-dim);font-size:18px;}
+  .plaque .chev{color:var(--gold-dim);display:flex;align-items:center;}
 
   .emptyState{text-align:center;padding:40px 16px;color:var(--text-dim);font-size:14px;line-height:1.9;}
 
@@ -125,8 +126,30 @@
     display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(184,146,63,.04);}
   .startBar .count{font-size:13px;color:var(--text-dim);}
 
+  /* ============ info / description ============ */
+  .infoBtn{background:none;border:1px solid var(--gold-dim);color:var(--text-dim);width:26px;height:26px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;transition:.15s;}
+  .infoBtn:hover{color:var(--gold-bright);border-color:var(--gold);}
+
+  .modalOverlay{position:fixed;inset:0;background:rgba(5,4,3,.78);backdrop-filter:blur(2px);
+    z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modalBox{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--gold);
+    border-radius:8px;max-width:440px;width:100%;max-height:80vh;overflow:auto;padding:20px;
+    box-shadow:0 10px 40px rgba(0,0,0,.6);}
+  .modalHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;}
+  .modalHead .mTitle{font-family:var(--font-head);font-size:17px;color:var(--gold-bright);font-weight:700;
+    unicode-bidi:plaintext;display:flex;align-items:center;gap:8px;}
+  .modalClose{background:none;border:1px solid var(--gold-dim);border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex:none;}
+  .modalClose:hover{color:var(--gold-bright);border-color:var(--gold);}
+  .modalMeta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .modalMeta .chip{font-size:11.5px;padding:5px 10px;border-radius:20px;border:1px solid var(--gold-dim);
+    color:var(--text-dim);display:flex;align-items:center;gap:5px;}
+  .modalDesc{font-size:14px;line-height:1.9;color:var(--parchment);unicode-bidi:plaintext;white-space:pre-wrap;}
+  .modalDesc.empty{color:var(--text-dim);font-style:italic;font-size:13px;}
+
   /* ============ quiz ============ */
-  .quizHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .quizHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;}
   .progressWrap{flex:1;height:6px;background:var(--panel-2);border-radius:6px;margin:0 14px;overflow:hidden;border:1px solid var(--gold-dim);}
   .progressBar{height:100%;background:linear-gradient(90deg, var(--gold-dim), var(--gold-bright));transition:.3s;}
   .qCounter{font-family:var(--font-head);font-size:13px;color:var(--gold);white-space:nowrap;}
@@ -150,7 +173,8 @@
   .optionBtn:disabled{cursor:default;}
 
   .explainBox{margin-top:14px;padding:12px 14px;border-radius:var(--radius);background:rgba(51,80,122,.12);
-    border:1px solid var(--sapphire);font-size:13.5px;color:#c7d5ea;line-height:1.8;unicode-bidi:plaintext;}
+    border:1px solid var(--sapphire);font-size:13.5px;color:#c7d5ea;line-height:1.8;unicode-bidi:plaintext;
+    display:flex;gap:8px;align-items:flex-start;}
 
   .quizFooter{display:flex;justify-content:flex-end;margin-top:6px;}
 
@@ -161,12 +185,12 @@
   .wrongList{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
   .wrongItem{border:1px solid var(--danger);border-radius:var(--radius);padding:12px 14px;background:rgba(192,57,74,.07);}
   .wrongItem .qt{font-weight:700;font-size:14px;margin-bottom:8px;unicode-bidi:plaintext;}
-  .wrongItem .ans{font-size:13px;color:#c9f0d1;unicode-bidi:plaintext;}
+  .wrongItem .ans{font-size:13px;color:#c9f0d1;unicode-bidi:plaintext;display:flex;align-items:center;gap:6px;}
   .resultActions{display:flex;gap:10px;margin-top:20px;}
 
   /* ============ forms / admin ============ */
   .field{margin-bottom:14px;}
-  .field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;font-weight:600;}
+  .field label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;font-weight:600;}
   .field input[type=text],.field input[type=email],.field input[type=password],.field select,.field textarea{
     width:100%;padding:11px 12px;border-radius:var(--radius);border:1px solid var(--gold-dim);
     background:var(--panel-2);color:var(--parchment);font-size:14px;
@@ -176,7 +200,7 @@
 
   .tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--gold-dim);overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .tabBtn{background:none;border:none;padding:10px 14px;color:var(--text-dim);font-weight:700;font-size:13.5px;
-    border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none;}
+    border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none;display:flex;align-items:center;gap:6px;}
   .tabBtn.active{color:var(--gold-bright);border-color:var(--gold-bright);}
 
   .treeNode{margin-inline-start:0;}
@@ -184,17 +208,17 @@
     border-radius:var(--radius);background:var(--panel-2);margin-bottom:6px;flex-wrap:wrap;}
   .treeRow .name{flex:1;font-size:14px;font-weight:600;unicode-bidi:plaintext;min-width:60px;}
   .treeChildren{margin-inline-start:22px;border-inline-start:1px dashed var(--gold-dim);padding-inline-start:12px;}
-  .iconBtn{background:none;border:none;color:var(--text-dim);font-size:14px;padding:4px 6px;border-radius:4px;}
+  .iconBtn{background:none;border:none;color:var(--text-dim);font-size:14px;padding:4px 6px;border-radius:4px;display:flex;align-items:center;}
   .iconBtn:hover{color:var(--gold-bright);background:rgba(184,146,63,.1);}
   .iconBtn.danger:hover{color:var(--danger);}
 
   .previewCard{border:1px solid var(--gold-dim);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;background:var(--panel-2);}
   .previewCard .qn{font-weight:700;font-size:13.5px;margin-bottom:6px;unicode-bidi:plaintext;}
-  .previewCard .op{font-size:12.5px;color:var(--text-dim);padding:2px 0;unicode-bidi:plaintext;}
+  .previewCard .op{font-size:12.5px;color:var(--text-dim);padding:2px 0;unicode-bidi:plaintext;display:flex;align-items:center;gap:6px;}
   .previewCard .op.correct{color:var(--ok);font-weight:700;}
   .previewCard .rm{float:left;}
 
-  .notice{padding:12px 14px;border-radius:var(--radius);font-size:13.5px;margin-bottom:14px;}
+  .notice{padding:12px 14px;border-radius:var(--radius);font-size:13.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
   .notice.err{background:rgba(192,57,74,.12);border:1px solid var(--danger);color:#f5c3ca;}
   .notice.ok{background:rgba(74,143,92,.12);border:1px solid var(--ok);color:#c9f0d1;}
   .notice.info{background:rgba(51,80,122,.12);border:1px solid var(--sapphire);color:#c7d5ea;}
@@ -202,6 +226,11 @@
   .loadingDots{text-align:center;color:var(--text-dim);padding:40px 0;font-size:13px;letter-spacing:.1em;}
 
   .footNote{text-align:center;font-size:11px;color:var(--gold-dim);margin-top:30px;letter-spacing:.08em;}
+
+  .pickerBox{max-height:260px;overflow:auto;border:1px solid var(--gold-dim);border-radius:6px;padding:6px;margin-bottom:10px;}
+  .pickerRow{display:flex;align-items:flex-start;gap:8px;padding:8px 6px;border-bottom:1px solid rgba(184,146,63,.15);font-size:13px;cursor:pointer;}
+  .pickerRow:last-child{border-bottom:none;}
+  .pickerRow input{margin-top:3px;flex:none;width:16px;height:16px;}
 
   /* focus visibility for keyboard/accessibility */
   button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
@@ -216,8 +245,20 @@
 </head>
 <body>
 <div id="app"></div>
+<div id="modalRoot"></div>
 
 <script>
+/* ══════════════════════════════════════════════════════════════════
+   أيقونات Lucide — دالة مساعدة موحّدة لكل الأيقونات بالتطبيق
+   ══════════════════════════════════════════════════════════════════ */
+function icon(name, size, extra){
+  size = size || 16;
+  return '<i data-lucide="'+name+'" style="width:'+size+'px;height:'+size+'px;display:inline-block;vertical-align:-3px;flex:none;'+(extra||'')+'"></i>';
+}
+function refreshIcons(){
+  if(window.lucide){ try{ lucide.createIcons(); }catch(e){ /* noop */ } }
+}
+
 /* ══════════════════════════════════════════════════════════════════
    شريط تشخيص الأخطاء المرئي — يظهر أي خطأ برمجي أو خطأ من Supabase
    مباشرة على الشاشة (مفيد جداً لأن لا يوجد وصول لأدوات المطوّر على الموبايل)
@@ -235,8 +276,8 @@ function ensureDebugPanel(){
   const toggle = document.createElement('button');
   toggle.id = 'debugToggle';
   toggle.type = 'button';
-  toggle.style.cssText = 'width:38px;height:38px;border-radius:50%;border:1px solid #9c2735;background:#3a0000;color:#fff;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.5);position:relative;';
-  toggle.textContent = '⚠';
+  toggle.style.cssText = 'width:38px;height:38px;border-radius:50%;border:1px solid #9c2735;background:#3a0000;color:#fff;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.5);position:relative;display:flex;align-items:center;justify-content:center;';
+  toggle.innerHTML = icon('alert-triangle', 17);
   const badge = document.createElement('span');
   badge.id = 'debugCount';
   badge.style.cssText = 'position:absolute;top:-6px;right:-6px;background:#c0394a;color:#fff;border-radius:10px;min-width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px;';
@@ -253,12 +294,14 @@ function ensureDebugPanel(){
   const btns = document.createElement('div');
   btns.style.cssText = 'display:flex;gap:6px;';
   const clearBtn = document.createElement('button');
-  clearBtn.type = 'button'; clearBtn.textContent = 'مسح';
-  clearBtn.style.cssText = 'background:none;border:1px solid #9c2735;color:#fff;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;';
+  clearBtn.type = 'button';
+  clearBtn.style.cssText = 'background:none;border:1px solid #9c2735;color:#fff;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;';
+  clearBtn.innerHTML = icon('rotate-ccw', 12) + '<span style="margin-inline-start:4px;">مسح</span>';
   clearBtn.onclick = () => { window.__debugLogs = []; renderDebugLines(); updateDebugBadge(); };
   const closeBtn = document.createElement('button');
-  closeBtn.type = 'button'; closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'background:none;border:1px solid #9c2735;color:#fff;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;';
+  closeBtn.type = 'button';
+  closeBtn.style.cssText = 'background:none;border:1px solid #9c2735;color:#fff;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;';
+  closeBtn.innerHTML = icon('x', 12);
   closeBtn.onclick = () => { panel.style.display = 'none'; };
   btns.appendChild(clearBtn); btns.appendChild(closeBtn);
   header.appendChild(btns);
@@ -277,6 +320,7 @@ function ensureDebugPanel(){
   wrap.appendChild(panel);
   wrap.appendChild(toggle);
   (document.body || document.documentElement).appendChild(wrap);
+  refreshIcons();
   return wrap;
 }
 
@@ -289,8 +333,9 @@ function renderDebugLines(){
   const lines = document.getElementById('debugLines');
   if(!lines) return;
   lines.innerHTML = window.__debugLogs.map(m =>
-    `<div style="border-bottom:1px solid #660000;padding:5px 0;white-space:pre-wrap;word-break:break-word;">⚠ ${m.time} — ${m.msg}</div>`
+    '<div style="border-bottom:1px solid #660000;padding:5px 0;white-space:pre-wrap;word-break:break-word;display:flex;gap:6px;align-items:flex-start;">'+icon('alert-triangle',13)+'<span>'+m.time+' — '+esc(m.msg)+'</span></div>'
   ).join('') || '<div style="color:#c9a; padding:6px 0;">لا توجد رسائل.</div>';
+  refreshIcons();
 }
 
 window.__debugLog = function(msg){
@@ -323,15 +368,8 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ══════════════════════════════════════════════════════════════════
    طبقة التخزين المؤقت (Cache) — تقلّل الضغط على قاعدة البيانات
-   تخزّن قائمة الأقسام وعدد الأسئلة محليًا بمتصفح كل مستخدم لمدة محددة،
-   فبدل ما كل طالب يرسل طلب لقاعدة البيانات عند كل فتح للتطبيق،
-   يقرأ من نسخة محفوظة عنده لو لسه صالحة (غير منتهية الصلاحية).
    ══════════════════════════════════════════════════════════════════ */
 const CACHE_KEY = "qbank_cache_v1";
-// الكاش دائم بجهاز الطالب. عند كل فتح للتطبيق، نقارن "علامة آخر تحديث"
-// المخزّنة بجدول app_meta (سطر واحد فقط بقاعدة البيانات، طلب خفيف جدًا)
-// مع العلامة المحفوظة بالكاش المحلي. إن تطابقتا نستخدم الكاش مباشرة،
-// وإن اختلفتا (لأن الأدمن عدّل شيئاً) نجلب البيانات الكاملة ونحدّث الكاش.
 
 function readCache(){
   try{
@@ -340,7 +378,7 @@ function readCache(){
     const parsed = JSON.parse(raw);
     if(!parsed || !parsed.updatedAt) return null;
     return parsed;
-  }catch(e){ return null; } // أي خطأ بالقراءة (متصفح يمنع التخزين مثلاً) → تجاهل الكاش بأمان
+  }catch(e){ return null; }
 }
 function writeCache(categories, examGroups, updatedAt){
   try{
@@ -349,22 +387,18 @@ function writeCache(categories, examGroups, updatedAt){
       categories,
       examGroups,
     }));
-  }catch(e){ /* لو فشل الحفظ (خصوصية المتصفح مثلاً) نتجاهل بصمت، التطبيق يشتغل بدون كاش فقط */ }
+  }catch(e){ /* noop */ }
 }
 function clearCache(){
   try{ localStorage.removeItem(CACHE_KEY); }catch(e){ /* noop */ }
 }
 
-// يقرأ "علامة آخر تحديث" من قاعدة البيانات فقط (طلب خفيف جدًا، سطر واحد)
 async function fetchServerUpdatedAt(){
   const { data, error } = await sb.from("app_meta").select("updated_at").eq("id", 1).single();
   if(error) throw error;
   return data.updated_at;
 }
 
-// يُستدعى من كل دوال الأدمن بعد أي تعديل ناجح — يحدّث علامة التحديث
-// بقاعدة البيانات فيجعل كل الأجهزة (الطلاب) تكتشف التغيير تلقائيًا
-// بالمرة التالية اللي يفتحوا فيها التطبيق أو يتنقلوا بالأقسام.
 async function bumpServerUpdatedAt(){
   try{
     await sb.from("app_meta").update({ updated_at: new Date().toISOString() }).eq("id", 1);
@@ -389,6 +423,8 @@ const state = {
   adminSession: null,
   notice: null,
   resumeAvailable: null,
+  modal: null,
+  descEditor: null,
 };
 
 function byId(id){ return state.categories.find(c => c.id === id); }
@@ -422,22 +458,20 @@ function directQuestionCount(id){
 function nodeQuestionCount(id){
   return descendantIds(id).reduce((sum, id2) => sum + directQuestionCount(id2), 0);
 }
-// إيجاد كل الامتحانات الشاملة المرتبطة بقسم معيّن (أو null لصفحة الرئيسية)
 function examGroupsFor(categoryId){
   return state.examGroups
     .filter(g => (g.attach_to || null) === (categoryId || null))
     .sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
 }
-// عدد الأسئلة الكلي لامتحان شامل معيّن (مجموع الأسئلة المباشرة بكل الأقسام المختارة فيه)
 function examGroupQuestionCount(group){
   const ids = new Set(group.category_ids || []);
-  return Array.from(ids).reduce((sum, id) => sum + directQuestionCount(id), 0);
+  const fromCats = Array.from(ids).reduce((sum, id) => sum + directQuestionCount(id), 0);
+  const manual = (group.question_ids || []).length;
+  return fromCats + manual;
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   تحميل البيانات — يستخدم الكاش المحلي أولاً إن وُجد وصالح،
-   وإلا يجلب من Supabase ثم يحفظ نسخة جديدة بالكاش.
-   forceRefresh=true تتجاوز الكاش (تُستخدم بعد أي تعديل إداري).
+   تحميل البيانات
    ══════════════════════════════════════════════════════════════════ */
 async function loadAll(forceRefresh){
   state.view = "loading"; render();
@@ -463,13 +497,9 @@ async function loadAll(forceRefresh){
   }
 
   try{
-    // ملاحظة أداء مهمة: لا نجلب أبدًا كل صفوف جدول questions هنا.
-    // عدد الأسئلة لكل قسم مخزّن مباشرة بعمود direct_question_count بجدول categories
-    // (يتحدّث تلقائيًا بواسطة Trigger بقاعدة البيانات)، فهذا يلغي الحاجة لتحميل
-    // آلاف الصفوف فقط لحساب عددها — طلب واحد خفيف بدل طلب ثقيل بحجم الجدول كامل.
     const [{data:cats, error:e1}, {data:groups, error:e3}, latestUpdatedAt] = await Promise.all([
-      sb.from("categories").select("id,parent_id,name,sort_order,direct_question_count"),
-      sb.from("exam_groups").select("id,title,attach_to,category_ids,sort_order"),
+      sb.from("categories").select("id,parent_id,name,sort_order,direct_question_count,description"),
+      sb.from("exam_groups").select("id,title,attach_to,category_ids,sort_order,description,question_ids"),
       fetchServerUpdatedAt().catch(()=>null),
     ]);
     if(e1) throw e1;
@@ -479,12 +509,15 @@ async function loadAll(forceRefresh){
       id: String(c.id),
       parent_id: (c.parent_id === null || c.parent_id === undefined) ? null : String(c.parent_id),
       direct_question_count: c.direct_question_count || 0,
+      description: c.description || "",
     }));
     state.examGroups = (groups || []).map(g => ({
       ...g,
       id: String(g.id),
       attach_to: (g.attach_to === null || g.attach_to === undefined) ? null : String(g.attach_to),
       category_ids: (g.category_ids || []).map(String),
+      question_ids: (g.question_ids || []).map(String),
+      description: g.description || "",
     }));
     writeCache(state.categories, state.examGroups, latestUpdatedAt);
     window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', exam groups: ' + state.examGroups.length + '.');
@@ -504,12 +537,10 @@ async function loadAll(forceRefresh){
 function parseQuestionsFromText(raw){
   const AR_MAP = {"أ":0,"ا":0,"ب":1,"ج":2,"د":3,"هـ":4,"ه":4,"و":5};
 
-  // ── أنماط التعرف على الخيارات ──────────────────────────────────────
   const OPT_LATIN = /^(?:([A-Ja-j])\s*[.):\-]\s*|\(([A-Ja-j])\)\s*)(.*)$/;
   const OPT_ARABIC = /^(أ|ا|ب|ج|د|هـ|ه|و)\s*[.)\-:]\s*(.*)$/;
   const INLINE_OPT_RE = /([A-Ja-j])\s*[.)]\s*(.*?)(?=\s+[A-Ja-j]\s*[.)]|$)/gi;
 
-  // ── سطر إجابة / شرح / سؤال مرقّم ─────────────────────────────────────
   const ANSWER_KEY = /^(?:Correct\s*Answer|Answers?|Ans|Correct|الإجابة\s*الصحيحة?|الإجابة|الجواب|الحل)\s*[:=\-]\s*(.+)$/i;
   const EXPLANATION_KEY = /^(?:Explanation|Explain|Rationale|Note|ملاحظة|التفسير|السبب|التوضيح|توضيح|الشرح|شرح)\s*[:=\-]\s*(.+)$/i;
   const QNUM = /^(?:Q(?:uestion)?s?\.?\s*)?(\d+)\s*[.)\-:؟]\s*(.*)$/i;
@@ -519,11 +550,9 @@ function parseQuestionsFromText(raw){
   const DIVIDER = /^[-_=*#]{3,}\s*$/;
   const STEM_START = /^(?:Which|What|Who|When|Where|How|Why|Choose|Select|True|False|ما|من|أي|اختر|حدد|صح|خطأ|هل)\b/i;
 
-  // ── مفتاح إجابات منفصل (Answer Key) ─────────────────────────────────
   const KEY_HDR = /^(?:answers?\s*key|key|answers?|الإجابات?|مفتاح\s*الإجابات?)\s*:?\s*$/i;
   const KEY_LINE = /^(\d+)\s*[-.):\s]\s*([A-Ja-j])\s*$/i;
 
-  // ── أنماط إجابات خاصة: All / None / أكثر من حرف ────────────────────
   const ALL_PAT = /^(?:ALL(?:\s+OF\s+(?:THE\s+)?ABOVE)?|كل\s*(?:ما\s*)?(?:سبق|ذكر)|جميع\s*(?:ما\s*)?(?:سبق|ذكر)|كلها|كلهم|جميعها|جميعهم|كل\s*الخيارات?\s*(?:صحيحة|صحيح)?)$/i;
   const NONE_PAT = /^(?:NONE(?:\s+OF\s+(?:THE\s+)?ABOVE)?|لا\s*شيء(?:\s*مما\s*(?:سبق|ذكر))?|لا\s*(?:شيء|إجابة)\s*(?:من\s*)?(?:ما\s*)?(?:سبق|صحيحة?)?)$/i;
   const MULTI_LETTER_PAT = /^[A-Ja-j](?:\s*(?:and|or|و|،|,|&|\+|\/)\s*[A-Ja-j])+$/i;
@@ -532,7 +561,6 @@ function parseQuestionsFromText(raw){
     return o.trim().replace(/\s*\.{2,}\s*$/,"").replace(/\s*\.\s*$/,"").replace(/\s+/g," ").trim();
   }
 
-  // يُعيد: رقم (index) أو "ALL" أو "NONE" أو "MULTI:ABC" أو null
   function parseAnswerValue(raw){
     const s = raw.trim();
     if(ALL_PAT.test(s)) return "ALL";
@@ -548,15 +576,13 @@ function parseQuestionsFromText(raw){
     const single = s.match(/^([A-Ja-j])\s*$/i);
     if(single) return single[1].toUpperCase().charCodeAt(0) - 65;
     const n = parseInt(s,10);
-    if(!isNaN(n) && String(n) === s) return n - 1; // رقم صريح (1-based) كإجابة
+    if(!isNaN(n) && String(n) === s) return n - 1;
     return null;
   }
 
-  // يبني خيارًا إضافيًا يمثّل "كلا الحرفين صحيحان" — نفس حيلة بوت البايثون،
-  // بحيث يبقى الشكل متوافقًا مع قاعدة البيانات الحالية (إجابة صحيحة واحدة فقط)
   function buildMultiOption(opts, letters){
     const label = letters.split("").join(" & ");
-    const combo = `(${label}) كلاهما صحيح ✔`;
+    const combo = `(${label}) كلاهما صحيح`;
     const newOpts = opts.map(cleanOption).concat([combo]);
     return { options: newOpts, correct: newOpts.length - 1 };
   }
@@ -576,7 +602,6 @@ function parseQuestionsFromText(raw){
 
   const lines = raw.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
 
-  // ── الخطوة 1: اكتشاف مفتاح إجابات منفصل (Answer Key) إن وُجد ────────
   const answerKeyMap = {};
   const keyLineIdx = new Set();
   let inKey = false;
@@ -589,10 +614,8 @@ function parseQuestionsFromText(raw){
       else if(s && !DIVIDER.test(s)){ inKey = false; }
     }
   }
-  if(keyLineIdx.size < 3){ /* مفتاح غير موثوق (أقل من 3 أسطر) → تجاهله */ }
   const useAnswerKey = keyLineIdx.size >= 3;
 
-  // ── الخطوة 2: التحليل سطرًا سطرًا ────────────────────────────────────
   const questions = [];
   let curLines = [], curOpts = [], curAns = null, curExpl = null, curNum = null;
   let autoCtr = 0;
@@ -616,9 +639,9 @@ function parseQuestionsFromText(raw){
     }
 
     if(curAns === "ALL"){
-      add(cleaned.concat(["كل ما سبق ✔"]), cleaned.length);
+      add(cleaned.concat(["كل ما سبق"]), cleaned.length);
     } else if(curAns === "NONE"){
-      add(cleaned.concat(["لا شيء مما سبق ✔"]), cleaned.length);
+      add(cleaned.concat(["لا شيء مما سبق"]), cleaned.length);
     } else if(typeof curAns === "string" && curAns.startsWith("MULTI:")){
       const built = buildMultiOption(curOpts, curAns.slice(6));
       add(built.options, built.correct);
@@ -640,11 +663,9 @@ function parseQuestionsFromText(raw){
       continue;
     }
 
-    // شرح
     const mExp = line.match(EXPLANATION_KEY);
     if(mExp){ curExpl = mExp[1]; continue; }
 
-    // سؤال مرقّم جديد (لا يبدأ سؤال جديد إذا كان السطر فعليًا سطر إجابة)
     const mQ = line.match(QNUM);
     if(mQ && !ANSWER_KEY.test(line)){
       flush();
@@ -655,14 +676,12 @@ function parseQuestionsFromText(raw){
       continue;
     }
 
-    // إجابة صريحة
     const mAns = line.match(ANSWER_KEY);
     if(mAns){
       curAns = parseAnswerValue(mAns[1]);
       continue;
     }
 
-    // خيار (لاتيني أو عربي) — مع دعم عدة خيارات بنفس السطر
     const optMatch = matchOption(line);
     if(optMatch){
       const inline = parseInlineOptions(line);
@@ -671,21 +690,18 @@ function parseQuestionsFromText(raw){
       continue;
     }
 
-    // حرف منفرد كإجابة بعد الخيارات
     if(curOpts.length >= 2 && curAns === null){
       if(LONE_LETTER_LATIN.test(line)){ curAns = line.toUpperCase().charCodeAt(0)-65; continue; }
       if(LONE_LETTER_ARABIC.test(line)){ curAns = AR_MAP[line]; continue; }
     }
 
-    // True/False تلقائي (سؤال ثنائي بدون خيارات مكتوبة صراحة)
     if(curOpts.length === 0 && TF_WORD.test(line) && curLines.length){
       const isTrue = /^(صح|True)$/i.test(line);
-      curOpts = [isTrue ? "صح ✅" : "خطأ ❌", isTrue ? "خطأ ❌" : "صح ✅"];
+      curOpts = [isTrue ? "صح" : "خطأ", isTrue ? "خطأ" : "صح"];
       curAns = 0;
       continue;
     }
 
-    // استمرار نص خيار (سطر تالٍ بدون رمز خيار، والإجابة لم تُحدد بعد)
     if(curOpts.length && curAns === null){
       const inline = parseInlineOptions(line);
       if(inline){ curOpts = inline; }
@@ -693,13 +709,11 @@ function parseQuestionsFromText(raw){
       continue;
     }
 
-    // استمرار نص السؤال (لا خيارات بعد ولا إجابة)
     if(curLines.length && curAns === null && curOpts.length === 0){
       curLines.push(line);
       continue;
     }
 
-    // سؤال جديد بدون رقم (يبدأ بكلمة استفهام معروفة)
     if(STEM_START.test(line)){
       flush();
       autoCtr++;
@@ -709,7 +723,6 @@ function parseQuestionsFromText(raw){
       continue;
     }
 
-    // أي سطر آخر غير مصنّف: يُعتبر بداية سؤال جديد احتياطيًا
     if(!curLines.length){
       resetCur();
       curLines = [line];
@@ -724,8 +737,6 @@ function parseQuestionsFromText(raw){
    ══════════════════════════════════════════════════════════════════ */
 const PROGRESS_KEY = "qbank_progress_v1";
 
-// يُحفظ محليًا بجهاز الطالب فقط (لا يُرسل لقاعدة البيانات) — يسمح باستئناف
-// الاختبار من نفس النقطة لو أغلق الطالب التطبيق بمنتصف الحل.
 function saveProgress(){
   if(!state.quiz) return;
   try{
@@ -733,7 +744,7 @@ function saveProgress(){
       savedAt: Date.now(),
       quiz: state.quiz,
     }));
-  }catch(e){ /* noop — فشل الحفظ لا يوقف الاختبار، فقط لن يُستأنف لاحقًا */ }
+  }catch(e){ /* noop */ }
 }
 function clearProgress(){
   try{ localStorage.removeItem(PROGRESS_KEY); }catch(e){ /* noop */ }
@@ -772,7 +783,6 @@ function shuffleArray(arr){
 
 async function startQuiz(nodeId, includeSub){
   try{
-    // نطلب فقط الأعمدة المطلوبة فعليًا بدل "*" لتقليل الحمل على قاعدة البيانات
     let query = sb.from("questions").select("id,category_id,question_text,options,correct_index,explanation");
     if(includeSub){
       const ids = Array.from(new Set(descendantIds(String(nodeId))));
@@ -816,17 +826,30 @@ async function startQuiz(nodeId, includeSub){
 
 async function startCustomExam(groupId){
   const group = state.examGroups.find(g => g.id === groupId);
-  if(!group || !group.category_ids || !group.category_ids.length){
+  const hasCats = group && group.category_ids && group.category_ids.length;
+  const hasQs = group && group.question_ids && group.question_ids.length;
+  if(!group || (!hasCats && !hasQs)){
     state.notice = "هذا الامتحان الشامل غير مُعد بشكل صحيح.";
     render();
     return;
   }
   try{
-    const { data, error } = await sb.from("questions")
-      .select("id,category_id,question_text,options,correct_index,explanation")
-      .in("category_id", group.category_ids);
-    if(error){ window.__debugLog('startCustomExam supabase error: ' + error.message); state.notice = state.adminSession ? ("خطأ: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
-    if(!data || !data.length){
+    const cols = "id,category_id,question_text,options,correct_index,explanation";
+    let rows = [];
+    if(hasCats){
+      const { data, error } = await sb.from("questions").select(cols).in("category_id", group.category_ids);
+      if(error){ window.__debugLog('startCustomExam categories error: ' + error.message); state.notice = state.adminSession ? ("خطأ: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
+      rows = rows.concat(data || []);
+    }
+    if(hasQs){
+      const { data, error } = await sb.from("questions").select(cols).in("id", group.question_ids);
+      if(error){ window.__debugLog('startCustomExam question_ids error: ' + error.message); state.notice = state.adminSession ? ("خطأ: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
+      rows = rows.concat(data || []);
+    }
+    const map = new Map();
+    rows.forEach(r => map.set(String(r.id), r));
+    const data = Array.from(map.values());
+    if(!data.length){
       state.notice = "لا توجد أسئلة بعد بهذا الامتحان الشامل.";
       render();
       return;
@@ -856,12 +879,136 @@ async function startCustomExam(groupId){
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   أدمن: نافذة معلومات + محرّر الوصف
+   ══════════════════════════════════════════════════════════════════ */
+function openInfoModal(title, meta, description){
+  state.modal = { title, meta: meta || [], description: description || "" };
+  renderModalRoot();
+}
+function closeModal(){ state.modal = null; renderModalRoot(); }
+function openDescEditor(kind, id, current){
+  state.descEditor = { kind, id, value: current || "" };
+  renderModalRoot();
+}
+function closeDescEditor(){ state.descEditor = null; renderModalRoot(); }
+async function saveDescEditor(){
+  const { kind, id, value } = state.descEditor;
+  const text = (value || "").trim();
+  let error = null;
+  if(kind === 'category'){
+    ({ error } = await sb.from('categories').update({ description: text || null }).eq('id', id));
+  } else {
+    ({ error } = await sb.from('exam_groups').update({ description: text || null }).eq('id', id));
+  }
+  if(error){ state.notice = error.message; }
+  else { state.notice = "تم حفظ الوصف بنجاح."; }
+  state.descEditor = null;
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = 'admin';
+  render();
+}
+function renderModalRoot(){
+  const root = document.getElementById('modalRoot');
+  if(!root) return;
+
+  if(state.descEditor){
+    const d = state.descEditor;
+    root.innerHTML = `
+      <div class="modalOverlay" onclick="if(event.target===this) closeDescEditor()">
+        <div class="modalBox">
+          <div class="modalHead">
+            <div class="mTitle">${icon('file-text',17)} تعديل الوصف</div>
+            <button class="modalClose" onclick="closeDescEditor()">${icon('x',15)}</button>
+          </div>
+          <div class="field">
+            <textarea dir="auto" style="min-height:140px;" oninput="state.descEditor.value=this.value" placeholder="اكتب وصفًا مختصرًا يوضّح محتوى هذا القسم أو الاختبار...">${esc(d.value)}</textarea>
+          </div>
+          <button class="btn primary block" onclick="saveDescEditor()">${icon('check',15)} حفظ الوصف</button>
+        </div>
+      </div>`;
+    refreshIcons();
+    return;
+  }
+
+  if(!state.modal){ root.innerHTML = ""; return; }
+  const m = state.modal;
+  root.innerHTML = `
+    <div class="modalOverlay" onclick="if(event.target===this) closeModal()">
+      <div class="modalBox">
+        <div class="modalHead">
+          <div class="mTitle" dir="auto">${icon('info',17)} ${esc(m.title)}</div>
+          <button class="modalClose" onclick="closeModal()">${icon('x',15)}</button>
+        </div>
+        ${m.meta.length ? `<div class="modalMeta">${m.meta.map(c=>`<span class="chip">${c.icon?icon(c.icon,13):''} ${esc(c.label)}</span>`).join("")}</div>` : ""}
+        <div class="modalDesc ${m.description?'':'empty'}" dir="auto">${m.description ? esc(m.description) : "لا يوجد وصف لهذا العنصر بعد."}</div>
+      </div>
+    </div>`;
+  refreshIcons();
+}
+window.closeModal = closeModal;
+window.closeDescEditor = closeDescEditor;
+window.saveDescEditor = saveDescEditor;
+
+window.showCategoryInfo = (id) => {
+  const c = byId(id);
+  if(!c) return;
+  const total = nodeQuestionCount(id);
+  const direct = directQuestionCount(id);
+  const subCount = descendantIds(id).length - 1;
+  const meta = [
+    { icon:'list-checks', label: direct + ' سؤال مباشر' },
+  ];
+  if(total !== direct) meta.push({ icon:'layers', label: total + ' سؤال شامل الفروع' });
+  if(subCount) meta.push({ icon:'folder', label: subCount + ' قسم فرعي' });
+  openInfoModal(c.name, meta, c.description || "");
+};
+window.showExamInfo = (id) => {
+  const g = state.examGroups.find(x => x.id === id);
+  if(!g) return;
+  const catCount = (g.category_ids || []).length;
+  const manual = (g.question_ids || []).length;
+  const meta = [];
+  if(catCount) meta.push({ icon:'layers', label: catCount + ' قسم مرتبط' });
+  if(manual) meta.push({ icon:'list-checks', label: manual + ' سؤال مُختار يدويًا' });
+  meta.push({ icon:'clipboard-list', label: examGroupQuestionCount(g) + ' سؤال تقريبًا' });
+  openInfoModal(g.title, meta, g.description || "");
+};
+window.showQuizInfo = () => {
+  const q = state.quiz;
+  if(!q) return;
+  let desc = "";
+  if(q.sourceType === 'category'){
+    const c = byId(q.sourceNodeId);
+    desc = c ? (c.description || "") : "";
+  } else if(q.sourceType === 'examGroup'){
+    const g = state.examGroups.find(x => x.id === q.sourceGroupId);
+    desc = g ? (g.description || "") : "";
+  }
+  openInfoModal(q.sourceLabel || "الاختبار", [
+    { icon:'list-checks', label: q.questions.length + ' سؤال' },
+    { icon:'target', label: 'سؤال ' + (q.index+1) + ' من ' + q.questions.length },
+  ], desc);
+};
+window.openDescEditorForCategory = (id) => {
+  const c = byId(id);
+  openDescEditor('category', id, c ? (c.description || "") : "");
+};
+window.openDescEditorForExam = (id) => {
+  const g = state.examGroups.find(x => x.id === id);
+  openDescEditor('exam', id, g ? (g.description || "") : "");
+};
+
+/* ══════════════════════════════════════════════════════════════════
    أدمن: إدارة الامتحانات الشاملة المخصصة
    ══════════════════════════════════════════════════════════════════ */
-let examBuilder = { id: null, title: "", attachTo: null, selected: new Set() };
+let examBuilder = { id: null, title: "", description: "", attachTo: null, selected: new Set(), questionIds: new Set(), pickCategory: null };
+let examPickerQuestions = [];
 
 function resetExamBuilder(){
-  examBuilder = { id: null, title: "", attachTo: null, selected: new Set() };
+  examBuilder = { id: null, title: "", description: "", attachTo: null, selected: new Set(), questionIds: new Set(), pickCategory: null };
+  examPickerQuestions = [];
 }
 function loadExamIntoBuilder(id){
   const g = state.examGroups.find(x => x.id === id);
@@ -869,9 +1016,13 @@ function loadExamIntoBuilder(id){
   examBuilder = {
     id: g.id,
     title: g.title,
+    description: g.description || "",
     attachTo: g.attach_to || null,
     selected: new Set(g.category_ids || []),
+    questionIds: new Set(g.question_ids || []),
+    pickCategory: null,
   };
+  examPickerQuestions = [];
   render();
 }
 function toggleExamBuilderCategory(id){
@@ -879,17 +1030,35 @@ function toggleExamBuilderCategory(id){
   else examBuilder.selected.add(id);
   render();
 }
+async function loadExamPicker(categoryId){
+  examBuilder.pickCategory = categoryId || null;
+  examPickerQuestions = [];
+  render();
+  if(!categoryId) return;
+  const { data, error } = await sb.from('questions').select('id,question_text').eq('category_id', categoryId).order('id',{ascending:true});
+  if(error){ state.notice = error.message; render(); return; }
+  examPickerQuestions = data || [];
+  render();
+}
+function toggleExamBuilderQuestion(id){
+  const key = String(id);
+  if(examBuilder.questionIds.has(key)) examBuilder.questionIds.delete(key);
+  else examBuilder.questionIds.add(key);
+  render();
+}
 async function saveExamGroup(){
   const title = (examBuilder.title || "").trim();
+  const description = (examBuilder.description || "").trim();
   const attachTo = examBuilder.attachTo || null;
   if(!title){ state.notice = "أدخل اسمًا للامتحان الشامل."; render(); return; }
-  if(!examBuilder.selected.size){ state.notice = "اختر قسمًا واحدًا على الأقل."; render(); return; }
+  if(!examBuilder.selected.size && !examBuilder.questionIds.size){ state.notice = "اختر قسمًا واحدًا على الأقل أو سؤالًا واحدًا على الأقل."; render(); return; }
   const category_ids = Array.from(examBuilder.selected);
+  const question_ids = Array.from(examBuilder.questionIds);
   if(examBuilder.id){
-    const { error } = await sb.from("exam_groups").update({ title, attach_to: attachTo, category_ids }).eq("id", examBuilder.id);
+    const { error } = await sb.from("exam_groups").update({ title, description: description || null, attach_to: attachTo, category_ids, question_ids }).eq("id", examBuilder.id);
     if(error){ state.notice = error.message; render(); return; }
   } else {
-    const { error } = await sb.from("exam_groups").insert({ title, attach_to: attachTo, category_ids, sort_order: state.examGroups.length });
+    const { error } = await sb.from("exam_groups").insert({ title, description: description || null, attach_to: attachTo, category_ids, question_ids, sort_order: state.examGroups.length });
     if(error){ state.notice = error.message; render(); return; }
   }
   resetExamBuilder();
@@ -913,9 +1082,9 @@ async function deleteExamGroup(id){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   أدمن: إدارة الأسئلة الموجودة (تصفح حسب القسم، تعديل، حذف)
+   أدمن: إدارة الأسئلة الموجودة
    ══════════════════════════════════════════════════════════════════ */
-let questionEditor = null; // {id, question, options:[], correct, explanation, category_id} أو null
+let questionEditor = null;
 
 async function loadQuestionsForCategory(categoryId){
   state.manageSelectedCategory = categoryId || null;
@@ -993,7 +1162,6 @@ async function saveQuestionEdit(){
   clearCache();
   await bumpServerUpdatedAt();
   await loadAll(true);
-  // لو تغيّر القسم، اعرض قائمة القسم الجديد؛ وإلا أعد تحميل نفس القسم الحالي
   await loadQuestionsForCategory(categoryChanged ? newCategoryId : state.manageSelectedCategory);
   state.view = "admin"; state.adminTab = "manage";
   render();
@@ -1036,7 +1204,7 @@ function nextQuestion(){
     render();
   } else {
     state.view = "results";
-    clearProgress(); // الاختبار انتهى بالكامل — لا داعي لبقاء تقدم محفوظ
+    clearProgress();
     render();
   }
 }
@@ -1065,8 +1233,6 @@ async function adminLogout(){
 
 /* ══════════════════════════════════════════════════════════════════
    أدمن: إدارة الأقسام
-   ملاحظة: كل دالة تعديل هنا تستدعي loadAll(true) بدل loadAll()
-   لتتجاوز الكاش المحلي وتجلب أحدث بيانات فورًا بعد أي تعديل إداري.
    ══════════════════════════════════════════════════════════════════ */
 async function addCategory(parentId, name){
   if(!name || !name.trim()) return;
@@ -1117,8 +1283,8 @@ async function moveCategory(id, dir){
    أدمن: إضافة أسئلة
    ══════════════════════════════════════════════════════════════════ */
 let pendingParsed = [];
-let treeExpanded = new Set();      // الأقسام المفتوحة حاليًا بتبويب "الأقسام"
-let examTreeExpanded = new Set();  // الأقسام المفتوحة حاليًا بشجرة اختيار الامتحان الشامل
+let treeExpanded = new Set();
+let examTreeExpanded = new Set();
 
 function runParse(text){
   pendingParsed = parseQuestionsFromText(text);
@@ -1160,13 +1326,13 @@ function renderTopbar(showAdminGear=true){
   return `
     <div class="topbar">
       <div class="brandmini">Pseudoscience QBank</div>
-      ${showAdminGear ? `<button class="gearBtn" onclick="goAdmin()" title="لوحة الإدارة">⚙</button>` : `<span></span>`}
+      ${showAdminGear ? `<button class="gearBtn" onclick="goAdmin()" title="لوحة الإدارة">${icon('settings',17)}</button>` : `<span></span>`}
     </div>`;
 }
 
 function renderNoticeBlock(){
   if(!state.notice) return "";
-  return `<div class="notice info" dir="auto">${esc(state.notice)}</div>`;
+  return `<div class="notice info" dir="auto">${icon('info',15)} <span>${esc(state.notice)}</span></div>`;
 }
 
 function renderHome(){
@@ -1188,7 +1354,7 @@ function renderHome(){
 
   const crumbs = `
     <div class="crumbs">
-      <button onclick="goHomeRoot()">🏠 الرئيسية</button>
+      <button onclick="goHomeRoot()">${icon('home',13)} الرئيسية</button>
       ${state.path.map((p,i)=>`<span class="sep">/</span><button onclick="goToCrumb(${i})" dir="auto">${esc(p.name)}</button>`).join("")}
     </div>`;
 
@@ -1207,19 +1373,24 @@ function renderHome(){
 
   const startBar = (!isRoot && directCount > 0) ? `
       <div class="startBar">
-        <div>
-          <div style="font-weight:700;font-size:14.5px;">ابدأ حل الأسئلة في هذا القسم</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-weight:700;font-size:14.5px;">ابدأ حل الأسئلة في هذا القسم</div>
+            <button class="infoBtn" onclick="showCategoryInfo('${parentId}')" title="تفاصيل القسم">${icon('info',14)}</button>
+          </div>
           <div class="count">${directCount} سؤال متاح</div>
         </div>
         <button class="btn primary" onclick="startQuiz('${parentId}', false)">ابدأ الاختبار</button>
       </div>` : "";
 
-  // الامتحانات الشاملة المخصصة اللي ربطها الأدمن بهذه الصفحة تحديدًا
   const groupsHere = examGroupsFor(parentId);
   const combinedBar = groupsHere.map(g => `
       <div class="startBar" style="border-style:solid;opacity:.9;">
-        <div>
-          <div style="font-weight:700;font-size:14.5px;" dir="auto">${esc(g.title)}</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-weight:700;font-size:14.5px;" dir="auto">${esc(g.title)}</div>
+            <button class="infoBtn" onclick="showExamInfo('${g.id}')" title="تفاصيل الاختبار">${icon('info',14)}</button>
+          </div>
           <div class="count">${examGroupQuestionCount(g)} سؤال</div>
         </div>
         <button class="btn gold sm" onclick="startCustomExam('${g.id}')">ابدأ</button>
@@ -1229,7 +1400,7 @@ function renderHome(){
     <div class="ledger" style="margin-top:14px;">
       ${kids.map(k => `
         <div class="plaque clickable" onclick="enterCategory('${k.id}','${escAttr(k.name)}')">
-          <div>
+          <div style="flex:1;">
             <div class="label" dir="auto">${esc(k.name)}</div>
             <div class="meta">${
               directQuestionCount(k.id) > 0 ? directQuestionCount(k.id)+" سؤال"
@@ -1237,7 +1408,8 @@ function renderHome(){
               : "بدون أسئلة بعد"
             }</div>
           </div>
-          <div class="chev">‹</div>
+          <button class="infoBtn" onclick="event.stopPropagation(); showCategoryInfo('${k.id}')" title="تفاصيل القسم">${icon('info',14)}</button>
+          <div class="chev">${icon('chevron-left',18)}</div>
         </div>`).join("")}
     </div>` : `
     <div class="emptyState">
@@ -1291,8 +1463,9 @@ function renderQuiz(){
   return `
     ${renderTopbar(false)}
     <div class="quizHead">
-      <button class="btn ghost sm" onclick="exitQuizToHome()">✕ خروج</button>
+      <button class="btn ghost sm" onclick="exitQuizToHome()">${icon('x',14)} خروج</button>
       <div class="progressWrap"><div class="progressBar" style="width:${pct}%"></div></div>
+      <button class="infoBtn" onclick="showQuizInfo()" title="تفاصيل الاختبار">${icon('info',14)}</button>
       <div class="qCounter">${q.index+1} / ${q.questions.length}</div>
     </div>
     <div class="questionCard">
@@ -1300,10 +1473,10 @@ function renderQuiz(){
     </div>
     <div class="options">${optsHtml}</div>
     ${q.answered && question.explanation ? `
-      <div class="explainBox" dir="auto">💡 ${esc(question.explanation)}</div>` : ""}
+      <div class="explainBox" dir="auto">${icon('lightbulb',15)}<span>${esc(question.explanation)}</span></div>` : ""}
     ${q.answered ? `
       <div class="quizFooter" style="margin-top:16px;">
-        <button class="btn gold" onclick="nextQuestion()">${q.index+1 < q.questions.length ? "السؤال التالي ›" : "عرض النتيجة ›"}</button>
+        <button class="btn gold" onclick="nextQuestion()">${q.index+1 < q.questions.length ? "السؤال التالي "+icon('chevron-left',15) : "عرض النتيجة "+icon('chevron-left',15)}</button>
       </div>` : ""}
   `;
 }
@@ -1325,9 +1498,9 @@ function renderResults(){
         ${q.wrongList.map(w => `
           <div class="wrongItem">
             <div class="qt" dir="auto">${esc(w.question.question)}</div>
-            <div class="ans" dir="auto">✅ الإجابة الصحيحة: ${esc(w.question.options[w.question.correct])}</div>
+            <div class="ans" dir="auto">${icon('check',14)} الإجابة الصحيحة: ${esc(w.question.options[w.question.correct])}</div>
           </div>`).join("")}
-      </div>` : `<div class="emptyState">🌟 إجابات مثالية بلا أخطاء!</div>`}
+      </div>` : `<div class="emptyState">${icon('sparkles',22)}<br>إجابات مثالية بلا أخطاء!</div>`}
     <div class="resultActions">
       <button class="btn gold block" onclick="enterReviewMode()">مراجعة كل الأسئلة</button>
       <button class="btn primary block" onclick="exitQuizToHome()">العودة للرئيسية</button>
@@ -1341,7 +1514,7 @@ function renderReview(){
     ${renderTopbar(false)}
     <div class="topbar" style="margin-top:-8px;">
       <div class="wordmark" style="font-size:20px;">مراجعة الأسئلة</div>
-      <button class="btn ghost sm" onclick="exitReviewToResults()">‹ رجوع للنتيجة</button>
+      <button class="btn ghost sm" onclick="exitReviewToResults()">${icon('chevron-right',15)} رجوع للنتيجة</button>
     </div>
     <div class="wrongList">
       ${q.questions.map((question, i) => {
@@ -1352,11 +1525,12 @@ function renderReview(){
           <div class="qt" dir="auto">${i+1}. ${esc(question.question)}</div>
           ${question.options.map((opt,j) => {
             let style = "";
-            if(j === question.correct) style = "color:var(--ok);font-weight:700;";
-            else if(j === userIdx) style = "color:var(--danger);font-weight:700;";
-            return `<div style="font-size:13px;padding:2px 0;${style}" dir="auto">${j===question.correct?'✔':(j===userIdx?'✖':'•')} ${esc(opt)}</div>`;
+            let mark = icon('circle',10,'opacity:.4;');
+            if(j === question.correct){ style = "color:var(--ok);font-weight:700;"; mark = icon('check',14); }
+            else if(j === userIdx){ style = "color:var(--danger);font-weight:700;"; mark = icon('x',14); }
+            return `<div style="font-size:13px;padding:3px 0;display:flex;align-items:center;gap:6px;${style}" dir="auto">${mark}<span>${esc(opt)}</span></div>`;
           }).join("")}
-          ${question.explanation ? `<div class="explainBox" style="margin-top:10px;" dir="auto">💡 ${esc(question.explanation)}</div>` : ""}
+          ${question.explanation ? `<div class="explainBox" style="margin-top:10px;" dir="auto">${icon('lightbulb',15)}<span>${esc(question.explanation)}</span></div>` : ""}
         </div>`;
       }).join("")}
     </div>
@@ -1374,7 +1548,7 @@ function renderAdminLogin(){
     <div class="field"><label>البريد الإلكتروني</label><input type="email" id="loginEmail" autocomplete="username"></div>
     <div class="field"><label>كلمة المرور</label><input type="password" id="loginPass" autocomplete="current-password"></div>
     <button class="btn primary block" onclick="doAdminLogin()">دخول</button>
-    <div style="margin-top:14px;text-align:center;"><button class="btn ghost sm" onclick="goHomeRoot()">‹ العودة للتطبيق</button></div>
+    <div style="margin-top:14px;text-align:center;"><button class="btn ghost sm" onclick="goHomeRoot()">${icon('chevron-right',14)} العودة للتطبيق</button></div>
   `;
 }
 
@@ -1382,7 +1556,7 @@ function renderTreeNode(node, depth, visited){
   visited = visited || new Set();
   if(visited.has(node.id) || depth > 50){
     window.__debugLog('تم اكتشاف حلقة دائرية (Circular Reference) في الأقسام عند: ' + node.name + ' (id=' + node.id + ').');
-    return `<div class="treeNode"><div class="treeRow"><span class="name" style="color:var(--danger);" dir="auto">⚠ ${esc(node.name)} — خطأ: هذا القسم جزء من حلقة دائرية في الأقسام (parent_id غير صحيح)</span></div></div>`;
+    return `<div class="treeNode"><div class="treeRow">${icon('alert-triangle',14)}<span class="name" style="color:var(--danger);" dir="auto">${esc(node.name)} — خطأ: هذا القسم جزء من حلقة دائرية في الأقسام (parent_id غير صحيح)</span></div></div>`;
   }
   visited = new Set(visited);
   visited.add(node.id);
@@ -1390,7 +1564,7 @@ function renderTreeNode(node, depth, visited){
   const hasKids = kids.length > 0;
   const isOpen = treeExpanded.has(node.id);
   const toggleBtn = hasKids
-    ? `<button class="iconBtn" title="${isOpen?'طي':'فتح'}" onclick="toggleTreeExpand('${node.id}')" style="font-size:12px;width:22px;">${isOpen?'▾':'▸'}</button>`
+    ? `<button class="iconBtn" title="${isOpen?'طي':'فتح'}" onclick="toggleTreeExpand('${node.id}')">${isOpen?icon('chevron-down',15):icon('chevron-left',15)}</button>`
     : `<span style="width:22px;display:inline-block;"></span>`;
   return `
     <div class="treeNode">
@@ -1398,11 +1572,12 @@ function renderTreeNode(node, depth, visited){
         ${toggleBtn}
         <span class="name" dir="auto" ${hasKids?`style="cursor:pointer;" onclick="toggleTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
         <span style="font-size:11px;color:var(--text-dim);">${(()=>{const d=directQuestionCount(node.id),t=nodeQuestionCount(node.id);return t>d? `${d} سؤال مباشر (${t} شاملاً الفروع)` : `${d} سؤال`;})()}</span>
-        <button class="iconBtn" title="إضافة قسم فرعي" onclick="promptAddCategory('${node.id}')">➕</button>
-        <button class="iconBtn" title="إعادة تسمية" onclick="promptRenameCategory('${node.id}','${escAttr(node.name)}')">✎</button>
-        <button class="iconBtn" title="تحريك لأعلى" onclick="moveCategory('${node.id}',-1)">↑</button>
-        <button class="iconBtn" title="تحريك لأسفل" onclick="moveCategory('${node.id}',1)">↓</button>
-        <button class="iconBtn danger" title="حذف" onclick="deleteCategory('${node.id}')">🗑</button>
+        <button class="iconBtn" title="الوصف" onclick="openDescEditorForCategory('${node.id}')">${icon('file-text',14)}</button>
+        <button class="iconBtn" title="إضافة قسم فرعي" onclick="promptAddCategory('${node.id}')">${icon('plus',14)}</button>
+        <button class="iconBtn" title="إعادة تسمية" onclick="promptRenameCategory('${node.id}','${escAttr(node.name)}')">${icon('pencil',14)}</button>
+        <button class="iconBtn" title="تحريك لأعلى" onclick="moveCategory('${node.id}',-1)">${icon('chevron-up',14)}</button>
+        <button class="iconBtn" title="تحريك لأسفل" onclick="moveCategory('${node.id}',1)">${icon('chevron-down',14)}</button>
+        <button class="iconBtn danger" title="حذف" onclick="deleteCategory('${node.id}')">${icon('trash-2',14)}</button>
       </div>
       ${hasKids && isOpen ? `<div class="treeChildren">${kids.map(k=>renderTreeNode(k, depth+1, visited)).join("")}</div>` : ""}
     </div>`;
@@ -1424,7 +1599,7 @@ function renderAdminTree(){
   return `
     <div class="field" style="display:flex;gap:8px;">
       <input type="text" id="newRootName" dir="auto" placeholder="اسم قسم رئيسي جديد (مثال: Pre-clinic)">
-      <button class="btn gold sm" onclick="addRootCategory()">إضافة</button>
+      <button class="btn gold sm" onclick="addRootCategory()">${icon('plus',14)} إضافة</button>
     </div>
     ${roots.length ? roots.map(r=>renderTreeNode(r,0)).join("") : `<div class="emptyState">لا توجد أقسام بعد. أضف أول قسم رئيسي أعلاه.</div>`}
   `;
@@ -1455,16 +1630,16 @@ function renderAdminAdd(){
     <div style="font-weight:700;margin-bottom:10px;">معاينة (${pendingParsed.length} سؤال مستخرج)</div>
     ${pendingParsed.map((q,i)=>`
       <div class="previewCard">
-        <button class="iconBtn danger rm" onclick="removePendingAt(${i})">✕</button>
+        <button class="iconBtn danger rm" onclick="removePendingAt(${i})">${icon('x',14)}</button>
         <div class="qn" dir="auto">${i+1}. ${esc(q.question)}</div>
-        ${q.options.map((o,j)=>`<div class="op ${j===q.correct?'correct':''}" dir="auto">${j===q.correct?'✔':'•'} ${esc(o)}</div>`).join("")}
-        ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;" dir="auto">💡 ${esc(q.explanation)}</div>` : ""}
+        ${q.options.map((o,j)=>`<div class="op ${j===q.correct?'correct':''}" dir="auto">${j===q.correct?icon('check',13):icon('circle',8,'opacity:.4;')}<span>${esc(o)}</span></div>`).join("")}
+        ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;display:flex;align-items:center;gap:6px;" dir="auto">${icon('lightbulb',13)}<span>${esc(q.explanation)}</span></div>` : ""}
       </div>`).join("")}
   ` : "";
 
   return `
     <div class="field">
-      <label>القسم الذي ستُضاف إليه الأسئلة</label>
+      <label>${icon('folder',14)} القسم الذي ستُضاف إليه الأسئلة</label>
       <select id="targetCategory">
         <option value="">— اختر القسم —</option>
         ${catOptionsHtml(null)}
@@ -1481,7 +1656,7 @@ function renderAdminAdd(){
     <button class="btn gold block" onclick="handleParseClick()">استخراج الأسئلة من النص</button>
     ${previewHtml}
     ${pendingParsed.length ? `
-      <button class="btn primary block" style="margin-top:14px;" onclick="handleSaveClick()">حفظ الأسئلة في القسم المختار</button>
+      <button class="btn primary block" style="margin-top:14px;" onclick="handleSaveClick()">${icon('save',15)} حفظ الأسئلة في القسم المختار</button>
     ` : ""}
   `;
 }
@@ -1496,7 +1671,7 @@ function renderExamCheckTree(node, depth, visited){
   const isOpen = examTreeExpanded.has(node.id);
   const checked = examBuilder.selected.has(node.id);
   const toggleBtn = hasKids
-    ? `<button class="iconBtn" title="${isOpen?'طي':'فتح'}" onclick="toggleExamTreeExpand('${node.id}')" style="font-size:12px;width:22px;">${isOpen?'▾':'▸'}</button>`
+    ? `<button class="iconBtn" title="${isOpen?'طي':'فتح'}" onclick="toggleExamTreeExpand('${node.id}')">${isOpen?icon('chevron-down',15):icon('chevron-left',15)}</button>`
     : `<span style="width:22px;display:inline-block;"></span>`;
   return `
     <div class="treeNode">
@@ -1518,7 +1693,7 @@ function renderAdminManage(){
 
   if(questionEditor){
     return `
-      <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;">تعديل السؤال</div>
+      <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;">${icon('pencil',16)} تعديل السؤال</div>
       <div class="field">
         <label>نص السؤال</label>
         <textarea dir="auto" oninput="questionEditor.question=this.value" style="min-height:80px;">${esc(questionEditor.question)}</textarea>
@@ -1530,21 +1705,21 @@ function renderAdminManage(){
         </select>
       </div>
       <div class="field">
-        <label>الخيارات (حدد ⚪ الإجابة الصحيحة)</label>
+        <label>الخيارات (حدد الإجابة الصحيحة)</label>
         ${questionEditor.options.map((opt,i)=>`
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <input type="radio" name="correctOpt" ${questionEditor.correct===i?"checked":""} onchange="editorSetCorrect(${i})" style="width:18px;height:18px;flex:none;">
             <input type="text" dir="auto" value="${escAttr(opt)}" oninput="editorSetOption(${i}, this.value)" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);">
-            <button class="iconBtn danger" title="حذف الخيار" onclick="editorRemoveOption(${i})">✕</button>
+            <button class="iconBtn danger" title="حذف الخيار" onclick="editorRemoveOption(${i})">${icon('x',14)}</button>
           </div>`).join("")}
-        <button class="btn ghost sm" onclick="editorAddOption()">➕ إضافة خيار</button>
+        <button class="btn ghost sm" onclick="editorAddOption()">${icon('plus',14)} إضافة خيار</button>
       </div>
       <div class="field">
         <label>الشرح (اختياري)</label>
         <textarea dir="auto" oninput="questionEditor.explanation=this.value" placeholder="اتركه فارغًا لعدم عرض شرح">${esc(questionEditor.explanation)}</textarea>
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="btn primary block" onclick="saveQuestionEdit()">حفظ التعديلات</button>
+        <button class="btn primary block" onclick="saveQuestionEdit()">${icon('check',15)} حفظ التعديلات</button>
         <button class="btn ghost sm" onclick="cancelEditQuestion()">إلغاء</button>
       </div>
     `;
@@ -1552,7 +1727,7 @@ function renderAdminManage(){
 
   return `
     <div class="field">
-      <label>اختر القسم لعرض أسئلته</label>
+      <label>${icon('search',14)} اختر القسم لعرض أسئلته</label>
       <select onchange="loadQuestionsForCategory(this.value)">
         <option value="">— اختر القسم —</option>
         ${catOptionsHtml(state.manageSelectedCategory)}
@@ -1567,11 +1742,11 @@ function renderAdminManage(){
       ${filtered.length ? filtered.map(q => `
         <div class="previewCard">
           <div class="qn" dir="auto">${esc(q.question_text)}</div>
-          ${q.options.map((o,j)=>`<div class="op ${j===q.correct_index?'correct':''}" dir="auto">${j===q.correct_index?'✔':'•'} ${esc(o)}</div>`).join("")}
-          ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;" dir="auto">💡 ${esc(q.explanation)}</div>` : ""}
+          ${q.options.map((o,j)=>`<div class="op ${j===q.correct_index?'correct':''}" dir="auto">${j===q.correct_index?icon('check',13):icon('circle',8,'opacity:.4;')}<span>${esc(o)}</span></div>`).join("")}
+          ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;display:flex;align-items:center;gap:6px;" dir="auto">${icon('lightbulb',13)}<span>${esc(q.explanation)}</span></div>` : ""}
           <div style="display:flex;gap:8px;margin-top:10px;">
-            <button class="btn ghost sm" onclick="startEditQuestionById('${q.id}')">✎ تعديل</button>
-            <button class="btn danger sm" onclick="deleteQuestion('${q.id}')">🗑 حذف</button>
+            <button class="btn ghost sm" onclick="startEditQuestionById('${q.id}')">${icon('pencil',13)} تعديل</button>
+            <button class="btn danger sm" onclick="deleteQuestion('${q.id}')">${icon('trash-2',13)} حذف</button>
           </div>
         </div>`).join("") : `<div class="emptyState">لا توجد أسئلة تطابق البحث.</div>`}
     ` : `<div class="emptyState">اختر قسمًا من الأعلى لعرض أسئلته.</div>`}
@@ -1585,28 +1760,34 @@ function renderAdminExams(){
     <div class="ledger" style="margin-bottom:20px;">
       ${state.examGroups.map(g => {
         const attachName = g.attach_to ? (byId(g.attach_to)?.name || "قسم محذوف") : "الصفحة الرئيسية";
+        const manual = (g.question_ids||[]).length;
         return `
         <div class="plaque">
-          <div>
+          <div style="flex:1;">
             <div class="label" dir="auto">${esc(g.title)}</div>
-            <div class="meta" dir="auto">يظهر في: ${esc(attachName)} — ${examGroupQuestionCount(g)} سؤال من ${(g.category_ids||[]).length} قسم</div>
+            <div class="meta" dir="auto">يظهر في: ${esc(attachName)} — ${examGroupQuestionCount(g)} سؤال من ${(g.category_ids||[]).length} قسم${manual ? ' + '+manual+' سؤال يدوي' : ''}</div>
           </div>
           <div style="display:flex;gap:4px;">
-            <button class="iconBtn" title="تعديل" onclick="loadExamIntoBuilder('${g.id}')">✎</button>
-            <button class="iconBtn danger" title="حذف" onclick="deleteExamGroup('${g.id}')">🗑</button>
+            <button class="iconBtn" title="الوصف" onclick="openDescEditorForExam('${g.id}')">${icon('file-text',14)}</button>
+            <button class="iconBtn" title="تعديل" onclick="loadExamIntoBuilder('${g.id}')">${icon('pencil',14)}</button>
+            <button class="iconBtn danger" title="حذف" onclick="deleteExamGroup('${g.id}')">${icon('trash-2',14)}</button>
           </div>
         </div>`;
       }).join("")}
     </div>` : `<div class="emptyState" style="padding:20px 16px;">لا توجد امتحانات شاملة بعد.</div>`;
 
   return `
-    <div style="font-weight:700;font-size:14.5px;margin-bottom:10px;">الامتحانات الشاملة الحالية</div>
+    <div style="font-weight:700;font-size:14.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">${icon('clipboard-list',16)} الامتحانات الشاملة الحالية</div>
     ${groupsList}
     <div class="divider"><span class="gem"></span></div>
     <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;">${builderTitle}</div>
     <div class="field">
       <label>اسم الامتحان الشامل (يظهر للطالب)</label>
       <input type="text" id="examTitle" dir="auto" value="${escAttr(examBuilder.title)}" oninput="examBuilder.title=this.value" placeholder="مثال: امتحان شامل - أنظمة الجسم">
+    </div>
+    <div class="field">
+      <label>${icon('file-text',14)} وصف الامتحان (اختياري — يظهر للطالب عبر زر التفاصيل)</label>
+      <textarea dir="auto" style="min-height:80px;" oninput="examBuilder.description=this.value" placeholder="مثال: يغطي هذا الامتحان أهم مواضيع الفصل الأول...">${esc(examBuilder.description)}</textarea>
     </div>
     <div class="field">
       <label>أين يظهر زر هذا الامتحان؟</label>
@@ -1616,11 +1797,27 @@ function renderAdminExams(){
       </select>
     </div>
     <div class="field">
-      <label>اختر الأقسام التي يشملها هذا الامتحان (اختر أي عدد، حتى لو غير مرتبطة ببعضها)</label>
+      <label>${icon('layers',14)} اختر أقساماً كاملة يشملها هذا الامتحان (اختياري، أي عدد حتى لو غير مرتبطة ببعضها)</label>
       ${roots.length ? roots.map(r=>renderExamCheckTree(r,0)).join("") : `<div class="emptyState">لا توجد أقسام بعد.</div>`}
     </div>
+    <div class="field">
+      <label>${icon('list-checks',14)} أو اختر أسئلة محددة فقط من أي قسم (بجانب أو بدلاً من الأقسام الكاملة أعلاه)</label>
+      <select onchange="loadExamPicker(this.value)">
+        <option value="">— اختر قسمًا لعرض أسئلته —</option>
+        ${catOptionsHtml(examBuilder.pickCategory)}
+      </select>
+    </div>
+    ${examBuilder.pickCategory ? `
+      <div class="pickerBox">
+        ${examPickerQuestions.length ? examPickerQuestions.map(q=>`
+          <label class="pickerRow">
+            <input type="checkbox" ${examBuilder.questionIds.has(String(q.id))?'checked':''} onchange="toggleExamBuilderQuestion('${q.id}')">
+            <span dir="auto">${esc(q.question_text)}</span>
+          </label>`).join("") : `<div class="emptyState" style="padding:14px;">لا توجد أسئلة في هذا القسم.</div>`}
+      </div>` : ""}
+    ${examBuilder.questionIds.size ? `<div class="notice info">${icon('list-checks',14)} <span>تم اختيار ${examBuilder.questionIds.size} سؤال يدويًا (بالإضافة لأي أقسام كاملة مختارة أعلاه).</span></div>` : ""}
     <div style="display:flex;gap:8px;">
-      <button class="btn primary block" onclick="saveExamGroup()">${examBuilder.id ? "حفظ التعديلات" : "إنشاء الامتحان الشامل"}</button>
+      <button class="btn primary block" onclick="saveExamGroup()">${icon('check',15)} ${examBuilder.id ? "حفظ التعديلات" : "إنشاء الامتحان الشامل"}</button>
       ${examBuilder.id ? `<button class="btn ghost sm" onclick="cancelExamBuilder()">إلغاء</button>` : ""}
     </div>
   `;
@@ -1634,15 +1831,15 @@ function renderAdmin(){
       <div class="wordmark" style="font-size:20px;">لوحة الإدارة</div>
       <div style="display:flex;gap:8px;">
         <button class="btn ghost sm" onclick="goHomeRoot()">عرض التطبيق</button>
-        <button class="btn danger sm" onclick="adminLogout()">خروج</button>
+        <button class="btn danger sm" onclick="adminLogout()">${icon('log-out',14)} خروج</button>
       </div>
     </div>
     ${renderNoticeBlock()}
     <div class="tabs">
-      <button class="tabBtn ${state.adminTab==='tree'?'active':''}" onclick="setAdminTab('tree')">الأقسام</button>
-      <button class="tabBtn ${state.adminTab==='add'?'active':''}" onclick="setAdminTab('add')">إضافة أسئلة</button>
-      <button class="tabBtn ${state.adminTab==='manage'?'active':''}" onclick="setAdminTab('manage')">إدارة الأسئلة</button>
-      <button class="tabBtn ${state.adminTab==='exams'?'active':''}" onclick="setAdminTab('exams')">الامتحانات الشاملة</button>
+      <button class="tabBtn ${state.adminTab==='tree'?'active':''}" onclick="setAdminTab('tree')">${icon('folder',14)} الأقسام</button>
+      <button class="tabBtn ${state.adminTab==='add'?'active':''}" onclick="setAdminTab('add')">${icon('plus',14)} إضافة أسئلة</button>
+      <button class="tabBtn ${state.adminTab==='manage'?'active':''}" onclick="setAdminTab('manage')">${icon('list-checks',14)} إدارة الأسئلة</button>
+      <button class="tabBtn ${state.adminTab==='exams'?'active':''}" onclick="setAdminTab('exams')">${icon('clipboard-list',14)} الامتحانات الشاملة</button>
     </div>
     ${state.adminTab==='tree' ? renderAdminTree() : state.adminTab==='add' ? renderAdminAdd() : state.adminTab==='manage' ? renderAdminManage() : renderAdminExams()}
   `;
@@ -1652,9 +1849,12 @@ function renderConnectionError(){
   return `
     ${renderTopbar(false)}
     <div class="notice err">
-      تعذّر الاتصال بقاعدة البيانات.<br>
-      تأكد من ضبط SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الكود، ومن اتصالك بالإنترنت.<br>
-      <span style="opacity:.7;font-size:12px;" dir="auto">${esc(state.notice||"")}</span>
+      ${icon('alert-triangle',15)}
+      <span>
+        تعذّر الاتصال بقاعدة البيانات.<br>
+        تأكد من ضبط SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الكود، ومن اتصالك بالإنترنت.<br>
+        <span style="opacity:.7;font-size:12px;" dir="auto">${esc(state.notice||"")}</span>
+      </span>
     </div>
     <button class="btn primary" onclick="loadAll(true)">إعادة المحاولة</button>
   `;
@@ -1674,6 +1874,8 @@ function render(){
     case "admin": html = renderAdmin(); break;
   }
   app.innerHTML = html;
+  renderModalRoot();
+  refreshIcons();
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1701,7 +1903,7 @@ window.nextQuestion = nextQuestion;
 window.exitQuizToHome = () => {
   state.quiz = null;
   state.view = "home";
-  state.resumeAvailable = readProgress(); // لو خرج بمنتصف اختبار، يبقى محفوظًا ويظهر شريط الاستئناف
+  state.resumeAvailable = readProgress();
   render();
 };
 window.enterReviewMode = () => {
@@ -1742,6 +1944,8 @@ window.setAdminTab = (tab) => {
 window.startCustomExam = startCustomExam;
 window.loadExamIntoBuilder = loadExamIntoBuilder;
 window.toggleExamBuilderCategory = toggleExamBuilderCategory;
+window.loadExamPicker = loadExamPicker;
+window.toggleExamBuilderQuestion = toggleExamBuilderQuestion;
 window.saveExamGroup = saveExamGroup;
 window.deleteExamGroup = deleteExamGroup;
 window.loadQuestionsForCategory = loadQuestionsForCategory;
