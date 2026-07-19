@@ -1,1 +1,982 @@
-[]
+[
+  {
+    "id": "027fb101-1a3b-43d3-98a4-43c3f4bca90a",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The earliest sign that commonly raises suspicion of Neurofibromatosis type 1 is:",
+    "options": [
+      "Optic glioma",
+      "Café-au-lait spots",
+      "Pheochromocytoma",
+      "Plexiform neurofibroma"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "070bf7b1-8f62-40ca-b0fb-27508e65d8ee",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Incidence refers to:",
+    "options": [
+      "The proportion of affected individuals at one point in time.",
+      "The number of new cases occurring over a period of time.",
+      "The frequency of carriers.",
+      "The prevalence of disease worldwide."
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "0930b7d4-bb54-405e-b546-514871f7b0d2",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "The Law of Independent Assortment is NOT completely true because:",
+    "options": [
+      "Mutations occur.",
+      "Some genes are linked on the same chromosome.",
+      "Chromosomes replicate.",
+      "Meiosis occurs."
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "11fc3036-a145-4bff-8e1a-49ae1cba1775",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which statement regarding Hemophilia is INCORRECT?",
+    "options": [
+      "It is X-linked recessive.",
+      "Females are usually carriers.",
+      "Males are predominantly affected.",
+      "Father-to-son transmission is common."
+    ],
+    "correct_index": 3,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "183cbcbb-1bdd-4249-b9b4-da3bf9bf6f0f",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which scientist described sex-linked inheritance after studying color blindness and hemophilia?",
+    "options": [
+      "Gregor Mendel",
+      "John Dalton",
+      "Watson",
+      "Crick"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "20238596-2c09-418e-a614-8c23f0e49208",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which of the following scientists is considered the founder of genetics?",
+    "options": [
+      "Watson",
+      "Crick",
+      "Gregor Mendel",
+      "Johannsen"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "21f04847-bce1-468f-a6b6-e19ae6ca675a",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Duchenne Muscular Dystrophy is caused by mutation in:",
+    "options": [
+      "FBN1",
+      "DMD",
+      "CFTR",
+      "DMPK"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "22463f92-7367-4bc1-8133-28dce023bd0f",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following is NOT included in the NIH diagnostic criteria for NF1?",
+    "options": [
+      "Café-au-lait spots",
+      "Lisch nodules",
+      "Optic glioma",
+      "Mitral valve prolapse"
+    ],
+    "correct_index": 3,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "23c54cc2-88e3-46ba-8288-0d3e19b3c738",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "A plant with genotype TT is described as:",
+    "options": [
+      "Heterozygous",
+      "Hybrid",
+      "Homozygous",
+      "Dominant phenotype only"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "24269622-93aa-4c1b-9989-13f696922e25",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following is NOT a major complication of DMD?",
+    "options": [
+      "Dilated cardiomyopathy",
+      "Respiratory failure",
+      "Cognitive impairment",
+      "Optic glioma"
+    ],
+    "correct_index": 3,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "24cf2d30-78ca-4bbf-877f-d679a03e452c",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The most severe childhood form of SMA is:",
+    "options": [
+      "Type II",
+      "Type III",
+      "Type IV",
+      "Type I (Werdnig-Hoffmann disease)"
+    ],
+    "correct_index": 3,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "26391def-15ab-461b-9d5f-8cd19b0729a1",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Drosophila possesses:",
+    "options": [
+      "23 chromosome pairs",
+      "22 chromosome pairs",
+      "4 chromosome pairs",
+      "8 chromosome pairs"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "3016ccbc-b300-412c-8921-9c160f78c099",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following disorders is caused by CAG trinucleotide repeat expansion?",
+    "options": [
+      "Myotonic dystrophy",
+      "Huntington disease",
+      "Fragile X syndrome",
+      "Cystic fibrosis"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "34beb2a2-a2d0-47ca-ae52-e237698e0085",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following findings would LEAST support the diagnosis of Marfan syndrome?",
+    "options": [
+      "Arachnodactyly",
+      "Joint hypermobility",
+      "Café-au-lait spots",
+      "Pectus excavatum"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "3ad50231-234b-4757-811d-fddb795b2fdb",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following findings is LEAST likely in Myotonic dystrophy?",
+    "options": [
+      "Delayed muscle relaxation",
+      "Testicular atrophy",
+      "Cataracts",
+      "Optic glioma"
+    ],
+    "correct_index": 3,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "41bb48e0-71ec-45bd-9c26-4c52e11535ba",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Charcot-Marie-Tooth disease type I is most commonly caused by:",
+    "options": [
+      "PMP22 deletion",
+      "PMP22 duplication",
+      "CFTR mutation",
+      "NF1 mutation"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "44032f70-adde-4026-82d0-5ef2e5702654",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which of the following is NOT an advantage of Drosophila in genetic research?",
+    "options": [
+      "Rapid reproduction",
+      "Easy laboratory breeding",
+      "Forty-six chromosomes",
+      "Easily recognized traits"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "45c1e8a9-d991-4a58-b0ba-4e415a72c6f1",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Hemophilia B is caused by deficiency of:",
+    "options": [
+      "Factor VII",
+      "Factor VIII",
+      "Factor IX",
+      "Factor XI"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "484c88bc-1913-4e00-a1b6-7d458f4282b2",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The mutated gene responsible for Myotonic dystrophy is:",
+    "options": [
+      "HTT",
+      "DMPK",
+      "CFTR",
+      "PMP22"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "49fb9e95-5836-49ea-9c32-befebbe7caec",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "A newborn develops intestinal obstruction due to thick meconium. The most likely diagnosis is:",
+    "options": [
+      "SMA",
+      "Marfan syndrome",
+      "Cystic fibrosis",
+      "Huntington disease"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "4eaf2d31-a4f3-411a-bddf-d507994eba8d",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which gene acts as a tumor suppressor in Neurofibromatosis type 1?",
+    "options": [
+      "CFTR",
+      "NF1",
+      "DMPK",
+      "SMN1"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "516f62d5-4777-4bc5-a374-b22bb5df80d3",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which laboratory test is considered the diagnostic hallmark of Cystic Fibrosis?",
+    "options": [
+      "Blood glucose",
+      "Sweat chloride test",
+      "Muscle biopsy",
+      "ECG"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "5176bd83-d68c-41fd-937f-36c733969636",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Giant chromosomes in Drosophila are found in:",
+    "options": [
+      "Liver cells",
+      "Muscle cells",
+      "Salivary gland cells",
+      "Bone marrow cells"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "557750f4-9ec7-441d-aeb0-923af824dc1f",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The major respiratory problem in SMA results from weakness of the:",
+    "options": [
+      "Intercostal muscles only",
+      "Diaphragm",
+      "Laryngeal muscles",
+      "Pharyngeal muscles"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "5dbff8b3-aaf7-4b1b-90fa-1dc8bf6298ac",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The hallmark bleeding manifestation in Hemophilia is:",
+    "options": [
+      "Hemarthrosis",
+      "Hematuria only",
+      "Petechiae",
+      "Purpura"
+    ],
+    "correct_index": 0,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "61a175d7-70b9-4bc3-84e2-a60c1f44a5ac",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Regarding Huntington disease, which statement is INCORRECT?",
+    "options": [
+      "It is autosomal dominant.",
+      "The HTT gene is located on chromosome 4.",
+      "Earlier onset is associated with fewer CAG repeats.",
+      "Chorea is a common clinical feature."
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "61cf208e-8d77-44c2-a915-4905ed3b11ea",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which of the following terms refers to the proportion of a population affected by a disease at a particular time?",
+    "options": [
+      "Frequency",
+      "Incidence",
+      "Prevalence",
+      "Penetrance"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "653ad609-82b9-4eb6-a750-d43dafb2686a",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "The phenotypic ratio in the F2 generation of a monohybrid cross is:",
+    "options": [
+      ":",
+      "2 :",
+      "3 :",
+      "9 : 3 : 3 :"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "685170ec-09f6-4645-87b3-5b62596134f9",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which of the following diseases is genetic but NOT congenital in terms of age of onset?",
+    "options": [
+      "Down syndrome",
+      "Huntington disease",
+      "Turner syndrome",
+      "Edwards syndrome"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "6b946bf6-d597-467b-9e38-51bd10682df7",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The most common CFTR mutation is:",
+    "options": [
+      "CAG expansion",
+      "deltaF508 (Phe508del)",
+      "CTG expansion",
+      "PMP22 duplication"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "6de67eb4-af2b-4eb9-b8bc-f4bf8fe11480",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which of the following best describes a recessive trait?",
+    "options": [
+      "Appears in every generation.",
+      "Expressed only when two recessive alleles are present.",
+      "Always masks dominant alleles.",
+      "Is present only in males."
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "72baf6d3-e924-4a17-b612-8cfb15256c8a",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following is a characteristic foot deformity in CMT?",
+    "options": [
+      "Flat foot",
+      "Pes cavus",
+      "Club foot",
+      "Hallux valgus"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "73d8fa28-02a5-4db8-898c-da7616d87d02",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "A mutation in FBN1 primarily affects the synthesis of:",
+    "options": [
+      "Collagen type I",
+      "Elastin",
+      "Fibrillin-1",
+      "Neurofibromin"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "7a607176-827d-4dd8-85a0-921717a36cf3",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which inherited cardiac disorder is characterized by prolonged cardiac repolarization and may cause sudden death?",
+    "options": [
+      "Dilated cardiomyopathy",
+      "Long QT syndrome",
+      "Brugada syndrome",
+      "Hypertrophic cardiomyopathy"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "808cae45-f083-4b73-8b32-ad853e7697b1",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "A patient has an autosomal dominant disorder with tall stature, another patient has an autosomal recessive disorder with pancreatic insufficiency, and a third patient has an X-linked recessive disorder with Gowers sign. These disorders are, respectively:",
+    "options": [
+      "Marfan syndrome – Cystic Fibrosis – Duchenne Muscular Dystrophy",
+      "Huntington disease – SMA – Hemophilia",
+      "NF1 – Cystic Fibrosis – Hemophilia",
+      "Marfan syndrome – SMA – DMD"
+    ],
+    "correct_index": 0,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "8095aaa8-68cf-4bf9-8b27-282933412bdc",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "A tall young man presents with scoliosis, long fingers, ectopia lentis, and aortic root dilatation. The inheritance pattern is:",
+    "options": [
+      "Autosomal recessive",
+      "X-linked recessive",
+      "Autosomal dominant",
+      "Mitochondrial"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "810306ca-424f-4a14-accb-5c7f12620c74",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The most life-threatening complication of Marfan syndrome is:",
+    "options": [
+      "Cataract",
+      "Scoliosis",
+      "Aortic dissection",
+      "Arachnodactyly"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "8374638e-ed5c-4b62-87a3-2e35987ac266",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which SMA type usually presents after 18 months and patients can walk independently?",
+    "options": [
+      "Type I",
+      "Type II",
+      "Type III",
+      "Type IV"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "8845b11f-f77f-4831-be02-91bba990becf",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which of the following is an exception to Mendel’s Law of Segregation?",
+    "options": [
+      "Crossing over",
+      "Nondisjunction",
+      "Mutation",
+      "Independent assortment"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "8de21f27-08bf-4166-a518-12788fb4ffba",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following ocular findings is considered a hallmark of Marfan syndrome?",
+    "options": [
+      "Cataract",
+      "Retinoblastoma",
+      "Ectopia lentis",
+      "Glaucoma"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "91005f33-6b08-4068-bbf9-0f2b0961b35f",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Marfan syndrome results from mutation of:",
+    "options": [
+      "DMPK",
+      "FBN1",
+      "HTT",
+      "SMN1"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "951da961-8fe0-438a-89e9-152dc639ad49",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "A patient has ptosis, cataracts, frontal balding, myotonia, and cardiac arrhythmia. The most likely diagnosis is:",
+    "options": [
+      "Huntington disease",
+      "DMD",
+      "Myotonic dystrophy",
+      "SMA"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "966c5f2d-0731-4bde-b1de-3071b3ab9c47",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The NF1 gene normally produces:",
+    "options": [
+      "Dystrophin",
+      "Neurofibromin",
+      "Huntingtin",
+      "Fibrillin-1"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "9a1abeac-814d-48a6-a79e-dba4bf0b6f17",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Myotonic dystrophy results from expansion of:",
+    "options": [
+      "CGG",
+      "CAG",
+      "CTG",
+      "GAA"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "9b64e648-0293-428c-a337-61a0008bebfa",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The phenomenon in which successive generations develop symptoms earlier is called:",
+    "options": [
+      "Penetrance",
+      "Mosaicism",
+      "Anticipation",
+      "Variable expressivity"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "9c9c364f-f9b3-46c0-9ba5-54ef0de55ffa",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Watson and Crick are credited with discovering:",
+    "options": [
+      "Chromosomes",
+      "DNA structure",
+      "Genes",
+      "RNA polymerase"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "a1b0734b-8ce9-4cd0-b76b-c97f9ac8aefc",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which syndrome is associated with the Beighton score?",
+    "options": [
+      "NF1",
+      "SMA",
+      "Marfan syndrome",
+      "Huntington disease"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "a38b44d2-c0c2-4aac-9342-5515c2b6fb0d",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "SMA primarily affects:",
+    "options": [
+      "Sensory neurons",
+      "Motor neurons",
+      "Schwann cells",
+      "Astrocytes"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "a44f278c-d8a0-4eec-8f43-74b4da85e589",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "All of the following are characteristic findings of NF1 EXCEPT:",
+    "options": [
+      "Axillary freckling",
+      "Café-au-lait spots",
+      "Iris hamartomas",
+      "Hyperextensible joints"
+    ],
+    "correct_index": 3,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "a6dee656-857b-4b5b-8019-932a921d9b0b",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following findings is LEAST likely in Cystic Fibrosis?",
+    "options": [
+      "Bronchiectasis",
+      "Meconium ileus",
+      "Digital clubbing",
+      "Ectopia lentis"
+    ],
+    "correct_index": 3,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "a7b4e030-f311-46a5-9b2d-e2543bbec5a7",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which statement is INCORRECT regarding Mendelian inheritance?",
+    "options": [
+      "Mendelian disorders result from defects in a single gene.",
+      "Homozygous individuals possess identical alleles.",
+      "Heterozygous individuals possess two identical alleles.",
+      "Dominant traits appear in the F generation."
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "a817db39-c058-4c12-93d8-d7fa4d82a141",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Loss of independent walking in Duchenne Muscular Dystrophy usually occurs around:",
+    "options": [
+      "2–3 years",
+      "5–6 years",
+      "10–12 years",
+      "20 years"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "a8729d27-2ff1-4375-ac9f-ec838f559b4c",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Spinal Muscular Atrophy is caused by mutation of:",
+    "options": [
+      "SMN1",
+      "HTT",
+      "NF1",
+      "CFTR"
+    ],
+    "correct_index": 0,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "ab3127b0-e47b-41f8-a0b1-1170809e48dc",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "A 4-year-old boy has progressive proximal muscle weakness, calf pseudohypertrophy, and a positive Gowers sign. The diagnosis is:",
+    "options": [
+      "SMA",
+      "DMD",
+      "Marfan syndrome",
+      "NF1"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "b01a144f-1ff3-4188-ae78-87b5ae13fc7c",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which of the following investigations is LEAST useful in inherited cardiomyopathies?",
+    "options": [
+      "ECG",
+      "Echocardiography",
+      "Cardiac MRI",
+      "Sweat chloride test"
+    ],
+    "correct_index": 3,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "b4cb8791-596d-47b5-9b01-074c35bccbfc",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "The law stating that each parent contributes only one allele to the offspring is:",
+    "options": [
+      "Law of Dominance",
+      "Law of Uniformity",
+      "Law of Segregation",
+      "Law of Linkage"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "bd80b2de-df9f-449b-bce0-de1285745ab2",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "A patient has involuntary choreiform movements, psychiatric symptoms, and cognitive decline. The most likely diagnosis is:",
+    "options": [
+      "Marfan syndrome",
+      "Huntington disease",
+      "SMA",
+      "DMD"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "bfbe65be-bc19-42ae-bf84-011a59f961c2",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The CTG expansion in Myotonic dystrophy occurs in:",
+    "options": [
+      "Coding region",
+      "5’ UTR",
+      "3’ UTR",
+      "Promoter region"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "c7ec617f-d2fb-400d-b9a0-ed936a0599f0",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The classic appearance of the legs in HMSN/CMT is:",
+    "options": [
+      "Drumstick legs",
+      "Inverted champagne bottle",
+      "Barrel legs",
+      "Bow legs"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "d0aaa4c6-8574-49e4-a02a-4db917ec5c67",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The mutated protein in Huntington disease becomes abnormal because of excessive:",
+    "options": [
+      "Glycine",
+      "Lysine",
+      "Glutamine",
+      "Tyrosine"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "d3721098-23fd-418e-a6d5-6cac94209525",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Which of the following statements regarding congenital disorders is CORRECT?",
+    "options": [
+      "All congenital disorders are genetic.",
+      "All genetic diseases are congenital.",
+      "Not all congenital disorders are genetic.",
+      "Congenital disorders always appear after birth."
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "d63c7f4f-36cf-43f3-b2dc-56e311677a02",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "One of the following disorders is caused by mutation in which gene? (Cystic fibrosis)",
+    "options": [
+      "DMPK",
+      "CFTR",
+      "SMN1",
+      "FBN1"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "d6c24730-b571-44fe-8559-1aa301eca535",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "The missing protein in Duchenne Muscular Dystrophy is:",
+    "options": [
+      "Neurofibromin",
+      "Fibrillin-1",
+      "Dystrophin",
+      "Huntingtin"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "e0d9fef4-06c5-475d-84d6-9ab207d632d3",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Almost all males with Cystic Fibrosis have:",
+    "options": [
+      "Hypospadias",
+      "Cryptorchidism",
+      "Congenital bilateral absence of the vas deferens",
+      "Testicular tumor"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "e23f744b-96ea-44d3-89f2-d829579a2ed8",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "The term “gene” was first introduced by:",
+    "options": [
+      "Gregor Mendel",
+      "Johannsen",
+      "Pierre de Maupertuis",
+      "Watson"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "e5480f4e-b3cc-40df-87c8-17b3b223cd42",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which inheritance pattern is seen in Cystic Fibrosis?",
+    "options": [
+      "Autosomal dominant",
+      "Autosomal recessive",
+      "X-linked dominant",
+      "X-linked recessive"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "f29a93d3-3f29-4102-bf03-b7e2997deebb",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "When two homozygous parents with contrasting traits are crossed, the F1 generation is expected to be:",
+    "options": [
+      "Homozygous recessive",
+      "Homozygous dominant",
+      "Identical heterozygotes",
+      "Half dominant and half recessive"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "f998e9bb-5364-4897-9c40-a432f0a13dd0",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Which organ is affected in approximately 85% of patients with Cystic Fibrosis?",
+    "options": [
+      "Liver",
+      "Pancreas",
+      "Kidney",
+      "Brain"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  },
+  {
+    "id": "fa706ab5-885f-4f08-869a-24021acbfd0d",
+    "category_id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
+    "question_text": "Mendel’s experiments were performed on:",
+    "options": [
+      "Drosophila",
+      "Mice",
+      "Garden peas",
+      "Corn"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-07-12T23:35:06.26984+00:00",
+    "explanation": null
+  },
+  {
+    "id": "fdaf1e64-2cdb-426c-87df-a08726c7a764",
+    "category_id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
+    "question_text": "Hemophilia A results from deficiency of:",
+    "options": [
+      "Factor IX",
+      "Factor VIII",
+      "Factor X",
+      "Factor XIII"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-07-12T23:35:36.269727+00:00",
+    "explanation": null
+  }
+]

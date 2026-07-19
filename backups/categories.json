@@ -4,41 +4,47 @@
     "parent_id": null,
     "name": "Pre-clinic",
     "sort_order": 0,
-    "created_at": "2026-07-08T22:14:35.832211+00:00"
+    "created_at": "2026-07-08T22:14:35.832211+00:00",
+    "direct_question_count": 0
   },
   {
     "id": "438e8d2e-4d94-4e0b-8319-d739e3aa3f63",
     "parent_id": "5cfb1811-1165-48b1-b69a-bce9a0bf726c",
     "name": "دفعا",
     "sort_order": 0,
-    "created_at": "2026-07-08T22:15:14.496238+00:00"
+    "created_at": "2026-07-08T22:15:14.496238+00:00",
+    "direct_question_count": 0
   },
   {
     "id": "5cfb1811-1165-48b1-b69a-bce9a0bf726c",
     "parent_id": "6ba0d168-0aa7-45f2-b0f9-22a81cf4571d",
     "name": "hs",
     "sort_order": 0,
-    "created_at": "2026-07-08T22:15:07.862957+00:00"
+    "created_at": "2026-07-08T22:15:07.862957+00:00",
+    "direct_question_count": 0
   },
   {
     "id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
     "parent_id": "438e8d2e-4d94-4e0b-8319-d739e3aa3f63",
     "name": "59",
     "sort_order": 1,
-    "created_at": "2026-07-09T00:05:51.012591+00:00"
+    "created_at": "2026-07-09T00:05:51.012591+00:00",
+    "direct_question_count": 20
   },
   {
     "id": "6ba0d168-0aa7-45f2-b0f9-22a81cf4571d",
     "parent_id": "1ed00f23-9997-47f2-bd54-4bd570690435",
     "name": "sem1",
     "sort_order": 0,
-    "created_at": "2026-07-08T22:14:55.018247+00:00"
+    "created_at": "2026-07-08T22:14:55.018247+00:00",
+    "direct_question_count": 0
   },
   {
     "id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
     "parent_id": "438e8d2e-4d94-4e0b-8319-d739e3aa3f63",
     "name": "60",
     "sort_order": 2,
-    "created_at": "2026-07-09T00:06:04.18735+00:00"
+    "created_at": "2026-07-09T00:06:04.18735+00:00",
+    "direct_question_count": 50
   }
 ]
