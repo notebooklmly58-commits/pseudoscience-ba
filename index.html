@@ -378,6 +378,9 @@ const state = {
   path: [],
   quiz: null,
   adminTab: "tree",
+  manageSelectedCategory: null,
+  manageQuestions: [],
+  manageSearch: "",
   adminSession: null,
   notice: null,
   resumeAvailable: null,
@@ -495,109 +498,216 @@ async function loadAll(forceRefresh){
    ══════════════════════════════════════════════════════════════════ */
 function parseQuestionsFromText(raw){
   const AR_MAP = {"أ":0,"ا":0,"ب":1,"ج":2,"د":3,"هـ":4,"ه":4,"و":5};
-  const OPT_LATIN = /^([A-Ja-j])\s*[.)\-:]\s*(.*)$/;
+
+  // ── أنماط التعرف على الخيارات ──────────────────────────────────────
+  const OPT_LATIN = /^(?:([A-Ja-j])\s*[.):\-]\s*|\(([A-Ja-j])\)\s*)(.*)$/;
   const OPT_ARABIC = /^(أ|ا|ب|ج|د|هـ|ه|و)\s*[.)\-:]\s*(.*)$/;
-  const ANSWER_KEY = /^(?:Answer|Ans|Correct(?:\s*Answer)?|الإجابة(?:\s*الصحيحة)?|الجواب|الحل)\s*[:=\-]\s*(.+)$/i;
-  const EXPLANATION_KEY = /^(?:Explanation|Explain|التوضيح|توضيح|الشرح|شرح)\s*[:=\-]\s*(.+)$/i;
-  const QNUM = /^(?:Q(?:uestion)?\.?\s*)?(\d+)\s*[.)\-:]\s*(.*)$/i;
+  const INLINE_OPT_RE = /([A-Ja-j])\s*[.)]\s*(.*?)(?=\s+[A-Ja-j]\s*[.)]|$)/gi;
+
+  // ── سطر إجابة / شرح / سؤال مرقّم ─────────────────────────────────────
+  const ANSWER_KEY = /^(?:Correct\s*Answer|Answers?|Ans|Correct|الإجابة\s*الصحيحة?|الإجابة|الجواب|الحل)\s*[:=\-]\s*(.+)$/i;
+  const EXPLANATION_KEY = /^(?:Explanation|Explain|Rationale|Note|ملاحظة|التفسير|السبب|التوضيح|توضيح|الشرح|شرح)\s*[:=\-]\s*(.+)$/i;
+  const QNUM = /^(?:Q(?:uestion)?s?\.?\s*)?(\d+)\s*[.)\-:؟]\s*(.*)$/i;
   const TF_WORD = /^(صح|خطأ|True|False)$/i;
   const LONE_LETTER_LATIN = /^([A-Ja-j])$/;
   const LONE_LETTER_ARABIC = /^(أ|ا|ب|ج|د|هـ|ه|و)$/;
+  const DIVIDER = /^[-_=*#]{3,}\s*$/;
+  const STEM_START = /^(?:Which|What|Who|When|Where|How|Why|Choose|Select|True|False|ما|من|أي|اختر|حدد|صح|خطأ|هل)\b/i;
 
-  function answerToIndex(ansRaw, optCount){
-    const s = ansRaw.trim();
-    const mLat = s.match(/^([A-Ja-j])\b/);
-    if(mLat) return mLat[1].toUpperCase().charCodeAt(0) - 65;
-    for(const [ar, idx] of Object.entries(AR_MAP)){
-      if(s === ar || s.startsWith(ar+" ") || s.startsWith(ar+".")) return idx;
+  // ── مفتاح إجابات منفصل (Answer Key) ─────────────────────────────────
+  const KEY_HDR = /^(?:answers?\s*key|key|answers?|الإجابات?|مفتاح\s*الإجابات?)\s*:?\s*$/i;
+  const KEY_LINE = /^(\d+)\s*[-.):\s]\s*([A-Ja-j])\s*$/i;
+
+  // ── أنماط إجابات خاصة: All / None / أكثر من حرف ────────────────────
+  const ALL_PAT = /^(?:ALL(?:\s+OF\s+(?:THE\s+)?ABOVE)?|كل\s*(?:ما\s*)?(?:سبق|ذكر)|جميع\s*(?:ما\s*)?(?:سبق|ذكر)|كلها|كلهم|جميعها|جميعهم|كل\s*الخيارات?\s*(?:صحيحة|صحيح)?)$/i;
+  const NONE_PAT = /^(?:NONE(?:\s+OF\s+(?:THE\s+)?ABOVE)?|لا\s*شيء(?:\s*مما\s*(?:سبق|ذكر))?|لا\s*(?:شيء|إجابة)\s*(?:من\s*)?(?:ما\s*)?(?:سبق|صحيحة?)?)$/i;
+  const MULTI_LETTER_PAT = /^[A-Ja-j](?:\s*(?:and|or|و|،|,|&|\+|\/)\s*[A-Ja-j])+$/i;
+
+  function cleanOption(o){
+    return o.trim().replace(/\s*\.{2,}\s*$/,"").replace(/\s*\.\s*$/,"").replace(/\s+/g," ").trim();
+  }
+
+  // يُعيد: رقم (index) أو "ALL" أو "NONE" أو "MULTI:ABC" أو null
+  function parseAnswerValue(raw){
+    const s = raw.trim();
+    if(ALL_PAT.test(s)) return "ALL";
+    if(NONE_PAT.test(s)) return "NONE";
+    if(MULTI_LETTER_PAT.test(s)){
+      const letters = (s.match(/[A-Ja-j]/g) || []).map(l=>l.toUpperCase());
+      const unique = [...new Set(letters)];
+      if(unique.length > 1) return "MULTI:" + unique.join("");
     }
-    if(/^(صح|True|نعم)$/i.test(s)) return 0;
-    if(/^(خطأ|False|لا)$/i.test(s)) return 1;
+    for(const [ar, idx] of Object.entries(AR_MAP)){
+      if(s === ar) return idx;
+    }
+    const single = s.match(/^([A-Ja-j])\s*$/i);
+    if(single) return single[1].toUpperCase().charCodeAt(0) - 65;
     const n = parseInt(s,10);
-    if(!isNaN(n) && n>=1 && n<=optCount) return n-1;
+    if(!isNaN(n) && String(n) === s) return n - 1; // رقم صريح (1-based) كإجابة
+    return null;
+  }
+
+  // يبني خيارًا إضافيًا يمثّل "كلا الحرفين صحيحان" — نفس حيلة بوت البايثون،
+  // بحيث يبقى الشكل متوافقًا مع قاعدة البيانات الحالية (إجابة صحيحة واحدة فقط)
+  function buildMultiOption(opts, letters){
+    const label = letters.split("").join(" & ");
+    const combo = `(${label}) كلاهما صحيح ✔`;
+    const newOpts = opts.map(cleanOption).concat([combo]);
+    return { options: newOpts, correct: newOpts.length - 1 };
+  }
+
+  function matchOption(line){
+    const mLat = line.match(OPT_LATIN);
+    if(mLat) return { text: (mLat[3]||"").trim() };
+    const mAr = line.match(OPT_ARABIC);
+    if(mAr) return { text: (mAr[2]||"").trim() };
+    return null;
+  }
+  function parseInlineOptions(line){
+    const matches = [...line.matchAll(INLINE_OPT_RE)];
+    if(matches.length >= 2) return matches.map(m => cleanOption(m[2]));
     return null;
   }
 
   const lines = raw.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+
+  // ── الخطوة 1: اكتشاف مفتاح إجابات منفصل (Answer Key) إن وُجد ────────
+  const answerKeyMap = {};
+  const keyLineIdx = new Set();
+  let inKey = false;
+  for(let i=0;i<lines.length;i++){
+    const s = lines[i].trim();
+    if(KEY_HDR.test(s)){ inKey = true; keyLineIdx.add(i); continue; }
+    if(inKey){
+      const mk = s.match(KEY_LINE);
+      if(mk){ answerKeyMap[parseInt(mk[1],10)] = mk[2].toUpperCase(); keyLineIdx.add(i); }
+      else if(s && !DIVIDER.test(s)){ inKey = false; }
+    }
+  }
+  if(keyLineIdx.size < 3){ /* مفتاح غير موثوق (أقل من 3 أسطر) → تجاهله */ }
+  const useAnswerKey = keyLineIdx.size >= 3;
+
+  // ── الخطوة 2: التحليل سطرًا سطرًا ────────────────────────────────────
   const questions = [];
-  let cur = null;
+  let curLines = [], curOpts = [], curAns = null, curExpl = null, curNum = null;
+  let autoCtr = 0;
+
+  function resetCur(){ curLines=[]; curOpts=[]; curAns=null; curExpl=null; curNum=null; }
 
   function flush(){
-    if(cur && cur.text.trim() && cur.options.length>=2 && cur.correct!==null && cur.correct < cur.options.length){
-      questions.push({
-        question: cur.text.trim(),
-        options: cur.options.map(o=>o.trim()),
-        correct: cur.correct,
-        explanation: cur.explanation ? cur.explanation.trim() : null,
-      });
+    if(!curLines.length) return;
+    if(curAns === null && curNum !== null && useAnswerKey && answerKeyMap[curNum]){
+      curAns = answerKeyMap[curNum].toUpperCase().charCodeAt(0) - 65;
     }
-    cur = null;
+    if(curAns === null || curOpts.length < 2) return;
+
+    const qText = curLines.join(" ").trim();
+    const cleaned = curOpts.map(cleanOption);
+
+    function add(opts, correct){
+      if(opts.length >= 2 && correct < opts.length){
+        questions.push({ question: qText, options: opts, correct, explanation: curExpl ? curExpl.trim() : null });
+      }
+    }
+
+    if(curAns === "ALL"){
+      add(cleaned.concat(["كل ما سبق ✔"]), cleaned.length);
+    } else if(curAns === "NONE"){
+      add(cleaned.concat(["لا شيء مما سبق ✔"]), cleaned.length);
+    } else if(typeof curAns === "string" && curAns.startsWith("MULTI:")){
+      const built = buildMultiOption(curOpts, curAns.slice(6));
+      add(built.options, built.correct);
+    } else if(typeof curAns === "number"){
+      add(cleaned, curAns);
+    }
   }
 
-  for(let raw_line of lines){
-    const line = raw_line.trim();
-    if(!line){ continue; }
+  for(let i=0;i<lines.length;i++){
+    if(keyLineIdx.has(i)) continue;
+    const line = lines[i].trim();
 
-    // إذا كان عندنا سؤال اكتملت إجابته (correct محدد) ووصل سطر شرح — نلحقه بنفس السؤال وننهيه
+    if(!line || DIVIDER.test(line)){
+      if(curAns !== null && curOpts.length){ flush(); resetCur(); }
+      continue;
+    }
+    if(KEY_HDR.test(line)){
+      if(curLines.length){ flush(); resetCur(); }
+      continue;
+    }
+
+    // شرح
     const mExp = line.match(EXPLANATION_KEY);
-    if(mExp && cur && cur.correct !== null){
-      cur.explanation = mExp[1];
+    if(mExp){ curExpl = mExp[1]; continue; }
+
+    // سؤال مرقّم جديد (لا يبدأ سؤال جديد إذا كان السطر فعليًا سطر إجابة)
+    const mQ = line.match(QNUM);
+    if(mQ && !ANSWER_KEY.test(line)){
       flush();
+      autoCtr++;
+      resetCur();
+      curNum = parseInt(mQ[1],10);
+      curLines = [(mQ[2]||"").trim()];
       continue;
     }
 
+    // إجابة صريحة
     const mAns = line.match(ANSWER_KEY);
-    if(mAns && cur){
-      const idx = answerToIndex(mAns[1], cur.options.length);
-      if(idx !== null) cur.correct = idx;
-      // لا نُنهي السؤال فورًا هنا — ننتظر سطر شرح محتمل بالسطر التالي.
-      // لو السطر التالي مو شرح، سينهي نفسه تلقائيًا عند بداية سؤال جديد بالأسفل.
+    if(mAns){
+      curAns = parseAnswerValue(mAns[1]);
       continue;
     }
 
-    // لو عندنا سؤال سابق اكتملت إجابته ولم يصل شرح، وهذا السطر ليس شرحًا →
-    // فهذا يعني بداية سؤال جديد، فننهي (flush) السؤال السابق أولاً
-    if(cur && cur.correct !== null){
+    // خيار (لاتيني أو عربي) — مع دعم عدة خيارات بنفس السطر
+    const optMatch = matchOption(line);
+    if(optMatch){
+      const inline = parseInlineOptions(line);
+      if(inline){ curOpts = inline; }
+      else { curOpts.push(optMatch.text); }
+      continue;
+    }
+
+    // حرف منفرد كإجابة بعد الخيارات
+    if(curOpts.length >= 2 && curAns === null){
+      if(LONE_LETTER_LATIN.test(line)){ curAns = line.toUpperCase().charCodeAt(0)-65; continue; }
+      if(LONE_LETTER_ARABIC.test(line)){ curAns = AR_MAP[line]; continue; }
+    }
+
+    // True/False تلقائي (سؤال ثنائي بدون خيارات مكتوبة صراحة)
+    if(curOpts.length === 0 && TF_WORD.test(line) && curLines.length){
+      const isTrue = /^(صح|True)$/i.test(line);
+      curOpts = [isTrue ? "صح ✅" : "خطأ ❌", isTrue ? "خطأ ❌" : "صح ✅"];
+      curAns = 0;
+      continue;
+    }
+
+    // استمرار نص خيار (سطر تالٍ بدون رمز خيار، والإجابة لم تُحدد بعد)
+    if(curOpts.length && curAns === null){
+      const inline = parseInlineOptions(line);
+      if(inline){ curOpts = inline; }
+      else { curOpts[curOpts.length-1] += " " + line; }
+      continue;
+    }
+
+    // استمرار نص السؤال (لا خيارات بعد ولا إجابة)
+    if(curLines.length && curAns === null && curOpts.length === 0){
+      curLines.push(line);
+      continue;
+    }
+
+    // سؤال جديد بدون رقم (يبدأ بكلمة استفهام معروفة)
+    if(STEM_START.test(line)){
       flush();
-    }
-
-    const mOptLat = line.match(OPT_LATIN);
-    const mOptAr  = !mOptLat ? line.match(OPT_ARABIC) : null;
-    if((mOptLat || mOptAr) && cur){
-      const text = (mOptLat ? mOptLat[2] : mOptAr[2]).trim();
-      cur.options.push(text);
+      autoCtr++;
+      resetCur();
+      curNum = autoCtr;
+      curLines = [line];
       continue;
     }
 
-    if(cur && cur.options.length>=2 && cur.correct===null){
-      const mLone = line.match(LONE_LETTER_LATIN);
-      const mLoneAr = !mLone ? line.match(LONE_LETTER_ARABIC) : null;
-      if(mLone){ cur.correct = mLone[1].toUpperCase().charCodeAt(0)-65; continue; }
-      if(mLoneAr){ cur.correct = AR_MAP[mLoneAr[1]]; continue; }
-    }
-
-    if(cur && cur.options.length===0 && TF_WORD.test(line)){
-      cur.options = [/^(صح|True)$/i.test(line) ? "صح ✅" : "خطأ ❌",
-                      /^(صح|True)$/i.test(line) ? "خطأ ❌" : "صح ✅"];
-      continue;
-    }
-    if(cur && cur.correct===null && TF_WORD.test(line) && cur.options.length===2){
-      continue;
-    }
-
-    if(!cur || (cur.options.length===0)){
-      if(!cur){
-        const mQ = line.match(QNUM);
-        cur = { text: mQ ? mQ[2] : line, options: [], correct: null, explanation: null };
-      } else {
-        const mQ = line.match(QNUM);
-        cur.text += " " + (mQ ? mQ[2] : line);
-      }
-      continue;
-    }
-
-    if(cur.options.length){
-      cur.options[cur.options.length-1] += " " + line;
+    // أي سطر آخر غير مصنّف: يُعتبر بداية سؤال جديد احتياطيًا
+    if(!curLines.length){
+      resetCur();
+      curLines = [line];
     }
   }
   flush();
@@ -794,6 +904,105 @@ async function deleteExamGroup(id){
   await bumpServerUpdatedAt();
   await loadAll(true);
   state.view = "admin"; state.adminTab = "exams";
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: إدارة الأسئلة الموجودة (تصفح حسب القسم، تعديل، حذف)
+   ══════════════════════════════════════════════════════════════════ */
+let questionEditor = null; // {id, question, options:[], correct, explanation, category_id} أو null
+
+async function loadQuestionsForCategory(categoryId){
+  state.manageSelectedCategory = categoryId || null;
+  state.manageQuestions = [];
+  questionEditor = null;
+  render();
+  if(!categoryId) return;
+  const { data, error } = await sb.from("questions")
+    .select("id,category_id,question_text,options,correct_index,explanation")
+    .eq("category_id", categoryId)
+    .order("id", { ascending: true });
+  if(error){ state.notice = error.message; render(); return; }
+  state.manageQuestions = data || [];
+  render();
+}
+
+function startEditQuestionById(id){
+  const q = state.manageQuestions.find(x => String(x.id) === String(id));
+  if(q) startEditQuestion(q);
+}
+function startEditQuestion(q){
+  questionEditor = {
+    id: q.id,
+    category_id: q.category_id,
+    question: q.question_text,
+    options: [...q.options],
+    correct: q.correct_index,
+    explanation: q.explanation || "",
+  };
+  render();
+}
+function cancelEditQuestion(){
+  questionEditor = null;
+  render();
+}
+function editorSetOption(i, val){
+  questionEditor.options[i] = val;
+}
+function editorAddOption(){
+  questionEditor.options.push("");
+  render();
+}
+function editorRemoveOption(i){
+  if(questionEditor.options.length <= 2){ state.notice = "لازم يبقى خيارين على الأقل."; render(); return; }
+  questionEditor.options.splice(i,1);
+  if(questionEditor.correct === i) questionEditor.correct = 0;
+  else if(questionEditor.correct > i) questionEditor.correct--;
+  render();
+}
+function editorSetCorrect(i){
+  questionEditor.correct = i;
+  render();
+}
+async function saveQuestionEdit(){
+  const qText = (questionEditor.question || "").trim();
+  const expText = (questionEditor.explanation || "").trim();
+  const newCategoryId = questionEditor.category_id;
+  if(!qText){ state.notice = "نص السؤال لا يمكن أن يكون فارغًا."; render(); return; }
+  const options = questionEditor.options.map(o=>o.trim()).filter(o=>o.length);
+  if(options.length < 2){ state.notice = "لازم يبقى خيارين صالحين على الأقل."; render(); return; }
+  if(questionEditor.correct >= options.length){ state.notice = "حدد الإجابة الصحيحة بشكل صحيح."; render(); return; }
+
+  const { error } = await sb.from("questions").update({
+    question_text: qText,
+    options: options,
+    correct_index: questionEditor.correct,
+    explanation: expText || null,
+    category_id: newCategoryId,
+  }).eq("id", questionEditor.id);
+
+  if(error){ state.notice = error.message; render(); return; }
+  state.notice = "تم حفظ التعديلات بنجاح.";
+  const categoryChanged = newCategoryId !== questionEditor.category_id;
+  questionEditor = null;
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  // لو تغيّر القسم، اعرض قائمة القسم الجديد؛ وإلا أعد تحميل نفس القسم الحالي
+  await loadQuestionsForCategory(categoryChanged ? newCategoryId : state.manageSelectedCategory);
+  state.view = "admin"; state.adminTab = "manage";
+  render();
+}
+async function deleteQuestion(id){
+  const ok = confirm("سيتم حذف هذا السؤال نهائيًا. متابعة؟");
+  if(!ok) return;
+  const { error } = await sb.from("questions").delete().eq("id", id);
+  if(error){ state.notice = error.message; render(); return; }
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  await loadQuestionsForCategory(state.manageSelectedCategory);
+  state.view = "admin"; state.adminTab = "manage";
   render();
 }
 
@@ -1296,6 +1505,74 @@ function renderExamCheckTree(node, depth, visited){
     </div>`;
 }
 
+function renderAdminManage(){
+  const searchLower = (state.manageSearch || "").trim().toLowerCase();
+  const filtered = searchLower
+    ? state.manageQuestions.filter(q => (q.question_text||"").toLowerCase().includes(searchLower))
+    : state.manageQuestions;
+
+  if(questionEditor){
+    return `
+      <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;">تعديل السؤال</div>
+      <div class="field">
+        <label>نص السؤال</label>
+        <textarea oninput="questionEditor.question=this.value" style="min-height:80px;">${esc(questionEditor.question)}</textarea>
+      </div>
+      <div class="field">
+        <label>نقل السؤال لقسم آخر (اختياري)</label>
+        <select onchange="questionEditor.category_id=this.value">
+          ${catOptionsHtml(questionEditor.category_id)}
+        </select>
+      </div>
+      <div class="field">
+        <label>الخيارات (حدد ⚪ الإجابة الصحيحة)</label>
+        ${questionEditor.options.map((opt,i)=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <input type="radio" name="correctOpt" ${questionEditor.correct===i?"checked":""} onchange="editorSetCorrect(${i})" style="width:18px;height:18px;flex:none;">
+            <input type="text" value="${escAttr(opt)}" oninput="editorSetOption(${i}, this.value)" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);">
+            <button class="iconBtn danger" title="حذف الخيار" onclick="editorRemoveOption(${i})">✕</button>
+          </div>`).join("")}
+        <button class="btn ghost sm" onclick="editorAddOption()">➕ إضافة خيار</button>
+      </div>
+      <div class="field">
+        <label>الشرح (اختياري)</label>
+        <textarea oninput="questionEditor.explanation=this.value" placeholder="اتركه فارغًا لعدم عرض شرح">${esc(questionEditor.explanation)}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn primary block" onclick="saveQuestionEdit()">حفظ التعديلات</button>
+        <button class="btn ghost sm" onclick="cancelEditQuestion()">إلغاء</button>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="field">
+      <label>اختر القسم لعرض أسئلته</label>
+      <select onchange="loadQuestionsForCategory(this.value)">
+        <option value="">— اختر القسم —</option>
+        ${catOptionsHtml(state.manageSelectedCategory)}
+      </select>
+    </div>
+    ${state.manageSelectedCategory ? `
+      <div class="field">
+        <label>بحث ضمن أسئلة هذا القسم</label>
+        <input type="text" value="${escAttr(state.manageSearch)}" oninput="state.manageSearch=this.value; render();" placeholder="اكتب جزءًا من نص السؤال...">
+      </div>
+      <div style="font-size:12.5px;color:var(--text-dim);margin-bottom:10px;">${filtered.length} من ${state.manageQuestions.length} سؤال</div>
+      ${filtered.length ? filtered.map(q => `
+        <div class="previewCard">
+          <div class="qn">${esc(q.question_text)}</div>
+          ${q.options.map((o,j)=>`<div class="op ${j===q.correct_index?'correct':''}">${j===q.correct_index?'✔':'•'} ${esc(o)}</div>`).join("")}
+          ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;">💡 ${esc(q.explanation)}</div>` : ""}
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn ghost sm" onclick="startEditQuestionById('${q.id}')">✎ تعديل</button>
+            <button class="btn danger sm" onclick="deleteQuestion('${q.id}')">🗑 حذف</button>
+          </div>
+        </div>`).join("") : `<div class="emptyState">لا توجد أسئلة تطابق البحث.</div>`}
+    ` : `<div class="emptyState">اختر قسمًا من الأعلى لعرض أسئلته.</div>`}
+  `;
+}
+
 function renderAdminExams(){
   const roots = childrenOf(null);
   const builderTitle = examBuilder.id ? "تعديل الامتحان الشامل" : "إنشاء امتحان شامل جديد";
@@ -1359,9 +1636,10 @@ function renderAdmin(){
     <div class="tabs">
       <button class="tabBtn ${state.adminTab==='tree'?'active':''}" onclick="setAdminTab('tree')">الأقسام</button>
       <button class="tabBtn ${state.adminTab==='add'?'active':''}" onclick="setAdminTab('add')">إضافة أسئلة</button>
+      <button class="tabBtn ${state.adminTab==='manage'?'active':''}" onclick="setAdminTab('manage')">إدارة الأسئلة</button>
       <button class="tabBtn ${state.adminTab==='exams'?'active':''}" onclick="setAdminTab('exams')">الامتحانات الشاملة</button>
     </div>
-    ${state.adminTab==='tree' ? renderAdminTree() : state.adminTab==='add' ? renderAdminAdd() : renderAdminExams()}
+    ${state.adminTab==='tree' ? renderAdminTree() : state.adminTab==='add' ? renderAdminAdd() : state.adminTab==='manage' ? renderAdminManage() : renderAdminExams()}
   `;
 }
 
@@ -1446,12 +1724,30 @@ window.doAdminLogin = () => {
   adminLogin(email, pass);
 };
 window.adminLogout = adminLogout;
-window.setAdminTab = (tab) => { state.adminTab = tab; pendingParsed = []; resetExamBuilder(); render(); };
+window.setAdminTab = (tab) => {
+  state.adminTab = tab;
+  pendingParsed = [];
+  resetExamBuilder();
+  questionEditor = null;
+  state.manageSelectedCategory = null;
+  state.manageQuestions = [];
+  state.manageSearch = "";
+  render();
+};
 window.startCustomExam = startCustomExam;
 window.loadExamIntoBuilder = loadExamIntoBuilder;
 window.toggleExamBuilderCategory = toggleExamBuilderCategory;
 window.saveExamGroup = saveExamGroup;
 window.deleteExamGroup = deleteExamGroup;
+window.loadQuestionsForCategory = loadQuestionsForCategory;
+window.startEditQuestionById = startEditQuestionById;
+window.cancelEditQuestion = cancelEditQuestion;
+window.editorSetOption = editorSetOption;
+window.editorAddOption = editorAddOption;
+window.editorRemoveOption = editorRemoveOption;
+window.editorSetCorrect = editorSetCorrect;
+window.saveQuestionEdit = saveQuestionEdit;
+window.deleteQuestion = deleteQuestion;
 window.cancelExamBuilder = () => { resetExamBuilder(); render(); };
 
 window.addRootCategory = () => {
