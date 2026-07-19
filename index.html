@@ -136,13 +136,13 @@
     border:1px solid var(--gold-dim);border-radius:var(--radius);
     padding:22px 18px;margin-bottom:16px;
   }
-  .questionText{font-size:17px;font-weight:700;line-height:1.8;color:var(--parchment);}
+  .questionText{font-size:17px;font-weight:700;line-height:1.8;color:var(--parchment);unicode-bidi:plaintext;}
 
   .options{display:flex;flex-direction:column;gap:10px;}
   .optionBtn{
-    text-align:right;padding:13px 16px;border-radius:var(--radius);
+    text-align:start;padding:13px 16px;border-radius:var(--radius);
     border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);
-    font-size:14.5px;line-height:1.6;transition:.15s;
+    font-size:14.5px;line-height:1.6;transition:.15s;unicode-bidi:plaintext;
   }
   .optionBtn:hover:not(:disabled){border-color:var(--gold);}
   .optionBtn.correct{border-color:var(--ok);background:rgba(74,143,92,.15);color:#c9f0d1;}
@@ -150,7 +150,7 @@
   .optionBtn:disabled{cursor:default;}
 
   .explainBox{margin-top:14px;padding:12px 14px;border-radius:var(--radius);background:rgba(51,80,122,.12);
-    border:1px solid var(--sapphire);font-size:13.5px;color:#c7d5ea;line-height:1.8;}
+    border:1px solid var(--sapphire);font-size:13.5px;color:#c7d5ea;line-height:1.8;unicode-bidi:plaintext;}
 
   .quizFooter{display:flex;justify-content:flex-end;margin-top:6px;}
 
@@ -160,8 +160,8 @@
   .scoreLabel{color:var(--text-dim);font-size:13px;margin-top:4px;}
   .wrongList{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
   .wrongItem{border:1px solid var(--danger);border-radius:var(--radius);padding:12px 14px;background:rgba(192,57,74,.07);}
-  .wrongItem .qt{font-weight:700;font-size:14px;margin-bottom:8px;}
-  .wrongItem .ans{font-size:13px;color:#c9f0d1;}
+  .wrongItem .qt{font-weight:700;font-size:14px;margin-bottom:8px;unicode-bidi:plaintext;}
+  .wrongItem .ans{font-size:13px;color:#c9f0d1;unicode-bidi:plaintext;}
   .resultActions{display:flex;gap:10px;margin-top:20px;}
 
   /* ============ forms / admin ============ */
@@ -172,25 +172,25 @@
     background:var(--panel-2);color:var(--parchment);font-size:14px;
   }
   .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold-dim);border-color:var(--gold);}
-  .field textarea{min-height:160px;resize:vertical;font-family:'Courier New',monospace;font-size:13.5px;line-height:1.6;}
+  .field textarea{min-height:160px;resize:vertical;font-family:'Courier New',monospace;font-size:13.5px;line-height:1.6;unicode-bidi:plaintext;}
 
-  .tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--gold-dim);}
+  .tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--gold-dim);overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .tabBtn{background:none;border:none;padding:10px 14px;color:var(--text-dim);font-weight:700;font-size:13.5px;
-    border-bottom:2px solid transparent;margin-bottom:-1px;}
+    border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none;}
   .tabBtn.active{color:var(--gold-bright);border-color:var(--gold-bright);}
 
   .treeNode{margin-inline-start:0;}
   .treeRow{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--gold-dim);
-    border-radius:var(--radius);background:var(--panel-2);margin-bottom:6px;}
-  .treeRow .name{flex:1;font-size:14px;font-weight:600;}
+    border-radius:var(--radius);background:var(--panel-2);margin-bottom:6px;flex-wrap:wrap;}
+  .treeRow .name{flex:1;font-size:14px;font-weight:600;unicode-bidi:plaintext;min-width:60px;}
   .treeChildren{margin-inline-start:22px;border-inline-start:1px dashed var(--gold-dim);padding-inline-start:12px;}
   .iconBtn{background:none;border:none;color:var(--text-dim);font-size:14px;padding:4px 6px;border-radius:4px;}
   .iconBtn:hover{color:var(--gold-bright);background:rgba(184,146,63,.1);}
   .iconBtn.danger:hover{color:var(--danger);}
 
   .previewCard{border:1px solid var(--gold-dim);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;background:var(--panel-2);}
-  .previewCard .qn{font-weight:700;font-size:13.5px;margin-bottom:6px;}
-  .previewCard .op{font-size:12.5px;color:var(--text-dim);padding:2px 0;}
+  .previewCard .qn{font-weight:700;font-size:13.5px;margin-bottom:6px;unicode-bidi:plaintext;}
+  .previewCard .op{font-size:12.5px;color:var(--text-dim);padding:2px 0;unicode-bidi:plaintext;}
   .previewCard .op.correct{color:var(--ok);font-weight:700;}
   .previewCard .rm{float:left;}
 
@@ -202,6 +202,11 @@
   .loadingDots{text-align:center;color:var(--text-dim);padding:40px 0;font-size:13px;letter-spacing:.1em;}
 
   .footNote{text-align:center;font-size:11px;color:var(--gold-dim);margin-top:30px;letter-spacing:.08em;}
+
+  /* focus visibility for keyboard/accessibility */
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--gold-bright);outline-offset:2px;
+  }
 
   @media (max-width:420px){
     .wordmark{font-size:24px;}
@@ -1161,7 +1166,7 @@ function renderTopbar(showAdminGear=true){
 
 function renderNoticeBlock(){
   if(!state.notice) return "";
-  return `<div class="notice info">${esc(state.notice)}</div>`;
+  return `<div class="notice info" dir="auto">${esc(state.notice)}</div>`;
 }
 
 function renderHome(){
@@ -1173,7 +1178,7 @@ function renderHome(){
     <div class="startBar" style="border-color:var(--sapphire);background:rgba(51,80,122,.1);">
       <div>
         <div style="font-weight:700;font-size:14.5px;">لديك اختبار غير مكتمل</div>
-        <div class="count">${esc(state.resumeAvailable.quiz.sourceLabel || "")} — سؤال ${state.resumeAvailable.quiz.index+1} من ${state.resumeAvailable.quiz.questions.length}</div>
+        <div class="count" dir="auto">${esc(state.resumeAvailable.quiz.sourceLabel || "")} — سؤال ${state.resumeAvailable.quiz.index+1} من ${state.resumeAvailable.quiz.questions.length}</div>
       </div>
       <div style="display:flex;gap:6px;">
         <button class="btn gold sm" onclick="resumeProgress()">متابعة</button>
@@ -1184,7 +1189,7 @@ function renderHome(){
   const crumbs = `
     <div class="crumbs">
       <button onclick="goHomeRoot()">🏠 الرئيسية</button>
-      ${state.path.map((p,i)=>`<span class="sep">/</span><button onclick="goToCrumb(${i})">${esc(p.name)}</button>`).join("")}
+      ${state.path.map((p,i)=>`<span class="sep">/</span><button onclick="goToCrumb(${i})" dir="auto">${esc(p.name)}</button>`).join("")}
     </div>`;
 
   let hero = "";
@@ -1214,7 +1219,7 @@ function renderHome(){
   const combinedBar = groupsHere.map(g => `
       <div class="startBar" style="border-style:solid;opacity:.9;">
         <div>
-          <div style="font-weight:700;font-size:14.5px;">${esc(g.title)}</div>
+          <div style="font-weight:700;font-size:14.5px;" dir="auto">${esc(g.title)}</div>
           <div class="count">${examGroupQuestionCount(g)} سؤال</div>
         </div>
         <button class="btn gold sm" onclick="startCustomExam('${g.id}')">ابدأ</button>
@@ -1225,7 +1230,7 @@ function renderHome(){
       ${kids.map(k => `
         <div class="plaque clickable" onclick="enterCategory('${k.id}','${escAttr(k.name)}')">
           <div>
-            <div class="label">${esc(k.name)}</div>
+            <div class="label" dir="auto">${esc(k.name)}</div>
             <div class="meta">${
               directQuestionCount(k.id) > 0 ? directQuestionCount(k.id)+" سؤال"
               : nodeHasQuestions(k.id) ? "يحتوي على أقسام فرعية بها أسئلة"
@@ -1280,7 +1285,7 @@ function renderQuiz(){
       if(i===question.correct) cls += " correct";
       else if(i===q.selected) cls += " wrong";
     }
-    return `<button class="${cls}" ${q.answered?"disabled":""} onclick="answerQuestion(${i})">${esc(opt)}</button>`;
+    return `<button class="${cls}" dir="auto" ${q.answered?"disabled":""} onclick="answerQuestion(${i})">${esc(opt)}</button>`;
   }).join("");
 
   return `
@@ -1291,11 +1296,11 @@ function renderQuiz(){
       <div class="qCounter">${q.index+1} / ${q.questions.length}</div>
     </div>
     <div class="questionCard">
-      <div class="questionText">${esc(question.question)}</div>
+      <div class="questionText" dir="auto">${esc(question.question)}</div>
     </div>
     <div class="options">${optsHtml}</div>
     ${q.answered && question.explanation ? `
-      <div class="explainBox">💡 ${esc(question.explanation)}</div>` : ""}
+      <div class="explainBox" dir="auto">💡 ${esc(question.explanation)}</div>` : ""}
     ${q.answered ? `
       <div class="quizFooter" style="margin-top:16px;">
         <button class="btn gold" onclick="nextQuestion()">${q.index+1 < q.questions.length ? "السؤال التالي ›" : "عرض النتيجة ›"}</button>
@@ -1319,8 +1324,8 @@ function renderResults(){
       <div class="wrongList">
         ${q.wrongList.map(w => `
           <div class="wrongItem">
-            <div class="qt">${esc(w.question.question)}</div>
-            <div class="ans">✅ الإجابة الصحيحة: ${esc(w.question.options[w.question.correct])}</div>
+            <div class="qt" dir="auto">${esc(w.question.question)}</div>
+            <div class="ans" dir="auto">✅ الإجابة الصحيحة: ${esc(w.question.options[w.question.correct])}</div>
           </div>`).join("")}
       </div>` : `<div class="emptyState">🌟 إجابات مثالية بلا أخطاء!</div>`}
     <div class="resultActions">
@@ -1344,14 +1349,14 @@ function renderReview(){
         const wasCorrect = userIdx === question.correct;
         return `
         <div class="wrongItem" style="${wasCorrect ? 'border-color:var(--ok);background:rgba(74,143,92,.07);' : ''}">
-          <div class="qt">${i+1}. ${esc(question.question)}</div>
+          <div class="qt" dir="auto">${i+1}. ${esc(question.question)}</div>
           ${question.options.map((opt,j) => {
             let style = "";
             if(j === question.correct) style = "color:var(--ok);font-weight:700;";
             else if(j === userIdx) style = "color:var(--danger);font-weight:700;";
-            return `<div style="font-size:13px;padding:2px 0;${style}">${j===question.correct?'✔':(j===userIdx?'✖':'•')} ${esc(opt)}</div>`;
+            return `<div style="font-size:13px;padding:2px 0;${style}" dir="auto">${j===question.correct?'✔':(j===userIdx?'✖':'•')} ${esc(opt)}</div>`;
           }).join("")}
-          ${question.explanation ? `<div class="explainBox" style="margin-top:10px;">💡 ${esc(question.explanation)}</div>` : ""}
+          ${question.explanation ? `<div class="explainBox" style="margin-top:10px;" dir="auto">💡 ${esc(question.explanation)}</div>` : ""}
         </div>`;
       }).join("")}
     </div>
@@ -1366,8 +1371,8 @@ function renderAdminLogin(){
     ${renderTopbar(false)}
     <div class="hero"><div class="wordmark" style="font-size:22px;">لوحة الإدارة</div></div>
     ${renderNoticeBlock()}
-    <div class="field"><label>البريد الإلكتروني</label><input type="email" id="loginEmail"></div>
-    <div class="field"><label>كلمة المرور</label><input type="password" id="loginPass"></div>
+    <div class="field"><label>البريد الإلكتروني</label><input type="email" id="loginEmail" autocomplete="username"></div>
+    <div class="field"><label>كلمة المرور</label><input type="password" id="loginPass" autocomplete="current-password"></div>
     <button class="btn primary block" onclick="doAdminLogin()">دخول</button>
     <div style="margin-top:14px;text-align:center;"><button class="btn ghost sm" onclick="goHomeRoot()">‹ العودة للتطبيق</button></div>
   `;
@@ -1377,7 +1382,7 @@ function renderTreeNode(node, depth, visited){
   visited = visited || new Set();
   if(visited.has(node.id) || depth > 50){
     window.__debugLog('تم اكتشاف حلقة دائرية (Circular Reference) في الأقسام عند: ' + node.name + ' (id=' + node.id + ').');
-    return `<div class="treeNode"><div class="treeRow"><span class="name" style="color:var(--danger);">⚠ ${esc(node.name)} — خطأ: هذا القسم جزء من حلقة دائرية في الأقسام (parent_id غير صحيح)</span></div></div>`;
+    return `<div class="treeNode"><div class="treeRow"><span class="name" style="color:var(--danger);" dir="auto">⚠ ${esc(node.name)} — خطأ: هذا القسم جزء من حلقة دائرية في الأقسام (parent_id غير صحيح)</span></div></div>`;
   }
   visited = new Set(visited);
   visited.add(node.id);
@@ -1391,7 +1396,7 @@ function renderTreeNode(node, depth, visited){
     <div class="treeNode">
       <div class="treeRow">
         ${toggleBtn}
-        <span class="name" ${hasKids?`style="cursor:pointer;" onclick="toggleTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
+        <span class="name" dir="auto" ${hasKids?`style="cursor:pointer;" onclick="toggleTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
         <span style="font-size:11px;color:var(--text-dim);">${(()=>{const d=directQuestionCount(node.id),t=nodeQuestionCount(node.id);return t>d? `${d} سؤال مباشر (${t} شاملاً الفروع)` : `${d} سؤال`;})()}</span>
         <button class="iconBtn" title="إضافة قسم فرعي" onclick="promptAddCategory('${node.id}')">➕</button>
         <button class="iconBtn" title="إعادة تسمية" onclick="promptRenameCategory('${node.id}','${escAttr(node.name)}')">✎</button>
@@ -1418,7 +1423,7 @@ function renderAdminTree(){
   const roots = childrenOf(null);
   return `
     <div class="field" style="display:flex;gap:8px;">
-      <input type="text" id="newRootName" placeholder="اسم قسم رئيسي جديد (مثال: Pre-clinic)">
+      <input type="text" id="newRootName" dir="auto" placeholder="اسم قسم رئيسي جديد (مثال: Pre-clinic)">
       <button class="btn gold sm" onclick="addRootCategory()">إضافة</button>
     </div>
     ${roots.length ? roots.map(r=>renderTreeNode(r,0)).join("") : `<div class="emptyState">لا توجد أقسام بعد. أضف أول قسم رئيسي أعلاه.</div>`}
@@ -1451,9 +1456,9 @@ function renderAdminAdd(){
     ${pendingParsed.map((q,i)=>`
       <div class="previewCard">
         <button class="iconBtn danger rm" onclick="removePendingAt(${i})">✕</button>
-        <div class="qn">${i+1}. ${esc(q.question)}</div>
-        ${q.options.map((o,j)=>`<div class="op ${j===q.correct?'correct':''}">${j===q.correct?'✔':'•'} ${esc(o)}</div>`).join("")}
-        ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;">💡 ${esc(q.explanation)}</div>` : ""}
+        <div class="qn" dir="auto">${i+1}. ${esc(q.question)}</div>
+        ${q.options.map((o,j)=>`<div class="op ${j===q.correct?'correct':''}" dir="auto">${j===q.correct?'✔':'•'} ${esc(o)}</div>`).join("")}
+        ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;" dir="auto">💡 ${esc(q.explanation)}</div>` : ""}
       </div>`).join("")}
   ` : "";
 
@@ -1467,7 +1472,7 @@ function renderAdminAdd(){
     </div>
     <div class="field">
       <label>الصق نص الأسئلة هنا (يمكن إضافة سطر Explanation: بعد الإجابة لشرح اختياري)</label>
-      <textarea id="pasteText" placeholder="1. نص السؤال؟&#10;أ. خيار أول&#10;ب. خيار ثاني&#10;ج. خيار ثالث&#10;د. خيار رابع&#10;الإجابة: ب&#10;Explanation: سبب كون ب هي الإجابة الصحيحة"></textarea>
+      <textarea id="pasteText" dir="auto" placeholder="1. نص السؤال؟&#10;أ. خيار أول&#10;ب. خيار ثاني&#10;ج. خيار ثالث&#10;د. خيار رابع&#10;الإجابة: ب&#10;Explanation: سبب كون ب هي الإجابة الصحيحة"></textarea>
     </div>
     <div class="field">
       <label>أو ارفع ملف نصي (txt)</label>
@@ -1498,7 +1503,7 @@ function renderExamCheckTree(node, depth, visited){
       <div class="treeRow">
         ${toggleBtn}
         <input type="checkbox" ${checked?"checked":""} onchange="toggleExamBuilderCategory('${node.id}')" style="width:18px;height:18px;">
-        <span class="name" ${hasKids?`style="cursor:pointer;" onclick="toggleExamTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
+        <span class="name" dir="auto" ${hasKids?`style="cursor:pointer;" onclick="toggleExamTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
         <span style="font-size:11px;color:var(--text-dim);">${directQuestionCount(node.id)} سؤال</span>
       </div>
       ${hasKids && isOpen ? `<div class="treeChildren">${kids.map(k=>renderExamCheckTree(k, depth+1, visited)).join("")}</div>` : ""}
@@ -1516,7 +1521,7 @@ function renderAdminManage(){
       <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;">تعديل السؤال</div>
       <div class="field">
         <label>نص السؤال</label>
-        <textarea oninput="questionEditor.question=this.value" style="min-height:80px;">${esc(questionEditor.question)}</textarea>
+        <textarea dir="auto" oninput="questionEditor.question=this.value" style="min-height:80px;">${esc(questionEditor.question)}</textarea>
       </div>
       <div class="field">
         <label>نقل السؤال لقسم آخر (اختياري)</label>
@@ -1529,14 +1534,14 @@ function renderAdminManage(){
         ${questionEditor.options.map((opt,i)=>`
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <input type="radio" name="correctOpt" ${questionEditor.correct===i?"checked":""} onchange="editorSetCorrect(${i})" style="width:18px;height:18px;flex:none;">
-            <input type="text" value="${escAttr(opt)}" oninput="editorSetOption(${i}, this.value)" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);">
+            <input type="text" dir="auto" value="${escAttr(opt)}" oninput="editorSetOption(${i}, this.value)" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);">
             <button class="iconBtn danger" title="حذف الخيار" onclick="editorRemoveOption(${i})">✕</button>
           </div>`).join("")}
         <button class="btn ghost sm" onclick="editorAddOption()">➕ إضافة خيار</button>
       </div>
       <div class="field">
         <label>الشرح (اختياري)</label>
-        <textarea oninput="questionEditor.explanation=this.value" placeholder="اتركه فارغًا لعدم عرض شرح">${esc(questionEditor.explanation)}</textarea>
+        <textarea dir="auto" oninput="questionEditor.explanation=this.value" placeholder="اتركه فارغًا لعدم عرض شرح">${esc(questionEditor.explanation)}</textarea>
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn primary block" onclick="saveQuestionEdit()">حفظ التعديلات</button>
@@ -1556,14 +1561,14 @@ function renderAdminManage(){
     ${state.manageSelectedCategory ? `
       <div class="field">
         <label>بحث ضمن أسئلة هذا القسم</label>
-        <input type="text" value="${escAttr(state.manageSearch)}" oninput="state.manageSearch=this.value; render();" placeholder="اكتب جزءًا من نص السؤال...">
+        <input type="text" dir="auto" value="${escAttr(state.manageSearch)}" oninput="state.manageSearch=this.value; render();" placeholder="اكتب جزءًا من نص السؤال...">
       </div>
       <div style="font-size:12.5px;color:var(--text-dim);margin-bottom:10px;">${filtered.length} من ${state.manageQuestions.length} سؤال</div>
       ${filtered.length ? filtered.map(q => `
         <div class="previewCard">
-          <div class="qn">${esc(q.question_text)}</div>
-          ${q.options.map((o,j)=>`<div class="op ${j===q.correct_index?'correct':''}">${j===q.correct_index?'✔':'•'} ${esc(o)}</div>`).join("")}
-          ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;">💡 ${esc(q.explanation)}</div>` : ""}
+          <div class="qn" dir="auto">${esc(q.question_text)}</div>
+          ${q.options.map((o,j)=>`<div class="op ${j===q.correct_index?'correct':''}" dir="auto">${j===q.correct_index?'✔':'•'} ${esc(o)}</div>`).join("")}
+          ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;" dir="auto">💡 ${esc(q.explanation)}</div>` : ""}
           <div style="display:flex;gap:8px;margin-top:10px;">
             <button class="btn ghost sm" onclick="startEditQuestionById('${q.id}')">✎ تعديل</button>
             <button class="btn danger sm" onclick="deleteQuestion('${q.id}')">🗑 حذف</button>
@@ -1583,8 +1588,8 @@ function renderAdminExams(){
         return `
         <div class="plaque">
           <div>
-            <div class="label">${esc(g.title)}</div>
-            <div class="meta">يظهر في: ${esc(attachName)} — ${examGroupQuestionCount(g)} سؤال من ${(g.category_ids||[]).length} قسم</div>
+            <div class="label" dir="auto">${esc(g.title)}</div>
+            <div class="meta" dir="auto">يظهر في: ${esc(attachName)} — ${examGroupQuestionCount(g)} سؤال من ${(g.category_ids||[]).length} قسم</div>
           </div>
           <div style="display:flex;gap:4px;">
             <button class="iconBtn" title="تعديل" onclick="loadExamIntoBuilder('${g.id}')">✎</button>
@@ -1601,7 +1606,7 @@ function renderAdminExams(){
     <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;">${builderTitle}</div>
     <div class="field">
       <label>اسم الامتحان الشامل (يظهر للطالب)</label>
-      <input type="text" id="examTitle" value="${escAttr(examBuilder.title)}" oninput="examBuilder.title=this.value" placeholder="مثال: امتحان شامل - أنظمة الجسم">
+      <input type="text" id="examTitle" dir="auto" value="${escAttr(examBuilder.title)}" oninput="examBuilder.title=this.value" placeholder="مثال: امتحان شامل - أنظمة الجسم">
     </div>
     <div class="field">
       <label>أين يظهر زر هذا الامتحان؟</label>
@@ -1649,7 +1654,7 @@ function renderConnectionError(){
     <div class="notice err">
       تعذّر الاتصال بقاعدة البيانات.<br>
       تأكد من ضبط SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الكود، ومن اتصالك بالإنترنت.<br>
-      <span style="opacity:.7;font-size:12px;">${esc(state.notice||"")}</span>
+      <span style="opacity:.7;font-size:12px;" dir="auto">${esc(state.notice||"")}</span>
     </div>
     <button class="btn primary" onclick="loadAll(true)">إعادة المحاولة</button>
   `;
