@@ -380,12 +380,13 @@ function readCache(){
     return parsed;
   }catch(e){ return null; }
 }
-function writeCache(categories, examGroups, updatedAt){
+function writeCache(categories, examGroups, updatedAt, questionSets){
   try{
     localStorage.setItem(CACHE_KEY, JSON.stringify({
       updatedAt,
       categories,
       examGroups,
+      questionSets,
     }));
   }catch(e){ /* noop */ }
 }
@@ -414,6 +415,8 @@ const state = {
   view: "loading",
   categories: [],
   examGroups: [],
+  questionSets: [],
+  setCounts: {},
   path: [],
   quiz: null,
   adminTab: "tree",
@@ -463,6 +466,26 @@ function examGroupsFor(categoryId){
     .filter(g => (g.attach_to || null) === (categoryId || null))
     .sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
 }
+function setsForCategory(categoryId){
+  return state.questionSets
+    .filter(s => s.category_id === categoryId)
+    .sort((a,b) => (a.sort_order||0) - (b.sort_order||0) || a.title.localeCompare(b.title,'ar'));
+}
+let loadingSetCounts = new Set();
+async function loadSetCounts(categoryId){
+  if(!categoryId || loadingSetCounts.has(categoryId)) return;
+  loadingSetCounts.add(categoryId);
+  const { data, error } = await sb.from("questions").select("set_id").eq("category_id", categoryId);
+  loadingSetCounts.delete(categoryId);
+  if(error){ window.__debugLog('loadSetCounts error: ' + error.message); return; }
+  const counts = {};
+  (data || []).forEach(r => {
+    const k = r.set_id ? String(r.set_id) : "legacy";
+    counts[k] = (counts[k] || 0) + 1;
+  });
+  state.setCounts[categoryId] = counts;
+  render();
+}
 function examGroupQuestionCount(group){
   const ids = new Set(group.category_ids || []);
   const fromCats = Array.from(ids).reduce((sum, id) => sum + directQuestionCount(id), 0);
@@ -484,6 +507,8 @@ async function loadAll(forceRefresh){
       if(serverUpdatedAt === cached.updatedAt){
         state.categories = cached.categories;
         state.examGroups = cached.examGroups || [];
+        state.questionSets = cached.questionSets || [];
+        state.setCounts = {};
         state.view = "home";
         state.resumeAvailable = readProgress();
         window.__debugLog('loadAll: لا يوجد تحديث جديد — تم استخدام الكاش المحلي مباشرة.');
@@ -497,13 +522,15 @@ async function loadAll(forceRefresh){
   }
 
   try{
-    const [{data:cats, error:e1}, {data:groups, error:e3}, latestUpdatedAt] = await Promise.all([
+    const [{data:cats, error:e1}, {data:groups, error:e3}, {data:sets, error:e4}, latestUpdatedAt] = await Promise.all([
       sb.from("categories").select("id,parent_id,name,sort_order,direct_question_count,description,quiz_title"),
       sb.from("exam_groups").select("id,title,attach_to,category_ids,sort_order,description,question_ids"),
+      sb.from("question_sets").select("id,category_id,title,sort_order"),
       fetchServerUpdatedAt().catch(()=>null),
     ]);
     if(e1) throw e1;
     if(e3) throw e3;
+    if(e4) throw e4;
     state.categories = (cats || []).map(c => ({
       ...c,
       id: String(c.id),
@@ -520,8 +547,15 @@ async function loadAll(forceRefresh){
       question_ids: (g.question_ids || []).map(String),
       description: g.description || "",
     }));
-    writeCache(state.categories, state.examGroups, latestUpdatedAt);
-    window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', exam groups: ' + state.examGroups.length + '.');
+    state.questionSets = (sets || []).map(s => ({
+      ...s,
+      id: String(s.id),
+      category_id: String(s.category_id),
+      title: s.title || "",
+    }));
+    state.setCounts = {};
+    writeCache(state.categories, state.examGroups, latestUpdatedAt, state.questionSets);
+    window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', exam groups: ' + state.examGroups.length + ', question sets: ' + state.questionSets.length + '.');
     state.view = "home";
     state.resumeAvailable = readProgress();
   }catch(err){
@@ -782,6 +816,48 @@ function shuffleArray(arr){
   return a;
 }
 
+async function startSetQuiz(categoryId, setId){
+  try{
+    let query = sb.from("questions").select("id,category_id,question_text,options,correct_index,explanation").eq("category_id", String(categoryId));
+    if(setId) query = query.eq("set_id", setId);
+    else query = query.is("set_id", null);
+    const { data, error } = await query;
+    if(error){ window.__debugLog('startSetQuiz error: ' + error.message); state.notice = state.adminSession ? ("خطأ أثناء تحميل الأسئلة: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
+    if(!data || !data.length){
+      state.notice = "لا توجد أسئلة في هذا الاختبار بعد.";
+      render();
+      return;
+    }
+    const questions = shuffleArray(data).map(row => ({
+      id: row.id,
+      question: row.question_text,
+      options: row.options,
+      correct: row.correct_index,
+      explanation: row.explanation || null,
+    }));
+    const catObj = byId(String(categoryId)) || {};
+    let label = catObj.quiz_title || "الاختبار الرئيسي";
+    if(setId){
+      const setObj = state.questionSets.find(s => s.id === String(setId));
+      label = setObj ? setObj.title : "اختبار";
+    }
+    state.quiz = {
+      questions, index:0, correct:0, wrongList:[], answered:false, selected:null,
+      userAnswers: new Array(questions.length).fill(null),
+      sourceLabel: label,
+      sourceType: "questionSet", sourceCategoryId: String(categoryId), sourceSetId: setId ? String(setId) : null,
+    };
+    state.view = "quiz";
+    state.notice = null;
+    saveProgress();
+    render();
+  }catch(err){
+    window.__debugLog('startSetQuiz exception: ' + (err.message || JSON.stringify(err)));
+    state.notice = "حدث خطأ غير متوقع، حاول مرة أخرى.";
+    render();
+  }
+}
+
 async function startQuiz(nodeId, includeSub){
   try{
     let query = sb.from("questions").select("id,category_id,question_text,options,correct_index,explanation");
@@ -966,6 +1042,20 @@ window.showCategoryInfo = (id) => {
   if(subCount) meta.push({ icon:'folder', label: subCount + ' قسم فرعي' });
   openInfoModal(c.quiz_title || c.name, meta, c.description || "");
 };
+window.showSetInfo = (categoryId, setId) => {
+  const c = byId(categoryId);
+  const counts = state.setCounts[categoryId] || {};
+  let title, count;
+  if(setId){
+    const s = state.questionSets.find(x => x.id === setId);
+    title = s ? s.title : "اختبار";
+    count = counts[setId] || 0;
+  } else {
+    title = (c && c.quiz_title) || "الاختبار الرئيسي";
+    count = counts["legacy"] || 0;
+  }
+  openInfoModal(title, [ { icon:'list-checks', label: count + ' سؤال' } ], c ? (c.description || "") : "");
+};
 window.showExamInfo = (id) => {
   const g = state.examGroups.find(x => x.id === id);
   if(!g) return;
@@ -987,6 +1077,9 @@ window.showQuizInfo = () => {
   } else if(q.sourceType === 'examGroup'){
     const g = state.examGroups.find(x => x.id === q.sourceGroupId);
     desc = g ? (g.description || "") : "";
+  } else if(q.sourceType === 'questionSet'){
+    const c = byId(q.sourceCategoryId);
+    desc = c ? (c.description || "") : "";
   }
   openInfoModal(q.sourceLabel || "الاختبار", [
     { icon:'list-checks', label: q.questions.length + ' سؤال' },
@@ -1287,11 +1380,21 @@ async function moveCategory(id, dir){
 let pendingParsed = [];
 let treeExpanded = new Set();
 let examTreeExpanded = new Set();
-let addTab = { categoryId: null, quizTitle: "" };
+let addTab = { categoryId: null, mode: "new", newSetTitle: "", existingSetId: "", quizTitle: "" };
 
 function onAddCategoryChange(id){
   addTab.categoryId = id || null;
+  addTab.mode = "new";
+  addTab.newSetTitle = "";
+  addTab.existingSetId = "";
   const cat = id ? byId(id) : null;
+  addTab.quizTitle = cat ? (cat.quiz_title || "") : "";
+  if(id) loadSetCounts(id);
+  render();
+}
+function onAddExistingSetChange(val){
+  addTab.existingSetId = val || "";
+  const cat = addTab.categoryId ? byId(addTab.categoryId) : null;
   addTab.quizTitle = cat ? (cat.quiz_title || "") : "";
   render();
 }
@@ -1308,6 +1411,18 @@ async function saveQuizTitleForCategory(categoryId, title){
   addTab.categoryId = categoryId;
   render();
 }
+async function renameQuestionSet(setId, title){
+  const text = (title || "").trim();
+  if(!text){ state.notice = "اسم الاختبار لا يمكن أن يكون فارغًا."; render(); return; }
+  const { error } = await sb.from("question_sets").update({ title: text }).eq("id", setId);
+  if(error){ state.notice = error.message; render(); return; }
+  state.notice = "تم حفظ اسم الاختبار.";
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "add";
+  render();
+}
 
 function runParse(text){
   pendingParsed = parseQuestionsFromText(text);
@@ -1320,8 +1435,24 @@ function removePendingAt(i){
 async function savePendingQuestions(categoryId){
   if(!categoryId){ state.notice = "اختر القسم أولاً."; render(); return; }
   if(!pendingParsed.length){ state.notice = "لا توجد أسئلة مستخرجة للحفظ."; render(); return; }
+
+  let targetSetId = null;
+  if(addTab.mode === "new"){
+    const title = (addTab.newSetTitle || "").trim();
+    if(!title){ state.notice = "اكتب اسمًا للاختبار الجديد."; render(); return; }
+    const { data: newSet, error: setErr } = await sb.from("question_sets")
+      .insert({ category_id: categoryId, title, sort_order: setsForCategory(categoryId).length })
+      .select("id").single();
+    if(setErr){ state.notice = setErr.message; render(); return; }
+    targetSetId = newSet.id;
+  } else if(addTab.mode === "existing"){
+    if(!addTab.existingSetId){ state.notice = "اختر الاختبار الذي تريد الإضافة إليه."; render(); return; }
+    targetSetId = (addTab.existingSetId !== "__legacy__") ? addTab.existingSetId : null;
+  }
+
   const rows = pendingParsed.map(q => ({
     category_id: categoryId,
+    set_id: targetSetId,
     question_text: q.question,
     options: q.options,
     correct_index: q.correct,
@@ -1329,8 +1460,10 @@ async function savePendingQuestions(categoryId){
   }));
   const { error } = await sb.from("questions").insert(rows);
   if(error){ state.notice = error.message; render(); return; }
-  const titleText = (addTab.quizTitle || "").trim();
-  await sb.from("categories").update({ quiz_title: titleText || null }).eq("id", categoryId);
+  if(!targetSetId){
+    const titleText = (addTab.quizTitle || "").trim();
+    await sb.from("categories").update({ quiz_title: titleText || null }).eq("id", categoryId);
+  }
   state.notice = `تم حفظ ${rows.length} سؤال بنجاح.`;
   pendingParsed = [];
   clearCache();
@@ -1395,18 +1528,40 @@ function renderHome(){
   }
 
   const directCount = !isRoot ? directQuestionCount(parentId) : 0;
+  const catObj = !isRoot ? byId(parentId) : null;
 
-  const startBar = (!isRoot && directCount > 0) ? `
+  let startBar = "";
+  if(!isRoot){
+    const counts = state.setCounts[parentId];
+    if(counts === undefined){
+      loadSetCounts(parentId);
+      startBar = directCount > 0 ? `
+      <div class="startBar" style="justify-content:center;">
+        <span style="color:var(--text-dim);font-size:13px;display:flex;align-items:center;gap:6px;">${icon('loader-2',14)} جارٍ تحميل الاختبارات...</span>
+      </div>` : "";
+    } else {
+      const rows = [];
+      const legacyCount = counts["legacy"] || 0;
+      if(legacyCount > 0){
+        rows.push({ id: null, title: (catObj && catObj.quiz_title) || "الاختبار الرئيسي", count: legacyCount });
+      }
+      setsForCategory(parentId).forEach(s => {
+        const c = counts[s.id] || 0;
+        if(c > 0) rows.push({ id: s.id, title: s.title, count: c });
+      });
+      startBar = rows.map(r => `
       <div class="startBar">
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-weight:700;font-size:14.5px;">ابدأ حل الأسئلة في هذا القسم</div>
-            <button class="infoBtn" onclick="showCategoryInfo('${parentId}')" title="تفاصيل القسم">${icon('info',14)}</button>
+            <div style="font-weight:700;font-size:14.5px;" dir="auto">${esc(r.title)}</div>
+            <button class="infoBtn" onclick="showSetInfo('${parentId}','${r.id||''}')" title="تفاصيل الاختبار">${icon('info',14)}</button>
           </div>
-          <div class="count">${directCount} سؤال متاح</div>
+          <div class="count">${r.count} سؤال متاح</div>
         </div>
-        <button class="btn primary" onclick="startQuiz('${parentId}', false)">ابدأ الاختبار</button>
-      </div>` : "";
+        <button class="btn primary sm" onclick="startSetQuiz('${parentId}', ${r.id?`'${r.id}'`:'null'})">ابدأ الاختبار</button>
+      </div>`).join("");
+    }
+  }
 
   const groupsHere = examGroupsFor(parentId);
   const combinedBar = groupsHere.map(g => `
@@ -1674,12 +1829,52 @@ function renderAdminAdd(){
     </div>
     ${addTab.categoryId ? `
     <div class="field">
-      <label>${icon('type',14)} الاسم الذي يظهر على الاختبار (اختياري — إن تُرك فارغًا يُستخدم اسم القسم نفسه)</label>
+      <label>${icon('layers',14)} هذه الأسئلة تخص:</label>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="radio" name="addMode" ${addTab.mode==='new'?'checked':''} onchange="addTab.mode='new'; render();">
+          اختبار جديد منفصل
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="radio" name="addMode" ${addTab.mode==='existing'?'checked':''} onchange="addTab.mode='existing'; render();">
+          إضافة إلى اختبار موجود
+        </label>
+      </div>
+    </div>
+    ${addTab.mode === 'new' ? `
+    <div class="field">
+      <label>${icon('type',14)} اسم الاختبار الجديد</label>
+      <input type="text" dir="auto" value="${escAttr(addTab.newSetTitle)}" oninput="addTab.newSetTitle=this.value" placeholder="مثال: اختبار الفصل الثالث">
+    </div>` : `
+    <div class="field">
+      <label>${icon('list-checks',14)} اختر الاختبار الذي ستُضاف إليه الأسئلة</label>
+      <select onchange="onAddExistingSetChange(this.value)">
+        <option value="">— اختر —</option>
+        ${(() => {
+          const counts = state.setCounts[addTab.categoryId] || {};
+          const legacyCount = counts["legacy"] || 0;
+          const cat = byId(addTab.categoryId);
+          const legacyLabel = (cat && cat.quiz_title) || "الاختبار الرئيسي";
+          let opts = `<option value="__legacy__" ${addTab.existingSetId==='__legacy__'?'selected':''}>${esc(legacyLabel)} (${legacyCount} سؤال)</option>`;
+          opts += setsForCategory(addTab.categoryId).map(s => `<option value="${s.id}" ${addTab.existingSetId===s.id?'selected':''}>${esc(s.title)} (${counts[s.id]||0} سؤال)</option>`).join("");
+          return opts;
+        })()}
+      </select>
+    </div>
+    ${addTab.existingSetId ? `
+    <div class="field">
+      <label>${icon('pencil',14)} إعادة تسمية هذا الاختبار (اختياري)</label>
       <div style="display:flex;gap:8px;">
-        <input type="text" id="quizTitleInput" dir="auto" style="flex:1;" value="${escAttr(addTab.quizTitle)}" oninput="addTab.quizTitle=this.value" placeholder="مثال: اختبار الفصل الثالث">
-        <button class="btn ghost sm" onclick="saveQuizTitleForCategory(addTab.categoryId, addTab.quizTitle)">${icon('check',14)} حفظ الاسم</button>
+        ${addTab.existingSetId === '__legacy__' ? `
+          <input type="text" dir="auto" style="flex:1;" value="${escAttr(addTab.quizTitle)}" oninput="addTab.quizTitle=this.value" placeholder="الاختبار الرئيسي">
+          <button class="btn ghost sm" onclick="saveQuizTitleForCategory(addTab.categoryId, addTab.quizTitle)">${icon('check',14)} حفظ</button>
+        ` : `
+          <input type="text" dir="auto" style="flex:1;" id="renameSetInput" value="${escAttr((state.questionSets.find(s=>s.id===addTab.existingSetId)||{}).title||'')}" placeholder="اسم الاختبار">
+          <button class="btn ghost sm" onclick="renameQuestionSet('${addTab.existingSetId}', document.getElementById('renameSetInput').value)">${icon('check',14)} حفظ</button>
+        `}
       </div>
     </div>` : ""}
+    `}` : ""}
     <div class="field">
       <label>الصق نص الأسئلة هنا (يمكن إضافة سطر Explanation: بعد الإجابة لشرح اختياري)</label>
       <textarea id="pasteText" dir="auto" placeholder="1. نص السؤال؟&#10;أ. خيار أول&#10;ب. خيار ثاني&#10;ج. خيار ثالث&#10;د. خيار رابع&#10;الإجابة: ب&#10;Explanation: سبب كون ب هي الإجابة الصحيحة"></textarea>
@@ -1933,6 +2128,7 @@ window.goHomeRoot = () => {
   render();
 };
 window.startQuiz = startQuiz;
+window.startSetQuiz = startSetQuiz;
 window.answerQuestion = answerQuestion;
 window.nextQuestion = nextQuestion;
 window.exitQuizToHome = () => {
@@ -1969,7 +2165,7 @@ window.adminLogout = adminLogout;
 window.setAdminTab = (tab) => {
   state.adminTab = tab;
   pendingParsed = [];
-  addTab = { categoryId: null, quizTitle: "" };
+  addTab = { categoryId: null, mode: "new", newSetTitle: "", existingSetId: "", quizTitle: "" };
   resetExamBuilder();
   questionEditor = null;
   state.manageSelectedCategory = null;
@@ -2025,7 +2221,9 @@ window.handleParseClick = () => {
 };
 window.removePendingAt = removePendingAt;
 window.onAddCategoryChange = onAddCategoryChange;
+window.onAddExistingSetChange = onAddExistingSetChange;
 window.saveQuizTitleForCategory = saveQuizTitleForCategory;
+window.renameQuestionSet = renameQuestionSet;
 window.handleSaveClick = () => {
   savePendingQuestions(addTab.categoryId || null);
 };
