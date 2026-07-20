@@ -498,7 +498,7 @@ async function loadAll(forceRefresh){
 
   try{
     const [{data:cats, error:e1}, {data:groups, error:e3}, latestUpdatedAt] = await Promise.all([
-      sb.from("categories").select("id,parent_id,name,sort_order,direct_question_count,description"),
+      sb.from("categories").select("id,parent_id,name,sort_order,direct_question_count,description,quiz_title"),
       sb.from("exam_groups").select("id,title,attach_to,category_ids,sort_order,description,question_ids"),
       fetchServerUpdatedAt().catch(()=>null),
     ]);
@@ -510,6 +510,7 @@ async function loadAll(forceRefresh){
       parent_id: (c.parent_id === null || c.parent_id === undefined) ? null : String(c.parent_id),
       direct_question_count: c.direct_question_count || 0,
       description: c.description || "",
+      quiz_title: c.quiz_title || "",
     }));
     state.examGroups = (groups || []).map(g => ({
       ...g,
@@ -805,7 +806,8 @@ async function startQuiz(nodeId, includeSub){
       correct: row.correct_index,
       explanation: row.explanation || null,
     }));
-    const catName = (byId(String(nodeId)) || {}).name || "";
+    const catObj = byId(String(nodeId)) || {};
+    const catName = catObj.quiz_title || catObj.name || "";
     state.quiz = {
       questions, index:0, correct:0, wrongList:[], answered:false, selected:null,
       userAnswers: new Array(questions.length).fill(null),
@@ -962,7 +964,7 @@ window.showCategoryInfo = (id) => {
   ];
   if(total !== direct) meta.push({ icon:'layers', label: total + ' سؤال شامل الفروع' });
   if(subCount) meta.push({ icon:'folder', label: subCount + ' قسم فرعي' });
-  openInfoModal(c.name, meta, c.description || "");
+  openInfoModal(c.quiz_title || c.name, meta, c.description || "");
 };
 window.showExamInfo = (id) => {
   const g = state.examGroups.find(x => x.id === id);
@@ -1285,6 +1287,27 @@ async function moveCategory(id, dir){
 let pendingParsed = [];
 let treeExpanded = new Set();
 let examTreeExpanded = new Set();
+let addTab = { categoryId: null, quizTitle: "" };
+
+function onAddCategoryChange(id){
+  addTab.categoryId = id || null;
+  const cat = id ? byId(id) : null;
+  addTab.quizTitle = cat ? (cat.quiz_title || "") : "";
+  render();
+}
+async function saveQuizTitleForCategory(categoryId, title){
+  if(!categoryId){ state.notice = "اختر القسم أولاً."; render(); return; }
+  const text = (title || "").trim();
+  const { error } = await sb.from('categories').update({ quiz_title: text || null }).eq('id', categoryId);
+  if(error){ state.notice = error.message; render(); return; }
+  state.notice = "تم حفظ اسم الاختبار.";
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "add";
+  addTab.categoryId = categoryId;
+  render();
+}
 
 function runParse(text){
   pendingParsed = parseQuestionsFromText(text);
@@ -1306,6 +1329,8 @@ async function savePendingQuestions(categoryId){
   }));
   const { error } = await sb.from("questions").insert(rows);
   if(error){ state.notice = error.message; render(); return; }
+  const titleText = (addTab.quizTitle || "").trim();
+  await sb.from("categories").update({ quiz_title: titleText || null }).eq("id", categoryId);
   state.notice = `تم حفظ ${rows.length} سؤال بنجاح.`;
   pendingParsed = [];
   clearCache();
@@ -1462,6 +1487,7 @@ function renderQuiz(){
 
   return `
     ${renderTopbar(false)}
+    ${q.sourceLabel ? `<div style="font-family:var(--font-head);font-size:14px;color:var(--gold);text-align:center;margin-bottom:12px;letter-spacing:.04em;" dir="auto">${esc(q.sourceLabel)}</div>` : ""}
     <div class="quizHead">
       <button class="btn ghost sm" onclick="exitQuizToHome()">${icon('x',14)} خروج</button>
       <div class="progressWrap"><div class="progressBar" style="width:${pct}%"></div></div>
@@ -1487,6 +1513,7 @@ function renderResults(){
   const wrong = q.wrongList.length;
   return `
     ${renderTopbar(false)}
+    ${q.sourceLabel ? `<div style="font-family:var(--font-head);font-size:13px;color:var(--gold);text-align:center;letter-spacing:.04em;" dir="auto">${esc(q.sourceLabel)}</div>` : ""}
     <div class="resultHero">
       <div class="scoreRing">${q.correct} / ${total}</div>
       <div class="scoreLabel">إجابات صحيحة</div>
@@ -1640,11 +1667,19 @@ function renderAdminAdd(){
   return `
     <div class="field">
       <label>${icon('folder',14)} القسم الذي ستُضاف إليه الأسئلة</label>
-      <select id="targetCategory">
+      <select id="targetCategory" onchange="onAddCategoryChange(this.value)">
         <option value="">— اختر القسم —</option>
-        ${catOptionsHtml(null)}
+        ${catOptionsHtml(addTab.categoryId)}
       </select>
     </div>
+    ${addTab.categoryId ? `
+    <div class="field">
+      <label>${icon('type',14)} الاسم الذي يظهر على الاختبار (اختياري — إن تُرك فارغًا يُستخدم اسم القسم نفسه)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="quizTitleInput" dir="auto" style="flex:1;" value="${escAttr(addTab.quizTitle)}" oninput="addTab.quizTitle=this.value" placeholder="مثال: اختبار الفصل الثالث">
+        <button class="btn ghost sm" onclick="saveQuizTitleForCategory(addTab.categoryId, addTab.quizTitle)">${icon('check',14)} حفظ الاسم</button>
+      </div>
+    </div>` : ""}
     <div class="field">
       <label>الصق نص الأسئلة هنا (يمكن إضافة سطر Explanation: بعد الإجابة لشرح اختياري)</label>
       <textarea id="pasteText" dir="auto" placeholder="1. نص السؤال؟&#10;أ. خيار أول&#10;ب. خيار ثاني&#10;ج. خيار ثالث&#10;د. خيار رابع&#10;الإجابة: ب&#10;Explanation: سبب كون ب هي الإجابة الصحيحة"></textarea>
@@ -1934,6 +1969,7 @@ window.adminLogout = adminLogout;
 window.setAdminTab = (tab) => {
   state.adminTab = tab;
   pendingParsed = [];
+  addTab = { categoryId: null, quizTitle: "" };
   resetExamBuilder();
   questionEditor = null;
   state.manageSelectedCategory = null;
@@ -1988,9 +2024,10 @@ window.handleParseClick = () => {
   }
 };
 window.removePendingAt = removePendingAt;
+window.onAddCategoryChange = onAddCategoryChange;
+window.saveQuizTitleForCategory = saveQuizTitleForCategory;
 window.handleSaveClick = () => {
-  const sel = document.getElementById("targetCategory");
-  savePendingQuestions(sel.value || null);
+  savePendingQuestions(addTab.categoryId || null);
 };
 
 /* ══════════════════════════════════════════════════════════════════
