@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pseudoscience QBank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  /* ============ design tokens ============ */
+  :root{
+    --bg:#0b0908;
+    --bg-deep:#050403;
+    --panel:#14100a;
+    --panel-2:#1b150d;
+    --gold:#b8923f;
+    --gold-bright:#e0bd6d;
+    --gold-dim:#6e5726;
+    --oxblood:#6b1620;
+    --oxblood-bright:#9c2735;
+    --sapphire:#33507a;
+    --parchment:#ece4cf;
+    --text-dim:#a89a7c;
+    --danger:#c0394a;
+    --ok:#4a8f5c;
+    --radius:6px;
+    --font-display:'Cinzel Decorative', serif;
+    --font-head:'Cinzel', serif;
+    --font-body:'Cairo', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(107,22,32,.25), transparent 60%),
+      radial-gradient(ellipse at 100% 100%, rgba(51,80,122,.12), transparent 55%),
+      var(--bg-deep);
+    color:var(--parchment);
+    font-family:var(--font-body);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+
+  ::selection{background:var(--gold-dim);color:#fff;}
+
+  /* ============ layout shell ============ */
+  #app{max-width:720px;margin:0 auto;min-height:100vh;padding:20px 16px 60px;position:relative;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .brandmini{font-family:var(--font-head);font-size:14px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;}
+  .gearBtn{
+    background:transparent;border:1px solid var(--gold-dim);color:var(--text-dim);
+    width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:15px;transition:.2s;
+  }
+  .gearBtn:hover{border-color:var(--gold);color:var(--gold-bright);}
+
+  /* ============ ornate divider (signature element) ============ */
+  .divider{display:flex;align-items:center;gap:10px;margin:22px 0;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;
+    background:linear-gradient(90deg, transparent, var(--gold-dim) 40%, var(--gold-dim) 60%, transparent);}
+  .divider .gem{width:8px;height:8px;background:var(--gold);transform:rotate(45deg);
+    box-shadow:0 0 10px 1px rgba(184,146,63,.7);flex:none;}
+
+  /* ============ hero / emblem ============ */
+  .hero{text-align:center;padding:26px 10px 8px;}
+  .emblem{width:78px;height:78px;margin:0 auto 14px;position:relative;}
+  .emblem svg{width:100%;height:100%;filter:drop-shadow(0 0 10px rgba(184,146,63,.35));}
+  .wordmark{
+    font-family:var(--font-display);
+    font-size:30px;color:var(--oxblood-bright);
+    text-shadow:0 0 18px rgba(156,39,53,.45), 0 1px 0 rgba(0,0,0,.6);
+    letter-spacing:.02em;
+  }
+  .subtitle{font-family:var(--font-head);font-size:12.5px;letter-spacing:.18em;color:var(--text-dim);
+    text-transform:uppercase;margin-top:6px;}
+
+  /* ============ breadcrumb ============ */
+  .crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--text-dim);margin-bottom:14px;min-height:20px;}
+  .crumbs button{background:none;border:none;color:var(--gold-bright);font-size:13px;padding:0;display:inline-flex;align-items:center;gap:4px;}
+  .crumbs button:hover{text-decoration:underline;}
+  .crumbs .sep{color:var(--gold-dim);}
+
+  /* ============ ledger cards ============ */
+  .ledger{display:flex;flex-direction:column;gap:10px;}
+  .plaque{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--gold-dim);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    transition:.18s ease;
+  }
+  .plaque.clickable{cursor:pointer;}
+  .plaque.clickable:hover{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-dim), 0 6px 18px -8px rgba(184,146,63,.35);transform:translateY(-1px);}
+  .plaque .label{font-weight:700;font-size:15.5px;color:var(--parchment);}
+  .plaque .meta{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .plaque .chev{color:var(--gold-dim);display:flex;align-items:center;}
+
+  .emptyState{text-align:center;padding:40px 16px;color:var(--text-dim);font-size:14px;line-height:1.9;}
+
+  /* ============ buttons ============ */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 20px;border-radius:var(--radius);font-weight:700;font-size:14.5px;
+    border:1px solid var(--gold-dim);background:transparent;color:var(--gold-bright);
+    transition:.18s;
+  }
+  .btn:hover{border-color:var(--gold);background:rgba(184,146,63,.08);}
+  .btn.primary{background:linear-gradient(180deg, var(--oxblood-bright), var(--oxblood));border-color:var(--oxblood-bright);color:#fff;}
+  .btn.primary:hover{filter:brightness(1.08);}
+  .btn.gold{background:linear-gradient(180deg, var(--gold-bright), var(--gold));border-color:var(--gold-bright);color:#1a1206;}
+  .btn.ghost{border-color:transparent;color:var(--text-dim);}
+  .btn.danger{border-color:var(--danger);color:var(--danger);}
+  .btn.danger:hover{background:rgba(192,57,74,.1);}
+  .btn.block{width:100%;}
+  .btn.sm{padding:7px 12px;font-size:13px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  .startBar{margin-top:8px;padding:16px;border:1px dashed var(--gold-dim);border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(184,146,63,.04);}
+  .startBar .count{font-size:13px;color:var(--text-dim);}
+
+  /* ============ info / description ============ */
+  .infoBtn{background:none;border:1px solid var(--gold-dim);color:var(--text-dim);width:26px;height:26px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;transition:.15s;}
+  .infoBtn:hover{color:var(--gold-bright);border-color:var(--gold);}
+
+  .modalOverlay{position:fixed;inset:0;background:rgba(5,4,3,.78);backdrop-filter:blur(2px);
+    z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modalBox{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--gold);
+    border-radius:8px;max-width:440px;width:100%;max-height:80vh;overflow:auto;padding:20px;
+    box-shadow:0 10px 40px rgba(0,0,0,.6);}
+  .modalHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;}
+  .modalHead .mTitle{font-family:var(--font-head);font-size:17px;color:var(--gold-bright);font-weight:700;
+    unicode-bidi:plaintext;display:flex;align-items:center;gap:8px;}
+  .modalClose{background:none;border:1px solid var(--gold-dim);border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex:none;}
+  .modalClose:hover{color:var(--gold-bright);border-color:var(--gold);}
+  .modalMeta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .modalMeta .chip{font-size:11.5px;padding:5px 10px;border-radius:20px;border:1px solid var(--gold-dim);
+    color:var(--text-dim);display:flex;align-items:center;gap:5px;}
+  .modalDesc{font-size:14px;line-height:1.9;color:var(--parchment);unicode-bidi:plaintext;white-space:pre-wrap;}
+  .modalDesc.empty{color:var(--text-dim);font-style:italic;font-size:13px;}
+
+  /* ============ quiz ============ */
+  .quizHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;}
+  .progressWrap{flex:1;height:6px;background:var(--panel-2);border-radius:6px;margin:0 14px;overflow:hidden;border:1px solid var(--gold-dim);}
+  .progressBar{height:100%;background:linear-gradient(90deg, var(--gold-dim), var(--gold-bright));transition:.3s;}
+  .qCounter{font-family:var(--font-head);font-size:13px;color:var(--gold);white-space:nowrap;}
+
+  .questionCard{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--gold-dim);border-radius:var(--radius);
+    padding:22px 18px;margin-bottom:16px;
+  }
+  .questionText{font-size:17px;font-weight:700;line-height:1.8;color:var(--parchment);unicode-bidi:plaintext;}
+
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .optionBtn{
+    text-align:start;padding:13px 16px;border-radius:var(--radius);
+    border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);
+    font-size:14.5px;line-height:1.6;transition:.15s;unicode-bidi:plaintext;
+  }
+  .optionBtn:hover:not(:disabled){border-color:var(--gold);}
+  .optionBtn.correct{border-color:var(--ok);background:rgba(74,143,92,.15);color:#c9f0d1;}
+  .optionBtn.wrong{border-color:var(--danger);background:rgba(192,57,74,.15);color:#f5c3ca;}
+  .optionBtn:disabled{cursor:default;}
+
+  .explainBox{margin-top:14px;padding:12px 14px;border-radius:var(--radius);background:rgba(51,80,122,.12);
+    border:1px solid var(--sapphire);font-size:13.5px;color:#c7d5ea;line-height:1.8;unicode-bidi:plaintext;
+    display:flex;gap:8px;align-items:flex-start;}
+
+  .quizFooter{display:flex;justify-content:flex-end;margin-top:6px;}
+
+  /* ============ results ============ */
+  .resultHero{text-align:center;padding:20px 10px;}
+  .scoreRing{font-family:var(--font-head);font-size:44px;color:var(--gold-bright);font-weight:700;}
+  .scoreLabel{color:var(--text-dim);font-size:13px;margin-top:4px;}
+  .wrongList{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+  .wrongItem{border:1px solid var(--danger);border-radius:var(--radius);padding:12px 14px;background:rgba(192,57,74,.07);}
+  .wrongItem .qt{font-weight:700;font-size:14px;margin-bottom:8px;unicode-bidi:plaintext;}
+  .wrongItem .ans{font-size:13px;color:#c9f0d1;unicode-bidi:plaintext;display:flex;align-items:center;gap:6px;}
+  .resultActions{display:flex;gap:10px;margin-top:20px;}
+
+  /* ============ forms / admin ============ */
+  .field{margin-bottom:14px;}
+  .field label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;font-weight:600;}
+  .field input[type=text],.field input[type=email],.field input[type=password],.field select,.field textarea{
+    width:100%;padding:11px 12px;border-radius:var(--radius);border:1px solid var(--gold-dim);
+    background:var(--panel-2);color:var(--parchment);font-size:14px;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold-dim);border-color:var(--gold);}
+  .field textarea{min-height:160px;resize:vertical;font-family:'Courier New',monospace;font-size:13.5px;line-height:1.6;unicode-bidi:plaintext;}
+
+  .tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--gold-dim);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .tabBtn{background:none;border:none;padding:10px 14px;color:var(--text-dim);font-weight:700;font-size:13.5px;
+    border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none;display:flex;align-items:center;gap:6px;}
+  .tabBtn.active{color:var(--gold-bright);border-color:var(--gold-bright);}
+
+  .treeNode{margin-inline-start:0;}
+  .treeRow{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--gold-dim);
+    border-radius:var(--radius);background:var(--panel-2);margin-bottom:6px;flex-wrap:wrap;}
+  .treeRow .name{flex:1;font-size:14px;font-weight:600;unicode-bidi:plaintext;min-width:60px;}
+  .treeChildren{margin-inline-start:22px;border-inline-start:1px dashed var(--gold-dim);padding-inline-start:12px;}
+  .iconBtn{background:none;border:none;color:var(--text-dim);font-size:14px;padding:4px 6px;border-radius:4px;display:flex;align-items:center;}
+  .iconBtn:hover{color:var(--gold-bright);background:rgba(184,146,63,.1);}
+  .iconBtn.danger:hover{color:var(--danger);}
+
+  .previewCard{border:1px solid var(--gold-dim);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;background:var(--panel-2);}
+  .previewCard .qn{font-weight:700;font-size:13.5px;margin-bottom:6px;unicode-bidi:plaintext;}
+  .previewCard .op{font-size:12.5px;color:var(--text-dim);padding:2px 0;unicode-bidi:plaintext;display:flex;align-items:center;gap:6px;}
+  .previewCard .op.correct{color:var(--ok);font-weight:700;}
+  .previewCard .rm{float:left;}
+
+  .notice{padding:12px 14px;border-radius:var(--radius);font-size:13.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .notice.err{background:rgba(192,57,74,.12);border:1px solid var(--danger);color:#f5c3ca;}
+  .notice.ok{background:rgba(74,143,92,.12);border:1px solid var(--ok);color:#c9f0d1;}
+  .notice.info{background:rgba(51,80,122,.12);border:1px solid var(--sapphire);color:#c7d5ea;}
+
+  .loadingDots{text-align:center;color:var(--text-dim);padding:40px 0;font-size:13px;letter-spacing:.1em;}
+
+  .footNote{text-align:center;font-size:11px;color:var(--gold-dim);margin-top:30px;letter-spacing:.08em;}
+
+  .pickerBox{max-height:260px;overflow:auto;border:1px solid var(--gold-dim);border-radius:6px;padding:6px;margin-bottom:10px;}
+  .pickerRow{display:flex;align-items:flex-start;gap:8px;padding:8px 6px;border-bottom:1px solid rgba(184,146,63,.15);font-size:13px;cursor:pointer;}
+  .pickerRow:last-child{border-bottom:none;}
+  .pickerRow input{margin-top:3px;flex:none;width:16px;height:16px;}
+
+  /* ============ category picker (new) ============ */
+  .catPickBtn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:11px 12px;border-radius:var(--radius);border:1px solid var(--gold-dim);
+    background:var(--panel-2);color:var(--parchment);font-size:14px;text-align:start;}
+  .catPickBtn:hover{border-color:var(--gold);}
+  .catPickBtn .ph{color:var(--text-dim);}
+  .catPickModal{max-width:480px;}
+  .catPickList{max-height:52vh;overflow:auto;border:1px solid var(--gold-dim);border-radius:6px;margin-top:10px;}
+  .catPickRow{padding:11px 12px;border-bottom:1px solid rgba(184,146,63,.15);cursor:pointer;font-size:13.5px;}
+  .catPickRow:last-child{border-bottom:none;}
+  .catPickRow:hover{background:rgba(184,146,63,.08);}
+  .catPickRow.sel{background:rgba(184,146,63,.15);}
+  .catPickRow .pth{font-size:11px;color:var(--text-dim);margin-top:2px;unicode-bidi:plaintext;}
+  .catPickRow .nm{font-weight:700;unicode-bidi:plaintext;}
+  .setRow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gold-dim);
+    border-radius:var(--radius);background:var(--panel-2);margin-bottom:8px;}
+  .setRow .nm{flex:1;font-weight:700;font-size:14px;unicode-bidi:plaintext;}
+  .setRow .cnt{font-size:12px;color:var(--text-dim);}
+
+  /* focus visibility for keyboard/accessibility */
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--gold-bright);outline-offset:2px;
+  }
+
+  @media (max-width:420px){
+    .wordmark{font-size:24px;}
+    .questionText{font-size:15.5px;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   أيقونات Lucide — دالة مساعدة موحّدة لكل الأيقونات بالتطبيق
+   ══════════════════════════════════════════════════════════════════ */
+function icon(name, size, extra){
+  size = size || 16;
+  return '<i data-lucide="'+name+'" style="width:'+size+'px;height:'+size+'px;display:inline-block;vertical-align:-3px;flex:none;'+(extra||'')+'"></i>';
+}
+function refreshIcons(){
+  if(window.lucide){ try{ lucide.createIcons(); }catch(e){ /* noop */ } }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   شريط تشخيص الأخطاء المرئي — يظهر أي خطأ برمجي أو خطأ من Supabase
+   مباشرة على الشاشة (مفيد جداً لأن لا يوجد وصول لأدوات المطوّر على الموبايل)
+   ══════════════════════════════════════════════════════════════════ */
+window.__debugLogs = [];
+
+function ensureDebugPanel(){
+  let wrap = document.getElementById('debugWrap');
+  if(wrap) return wrap;
+
+  wrap = document.createElement('div');
+  wrap.id = 'debugWrap';
+  wrap.style.cssText = 'position:fixed;bottom:14px;left:14px;z-index:99999;direction:ltr;font-family:monospace;';
+
+  const toggle = document.createElement('button');
+  toggle.id = 'debugToggle';
+  toggle.type = 'button';
+  toggle.style.cssText = 'width:38px;height:38px;border-radius:50%;border:1px solid #9c2735;background:#3a0000;color:#fff;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.5);position:relative;display:flex;align-items:center;justify-content:center;';
+  toggle.innerHTML = icon('alert-triangle', 17);
+  const badge = document.createElement('span');
+  badge.id = 'debugCount';
+  badge.style.cssText = 'position:absolute;top:-6px;right:-6px;background:#c0394a;color:#fff;border-radius:10px;min-width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px;';
+  badge.textContent = '0';
+  toggle.appendChild(badge);
+
+  const panel = document.createElement('div');
+  panel.id = 'debugPanel';
+  panel.style.cssText = 'display:none;position:fixed;bottom:60px;left:14px;right:14px;max-width:460px;max-height:42vh;overflow:auto;background:#2a0000;color:#fff;font-size:11px;line-height:1.5;border:1px solid #9c2735;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.6);';
+
+  const header = document.createElement('div');
+  header.style.cssText = 'position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;background:#3a0000;padding:8px 10px;border-bottom:1px solid #660000;';
+  header.innerHTML = '<span style="font-weight:bold;">سجل الأخطاء (أدمن)</span>';
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:6px;';
+  const clearBtn = document.createElement('button');
+  clearBtn.type = 'button';
+  clearBtn.style.cssText = 'background:none;border:1px solid #9c2735;color:#fff;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;';
+  clearBtn.innerHTML = icon('rotate-ccw', 12) + '<span style="margin-inline-start:4px;">مسح</span>';
+  clearBtn.onclick = () => { window.__debugLogs = []; renderDebugLines(); updateDebugBadge(); };
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.style.cssText = 'background:none;border:1px solid #9c2735;color:#fff;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;';
+  closeBtn.innerHTML = icon('x', 12);
+  closeBtn.onclick = () => { panel.style.display = 'none'; };
+  btns.appendChild(clearBtn); btns.appendChild(closeBtn);
+  header.appendChild(btns);
+
+  const lines = document.createElement('div');
+  lines.id = 'debugLines';
+  lines.style.cssText = 'padding:8px;';
+
+  panel.appendChild(header);
+  panel.appendChild(lines);
+
+  toggle.onclick = () => {
+    panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+  };
+
+  wrap.appendChild(panel);
+  wrap.appendChild(toggle);
+  (document.body || document.documentElement).appendChild(wrap);
+  refreshIcons();
+  return wrap;
+}
+
+function updateDebugBadge(){
+  const badge = document.getElementById('debugCount');
+  if(badge) badge.textContent = String(window.__debugLogs.length);
+}
+
+function renderDebugLines(){
+  const lines = document.getElementById('debugLines');
+  if(!lines) return;
+  lines.innerHTML = window.__debugLogs.map(m =>
+    '<div style="border-bottom:1px solid #660000;padding:5px 0;white-space:pre-wrap;word-break:break-word;display:flex;gap:6px;align-items:flex-start;">'+icon('alert-triangle',13)+'<span>'+m.time+' — '+esc(m.msg)+'</span></div>'
+  ).join('') || '<div style="color:#c9a; padding:6px 0;">لا توجد رسائل.</div>';
+  refreshIcons();
+}
+
+window.__debugLog = function(msg){
+  try{ console.warn('[QBank]', msg); }catch(e){ /* noop */ }
+  const text = String(msg);
+  window.__debugLogs.push({ time: new Date().toLocaleTimeString(), msg: text });
+  if(window.__debugLogs.length > 200) window.__debugLogs.shift();
+  try{
+    if(typeof state === "undefined" || !state.adminSession) return;
+    ensureDebugPanel();
+    renderDebugLines();
+    updateDebugBadge();
+  }catch(e){ /* noop */ }
+};
+window.addEventListener('error', function(e){
+  window.__debugLog('JS Error: ' + (e.message||e) + (e.filename?(' @ '+e.filename+':'+e.lineno):''));
+});
+window.addEventListener('unhandledrejection', function(e){
+  const r = e.reason;
+  window.__debugLog('Unhandled Promise: ' + (r && r.message ? r.message : JSON.stringify(r)));
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   إعدادات الاتصال
+   ══════════════════════════════════════════════════════════════════ */
+const SUPABASE_URL      = "https://hqpoqldmuyfrxkbbczql.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxcG9xbGRtdXlmcnhrYmJjenFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NDE0ODMsImV4cCI6MjA5OTExNzQ4M30.cM_JjWiRjzjbjERSPdeOXYkvSZxneYkd5jrvd8yBlBc";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ══════════════════════════════════════════════════════════════════
+   طبقة التخزين المؤقت (Cache) — تقلّل الضغط على قاعدة البيانات
+   ══════════════════════════════════════════════════════════════════ */
+const CACHE_KEY = "qbank_cache_v1";
+
+function readCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed || !parsed.updatedAt) return null;
+    return parsed;
+  }catch(e){ return null; }
+}
+function writeCache(categories, examGroups, updatedAt, questionSets){
+  try{
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      updatedAt,
+      categories,
+      examGroups,
+      questionSets,
+    }));
+  }catch(e){ /* noop */ }
+}
+function clearCache(){
+  try{ localStorage.removeItem(CACHE_KEY); }catch(e){ /* noop */ }
+}
+
+async function fetchServerUpdatedAt(){
+  const { data, error } = await sb.from("app_meta").select("updated_at").eq("id", 1).single();
+  if(error) throw error;
+  return data.updated_at;
+}
+
+async function bumpServerUpdatedAt(){
+  try{
+    await sb.from("app_meta").update({ updated_at: new Date().toISOString() }).eq("id", 1);
+  }catch(e){
+    window.__debugLog('bumpServerUpdatedAt error: ' + (e.message || JSON.stringify(e)) + ' — تأكد من إنشاء جدول app_meta بالخطوات المرفقة.');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   حالة التطبيق
+   ══════════════════════════════════════════════════════════════════ */
+const state = {
+  view: "loading",
+  categories: [],
+  examGroups: [],
+  questionSets: [],
+  setCounts: {},
+  path: [],
+  quiz: null,
+  adminTab: "tree",
+  manageSelectedCategory: null,
+  manageQuestions: [],
+  manageSearch: "",
+  adminSession: null,
+  notice: null,
+  resumeAvailable: null,
+  modal: null,
+  descEditor: null,
+};
+
+function byId(id){ return state.categories.find(c => c.id === id); }
+function childrenOf(parentId){
+  return state.categories
+    .filter(c => c.parent_id === parentId)
+    .sort((a,b) => (a.sort_order||0) - (b.sort_order||0) || a.name.localeCompare(b.name,'ar'));
+}
+function descendantIds(rootId){
+  const seen = new Set([rootId]);
+  const out = [rootId];
+  const stack = [rootId];
+  while(stack.length){
+    const cur = stack.pop();
+    for(const c of childrenOf(cur)){
+      if(seen.has(c.id)) continue;
+      seen.add(c.id);
+      out.push(c.id);
+      stack.push(c.id);
+    }
+  }
+  return out;
+}
+function nodeHasQuestions(id){
+  return nodeQuestionCount(id) > 0;
+}
+function directQuestionCount(id){
+  const c = byId(id);
+  return c ? (c.direct_question_count || 0) : 0;
+}
+function nodeQuestionCount(id){
+  return descendantIds(id).reduce((sum, id2) => sum + directQuestionCount(id2), 0);
+}
+function examGroupsFor(categoryId){
+  return state.examGroups
+    .filter(g => (g.attach_to || null) === (categoryId || null))
+    .sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+}
+function setsForCategory(categoryId){
+  return state.questionSets
+    .filter(s => s.category_id === categoryId)
+    .sort((a,b) => (a.sort_order||0) - (b.sort_order||0) || a.title.localeCompare(b.title,'ar'));
+}
+let loadingSetCounts = new Set();
+async function loadSetCounts(categoryId){
+  if(!categoryId || loadingSetCounts.has(categoryId)) return;
+  loadingSetCounts.add(categoryId);
+  const { data, error } = await sb.from("questions").select("set_id").eq("category_id", categoryId);
+  loadingSetCounts.delete(categoryId);
+  if(error){ window.__debugLog('loadSetCounts error: ' + error.message); return; }
+  const counts = {};
+  (data || []).forEach(r => {
+    const k = r.set_id ? String(r.set_id) : "legacy";
+    counts[k] = (counts[k] || 0) + 1;
+  });
+  state.setCounts[categoryId] = counts;
+  render();
+}
+function examGroupQuestionCount(group){
+  const ids = new Set(group.category_ids || []);
+  const fromCats = Array.from(ids).reduce((sum, id) => sum + directQuestionCount(id), 0);
+  const manual = (group.question_ids || []).length;
+  return fromCats + manual;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   تحميل البيانات
+   ══════════════════════════════════════════════════════════════════ */
+async function loadAll(forceRefresh){
+  state.view = "loading"; render();
+
+  const cached = readCache();
+
+  if(!forceRefresh && cached){
+    try{
+      const serverUpdatedAt = await fetchServerUpdatedAt();
+      if(serverUpdatedAt === cached.updatedAt){
+        state.categories = cached.categories;
+        state.examGroups = cached.examGroups || [];
+        state.questionSets = cached.questionSets || [];
+        state.setCounts = {};
+        state.view = "home";
+        state.resumeAvailable = readProgress();
+        window.__debugLog('loadAll: لا يوجد تحديث جديد — تم استخدام الكاش المحلي مباشرة.');
+        render();
+        return;
+      }
+      window.__debugLog('loadAll: تم رصد تحديث جديد من الأدمن — سيتم تحميل البيانات الكاملة.');
+    }catch(err){
+      window.__debugLog('fetchServerUpdatedAt error: ' + (err.message || JSON.stringify(err)) + ' — سيتم تحميل البيانات كاملة كإجراء احتياطي. تأكد من إنشاء جدول app_meta.');
+    }
+  }
+
+  try{
+    const [{data:cats, error:e1}, {data:groups, error:e3}, {data:sets, error:e4}, latestUpdatedAt] = await Promise.all([
+      sb.from("categories").select("id,parent_id,name,sort_order,direct_question_count,description,quiz_title"),
+      sb.from("exam_groups").select("id,title,attach_to,category_ids,sort_order,description,question_ids"),
+      sb.from("question_sets").select("id,category_id,title,sort_order"),
+      fetchServerUpdatedAt().catch(()=>null),
+    ]);
+    if(e1) throw e1;
+    if(e3) throw e3;
+    if(e4) throw e4;
+    state.categories = (cats || []).map(c => ({
+      ...c,
+      id: String(c.id),
+      parent_id: (c.parent_id === null || c.parent_id === undefined) ? null : String(c.parent_id),
+      direct_question_count: c.direct_question_count || 0,
+      description: c.description || "",
+      quiz_title: c.quiz_title || "",
+    }));
+    state.examGroups = (groups || []).map(g => ({
+      ...g,
+      id: String(g.id),
+      attach_to: (g.attach_to === null || g.attach_to === undefined) ? null : String(g.attach_to),
+      category_ids: (g.category_ids || []).map(String),
+      question_ids: (g.question_ids || []).map(String),
+      description: g.description || "",
+    }));
+    state.questionSets = (sets || []).map(s => ({
+      ...s,
+      id: String(s.id),
+      category_id: String(s.category_id),
+      title: s.title || "",
+    }));
+    state.setCounts = {};
+    writeCache(state.categories, state.examGroups, latestUpdatedAt, state.questionSets);
+    window.__debugLog('loadAll ok (من قاعدة البيانات مباشرة) — categories: ' + state.categories.length + ', exam groups: ' + state.examGroups.length + ', question sets: ' + state.questionSets.length + '.');
+    state.view = "home";
+    state.resumeAvailable = readProgress();
+  }catch(err){
+    state.view = "connectionError";
+    state.notice = state.adminSession ? (err.message || String(err)) : "تعذّر تحميل البيانات حالياً، حاول مرة أخرى بعد قليل.";
+    window.__debugLog('loadAll error: ' + (err.message || JSON.stringify(err)));
+  }
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   محلّل النصوص إلى أسئلة
+   ══════════════════════════════════════════════════════════════════ */
+function parseQuestionsFromText(raw){
+  const AR_MAP = {"أ":0,"ا":0,"ب":1,"ج":2,"د":3,"هـ":4,"ه":4,"و":5};
+
+  const OPT_LATIN = /^(?:([A-Ja-j])\s*[.):\-]\s*|\(([A-Ja-j])\)\s*)(.*)$/;
+  const OPT_ARABIC = /^(أ|ا|ب|ج|د|هـ|ه|و)\s*[.)\-:]\s*(.*)$/;
+  const INLINE_OPT_RE = /([A-Ja-j])\s*[.)]\s*(.*?)(?=\s+[A-Ja-j]\s*[.)]|$)/gi;
+
+  const ANSWER_KEY = /^(?:Correct\s*Answer|Answers?|Ans|Correct|الإجابة\s*الصحيحة?|الإجابة|الجواب|الحل)\s*[:=\-]\s*(.+)$/i;
+  const EXPLANATION_KEY = /^(?:Explanation|Explain|Rationale|Note|ملاحظة|التفسير|السبب|التوضيح|توضيح|الشرح|شرح)\s*[:=\-]\s*(.+)$/i;
+  const QNUM = /^(?:Q(?:uestion)?s?\.?\s*)?(\d+)\s*[.)\-:؟]\s*(.*)$/i;
+  const TF_WORD = /^(صح|خطأ|True|False)$/i;
+  const LONE_LETTER_LATIN = /^([A-Ja-j])$/;
+  const LONE_LETTER_ARABIC = /^(أ|ا|ب|ج|د|هـ|ه|و)$/;
+  const DIVIDER = /^[-_=*#]{3,}\s*$/;
+  const STEM_START = /^(?:Which|What|Who|When|Where|How|Why|Choose|Select|True|False|ما|من|أي|اختر|حدد|صح|خطأ|هل)\b/i;
+
+  const KEY_HDR = /^(?:answers?\s*key|key|answers?|الإجابات?|مفتاح\s*الإجابات?)\s*:?\s*$/i;
+  const KEY_LINE = /^(\d+)\s*[-.):\s]\s*([A-Ja-j])\s*$/i;
+
+  const ALL_PAT = /^(?:ALL(?:\s+OF\s+(?:THE\s+)?ABOVE)?|كل\s*(?:ما\s*)?(?:سبق|ذكر)|جميع\s*(?:ما\s*)?(?:سبق|ذكر)|كلها|كلهم|جميعها|جميعهم|كل\s*الخيارات?\s*(?:صحيحة|صحيح)?)$/i;
+  const NONE_PAT = /^(?:NONE(?:\s+OF\s+(?:THE\s+)?ABOVE)?|لا\s*شيء(?:\s*مما\s*(?:سبق|ذكر))?|لا\s*(?:شيء|إجابة)\s*(?:من\s*)?(?:ما\s*)?(?:سبق|صحيحة?)?)$/i;
+  const MULTI_LETTER_PAT = /^[A-Ja-j](?:\s*(?:and|or|و|،|,|&|\+|\/)\s*[A-Ja-j])+$/i;
+
+  function cleanOption(o){
+    return o.trim().replace(/\s*\.{2,}\s*$/,"").replace(/\s*\.\s*$/,"").replace(/\s+/g," ").trim();
+  }
+
+  function parseAnswerValue(raw){
+    const s = raw.trim();
+    if(ALL_PAT.test(s)) return "ALL";
+    if(NONE_PAT.test(s)) return "NONE";
+    if(MULTI_LETTER_PAT.test(s)){
+      const letters = (s.match(/[A-Ja-j]/g) || []).map(l=>l.toUpperCase());
+      const unique = [...new Set(letters)];
+      if(unique.length > 1) return "MULTI:" + unique.join("");
+    }
+    for(const [ar, idx] of Object.entries(AR_MAP)){
+      if(s === ar) return idx;
+    }
+    const single = s.match(/^([A-Ja-j])\s*$/i);
+    if(single) return single[1].toUpperCase().charCodeAt(0) - 65;
+    const n = parseInt(s,10);
+    if(!isNaN(n) && String(n) === s) return n - 1;
+    return null;
+  }
+
+  function buildMultiOption(opts, letters){
+    const label = letters.split("").join(" & ");
+    const combo = `(${label}) كلاهما صحيح`;
+    const newOpts = opts.map(cleanOption).concat([combo]);
+    return { options: newOpts, correct: newOpts.length - 1 };
+  }
+
+  function matchOption(line){
+    const mLat = line.match(OPT_LATIN);
+    if(mLat) return { text: (mLat[3]||"").trim() };
+    const mAr = line.match(OPT_ARABIC);
+    if(mAr) return { text: (mAr[2]||"").trim() };
+    return null;
+  }
+  function parseInlineOptions(line){
+    const matches = [...line.matchAll(INLINE_OPT_RE)];
+    if(matches.length >= 2) return matches.map(m => cleanOption(m[2]));
+    return null;
+  }
+
+  const lines = raw.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+
+  const answerKeyMap = {};
+  const keyLineIdx = new Set();
+  let inKey = false;
+  for(let i=0;i<lines.length;i++){
+    const s = lines[i].trim();
+    if(KEY_HDR.test(s)){ inKey = true; keyLineIdx.add(i); continue; }
+    if(inKey){
+      const mk = s.match(KEY_LINE);
+      if(mk){ answerKeyMap[parseInt(mk[1],10)] = mk[2].toUpperCase(); keyLineIdx.add(i); }
+      else if(s && !DIVIDER.test(s)){ inKey = false; }
+    }
+  }
+  const useAnswerKey = keyLineIdx.size >= 3;
+
+  const questions = [];
+  let curLines = [], curOpts = [], curAns = null, curExpl = null, curNum = null;
+  let autoCtr = 0;
+
+  function resetCur(){ curLines=[]; curOpts=[]; curAns=null; curExpl=null; curNum=null; }
+
+  function flush(){
+    if(!curLines.length) return;
+    if(curAns === null && curNum !== null && useAnswerKey && answerKeyMap[curNum]){
+      curAns = answerKeyMap[curNum].toUpperCase().charCodeAt(0) - 65;
+    }
+    if(curAns === null || curOpts.length < 2) return;
+
+    const qText = curLines.join(" ").trim();
+    const cleaned = curOpts.map(cleanOption);
+
+    function add(opts, correct){
+      if(opts.length >= 2 && correct < opts.length){
+        questions.push({ question: qText, options: opts, correct, explanation: curExpl ? curExpl.trim() : null });
+      }
+    }
+
+    if(curAns === "ALL"){
+      add(cleaned.concat(["كل ما سبق"]), cleaned.length);
+    } else if(curAns === "NONE"){
+      add(cleaned.concat(["لا شيء مما سبق"]), cleaned.length);
+    } else if(typeof curAns === "string" && curAns.startsWith("MULTI:")){
+      const built = buildMultiOption(curOpts, curAns.slice(6));
+      add(built.options, built.correct);
+    } else if(typeof curAns === "number"){
+      add(cleaned, curAns);
+    }
+  }
+
+  for(let i=0;i<lines.length;i++){
+    if(keyLineIdx.has(i)) continue;
+    const line = lines[i].trim();
+
+    if(!line || DIVIDER.test(line)){
+      if(curAns !== null && curOpts.length){ flush(); resetCur(); }
+      continue;
+    }
+    if(KEY_HDR.test(line)){
+      if(curLines.length){ flush(); resetCur(); }
+      continue;
+    }
+
+    const mExp = line.match(EXPLANATION_KEY);
+    if(mExp){ curExpl = mExp[1]; continue; }
+
+    const mQ = line.match(QNUM);
+    if(mQ && !ANSWER_KEY.test(line)){
+      flush();
+      autoCtr++;
+      resetCur();
+      curNum = parseInt(mQ[1],10);
+      curLines = [(mQ[2]||"").trim()];
+      continue;
+    }
+
+    const mAns = line.match(ANSWER_KEY);
+    if(mAns){
+      curAns = parseAnswerValue(mAns[1]);
+      continue;
+    }
+
+    const optMatch = matchOption(line);
+    if(optMatch){
+      const inline = parseInlineOptions(line);
+      if(inline){ curOpts = inline; }
+      else { curOpts.push(optMatch.text); }
+      continue;
+    }
+
+    if(curOpts.length >= 2 && curAns === null){
+      if(LONE_LETTER_LATIN.test(line)){ curAns = line.toUpperCase().charCodeAt(0)-65; continue; }
+      if(LONE_LETTER_ARABIC.test(line)){ curAns = AR_MAP[line]; continue; }
+    }
+
+    if(curOpts.length === 0 && TF_WORD.test(line) && curLines.length){
+      const isTrue = /^(صح|True)$/i.test(line);
+      curOpts = [isTrue ? "صح" : "خطأ", isTrue ? "خطأ" : "صح"];
+      curAns = 0;
+      continue;
+    }
+
+    if(curOpts.length && curAns === null){
+      const inline = parseInlineOptions(line);
+      if(inline){ curOpts = inline; }
+      else { curOpts[curOpts.length-1] += " " + line; }
+      continue;
+    }
+
+    if(curLines.length && curAns === null && curOpts.length === 0){
+      curLines.push(line);
+      continue;
+    }
+
+    if(STEM_START.test(line)){
+      flush();
+      autoCtr++;
+      resetCur();
+      curNum = autoCtr;
+      curLines = [line];
+      continue;
+    }
+
+    if(!curLines.length){
+      resetCur();
+      curLines = [line];
+    }
+  }
+  flush();
+  return questions;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   منطق الاختبار
+   ══════════════════════════════════════════════════════════════════ */
+const PROGRESS_KEY = "qbank_progress_v1";
+
+function saveProgress(){
+  if(!state.quiz) return;
+  try{
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      quiz: state.quiz,
+    }));
+  }catch(e){ /* noop */ }
+}
+function clearProgress(){
+  try{ localStorage.removeItem(PROGRESS_KEY); }catch(e){ /* noop */ }
+}
+function readProgress(){
+  try{
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed || !parsed.quiz || !parsed.quiz.questions || !parsed.quiz.questions.length) return null;
+    return parsed;
+  }catch(e){ return null; }
+}
+window.resumeProgress = () => {
+  const p = readProgress();
+  if(!p){ state.resumeAvailable = null; render(); return; }
+  state.quiz = p.quiz;
+  state.view = "quiz";
+  state.notice = null;
+  render();
+};
+window.discardProgress = () => {
+  clearProgress();
+  state.resumeAvailable = null;
+  render();
+};
+
+function shuffleArray(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+async function startSetQuiz(categoryId, setId){
+  try{
+    let query = sb.from("questions").select("id,category_id,question_text,options,correct_index,explanation").eq("category_id", String(categoryId));
+    if(setId) query = query.eq("set_id", setId);
+    else query = query.is("set_id", null);
+    const { data, error } = await query;
+    if(error){ window.__debugLog('startSetQuiz error: ' + error.message); state.notice = state.adminSession ? ("خطأ أثناء تحميل الأسئلة: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
+    if(!data || !data.length){
+      state.notice = "لا توجد أسئلة في هذا الاختبار بعد.";
+      render();
+      return;
+    }
+    const questions = shuffleArray(data).map(row => ({
+      id: row.id,
+      question: row.question_text,
+      options: row.options,
+      correct: row.correct_index,
+      explanation: row.explanation || null,
+    }));
+    const catObj = byId(String(categoryId)) || {};
+    let label = catObj.quiz_title || "الاختبار الرئيسي";
+    if(setId){
+      const setObj = state.questionSets.find(s => s.id === String(setId));
+      label = setObj ? setObj.title : "اختبار";
+    }
+    state.quiz = {
+      questions, index:0, correct:0, wrongList:[], answered:false, selected:null,
+      userAnswers: new Array(questions.length).fill(null),
+      sourceLabel: label,
+      sourceType: "questionSet", sourceCategoryId: String(categoryId), sourceSetId: setId ? String(setId) : null,
+    };
+    state.view = "quiz";
+    state.notice = null;
+    saveProgress();
+    render();
+  }catch(err){
+    window.__debugLog('startSetQuiz exception: ' + (err.message || JSON.stringify(err)));
+    state.notice = "حدث خطأ غير متوقع، حاول مرة أخرى.";
+    render();
+  }
+}
+
+async function startQuiz(nodeId, includeSub){
+  try{
+    let query = sb.from("questions").select("id,category_id,question_text,options,correct_index,explanation");
+    if(includeSub){
+      const ids = Array.from(new Set(descendantIds(String(nodeId))));
+      query = query.in("category_id", ids);
+    } else {
+      query = query.eq("category_id", String(nodeId));
+    }
+    const { data, error } = await query;
+    if(error){ console.error("startQuiz error:", error); window.__debugLog('startQuiz supabase error: ' + error.message + ' | code: ' + (error.code||'')); state.notice = state.adminSession ? ("خطأ أثناء تحميل الأسئلة: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
+    if(!data || !data.length){
+      window.__debugLog('startQuiz: query succeeded but returned 0 rows. mode: ' + (includeSub?'includeSub':'direct') + ', node id: ' + nodeId + '.');
+      state.notice = "لا توجد أسئلة في هذا القسم بعد.";
+      render();
+      return;
+    }
+    const questions = shuffleArray(data).map(row => ({
+      id: row.id,
+      question: row.question_text,
+      options: row.options,
+      correct: row.correct_index,
+      explanation: row.explanation || null,
+    }));
+    const catObj = byId(String(nodeId)) || {};
+    const catName = catObj.quiz_title || catObj.name || "";
+    state.quiz = {
+      questions, index:0, correct:0, wrongList:[], answered:false, selected:null,
+      userAnswers: new Array(questions.length).fill(null),
+      sourceLabel: catName + (includeSub ? " (شامل)" : ""),
+      sourceType: "category", sourceNodeId: String(nodeId), sourceIncludeSub: !!includeSub,
+    };
+    state.view = "quiz";
+    state.notice = null;
+    saveProgress();
+    render();
+  }catch(err){
+    console.error("startQuiz exception:", err);
+    window.__debugLog('startQuiz exception: ' + (err.message || JSON.stringify(err)));
+    state.notice = state.adminSession ? ("حدث خطأ غير متوقع أثناء بدء الاختبار: " + (err.message || String(err))) : "حدث خطأ غير متوقع، حاول مرة أخرى.";
+    render();
+  }
+}
+
+async function startCustomExam(groupId){
+  const group = state.examGroups.find(g => g.id === groupId);
+  const hasCats = group && group.category_ids && group.category_ids.length;
+  const hasQs = group && group.question_ids && group.question_ids.length;
+  if(!group || (!hasCats && !hasQs)){
+    state.notice = "هذا الامتحان الشامل غير مُعد بشكل صحيح.";
+    render();
+    return;
+  }
+  try{
+    const cols = "id,category_id,question_text,options,correct_index,explanation";
+    let rows = [];
+    if(hasCats){
+      const { data, error } = await sb.from("questions").select(cols).in("category_id", group.category_ids);
+      if(error){ window.__debugLog('startCustomExam categories error: ' + error.message); state.notice = state.adminSession ? ("خطأ: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
+      rows = rows.concat(data || []);
+    }
+    if(hasQs){
+      const { data, error } = await sb.from("questions").select(cols).in("id", group.question_ids);
+      if(error){ window.__debugLog('startCustomExam question_ids error: ' + error.message); state.notice = state.adminSession ? ("خطأ: " + error.message) : "تعذّر تحميل الأسئلة، حاول مرة أخرى."; render(); return; }
+      rows = rows.concat(data || []);
+    }
+    const map = new Map();
+    rows.forEach(r => map.set(String(r.id), r));
+    const data = Array.from(map.values());
+    if(!data.length){
+      state.notice = "لا توجد أسئلة بعد بهذا الامتحان الشامل.";
+      render();
+      return;
+    }
+    const questions = shuffleArray(data).map(row => ({
+      id: row.id,
+      question: row.question_text,
+      options: row.options,
+      correct: row.correct_index,
+      explanation: row.explanation || null,
+    }));
+    state.quiz = {
+      questions, index:0, correct:0, wrongList:[], answered:false, selected:null,
+      userAnswers: new Array(questions.length).fill(null),
+      sourceLabel: group.title,
+      sourceType: "examGroup", sourceGroupId: groupId,
+    };
+    state.view = "quiz";
+    state.notice = null;
+    saveProgress();
+    render();
+  }catch(err){
+    window.__debugLog('startCustomExam exception: ' + (err.message || JSON.stringify(err)));
+    state.notice = "حدث خطأ غير متوقع، حاول مرة أخرى.";
+    render();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: نافذة معلومات + محرّر الوصف
+   ══════════════════════════════════════════════════════════════════ */
+function openInfoModal(title, meta, description){
+  state.modal = { title, meta: meta || [], description: description || "" };
+  renderModalRoot();
+}
+function closeModal(){ state.modal = null; renderModalRoot(); }
+function openDescEditor(kind, id, current){
+  state.descEditor = { kind, id, value: current || "" };
+  renderModalRoot();
+}
+function closeDescEditor(){ state.descEditor = null; renderModalRoot(); }
+async function saveDescEditor(){
+  const { kind, id, value } = state.descEditor;
+  const text = (value || "").trim();
+  let error = null;
+  if(kind === 'category'){
+    ({ error } = await sb.from('categories').update({ description: text || null }).eq('id', id));
+  } else {
+    ({ error } = await sb.from('exam_groups').update({ description: text || null }).eq('id', id));
+  }
+  if(error){ state.notice = error.message; }
+  else { state.notice = "تم حفظ الوصف بنجاح."; }
+  state.descEditor = null;
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = 'admin';
+  render();
+}
+function renderModalRoot(){
+  const root = document.getElementById('modalRoot');
+  if(!root) return;
+
+  if(state.descEditor){
+    const d = state.descEditor;
+    root.innerHTML = `
+      <div class="modalOverlay" onclick="if(event.target===this) closeDescEditor()">
+        <div class="modalBox">
+          <div class="modalHead">
+            <div class="mTitle">${icon('file-text',17)} تعديل الوصف</div>
+            <button class="modalClose" onclick="closeDescEditor()">${icon('x',15)}</button>
+          </div>
+          <div class="field">
+            <textarea dir="auto" style="min-height:140px;" oninput="state.descEditor.value=this.value" placeholder="اكتب وصفًا مختصرًا يوضّح محتوى هذا القسم أو الاختبار...">${esc(d.value)}</textarea>
+          </div>
+          <button class="btn primary block" onclick="saveDescEditor()">${icon('check',15)} حفظ الوصف</button>
+        </div>
+      </div>`;
+    refreshIcons();
+    return;
+  }
+
+  if(state.catPicker && state.catPicker.open){
+    root.innerHTML = renderCatPickerModalHtml();
+    refreshIcons();
+    const inp = document.getElementById('catPickSearch');
+    if(inp) inp.focus();
+    return;
+  }
+
+  if(!state.modal){ root.innerHTML = ""; return; }
+  const m = state.modal;
+  root.innerHTML = `
+    <div class="modalOverlay" onclick="if(event.target===this) closeModal()">
+      <div class="modalBox">
+        <div class="modalHead">
+          <div class="mTitle" dir="auto">${icon('info',17)} ${esc(m.title)}</div>
+          <button class="modalClose" onclick="closeModal()">${icon('x',15)}</button>
+        </div>
+        ${m.meta.length ? `<div class="modalMeta">${m.meta.map(c=>`<span class="chip">${c.icon?icon(c.icon,13):''} ${esc(c.label)}</span>`).join("")}</div>` : ""}
+        <div class="modalDesc ${m.description?'':'empty'}" dir="auto">${m.description ? esc(m.description) : "لا يوجد وصف لهذا العنصر بعد."}</div>
+      </div>
+    </div>`;
+  refreshIcons();
+}
+window.closeModal = closeModal;
+window.closeDescEditor = closeDescEditor;
+window.saveDescEditor = saveDescEditor;
+
+window.showCategoryInfo = (id) => {
+  const c = byId(id);
+  if(!c) return;
+  const total = nodeQuestionCount(id);
+  const direct = directQuestionCount(id);
+  const subCount = descendantIds(id).length - 1;
+  const meta = [
+    { icon:'list-checks', label: direct + ' سؤال مباشر' },
+  ];
+  if(total !== direct) meta.push({ icon:'layers', label: total + ' سؤال شامل الفروع' });
+  if(subCount) meta.push({ icon:'folder', label: subCount + ' قسم فرعي' });
+  openInfoModal(c.quiz_title || c.name, meta, c.description || "");
+};
+window.showSetInfo = (categoryId, setId) => {
+  const c = byId(categoryId);
+  const counts = state.setCounts[categoryId] || {};
+  let title, count;
+  if(setId){
+    const s = state.questionSets.find(x => x.id === setId);
+    title = s ? s.title : "اختبار";
+    count = counts[setId] || 0;
+  } else {
+    title = (c && c.quiz_title) || "الاختبار الرئيسي";
+    count = counts["legacy"] || 0;
+  }
+  openInfoModal(title, [ { icon:'list-checks', label: count + ' سؤال' } ], c ? (c.description || "") : "");
+};
+window.showExamInfo = (id) => {
+  const g = state.examGroups.find(x => x.id === id);
+  if(!g) return;
+  const catCount = (g.category_ids || []).length;
+  const manual = (g.question_ids || []).length;
+  const meta = [];
+  if(catCount) meta.push({ icon:'layers', label: catCount + ' قسم مرتبط' });
+  if(manual) meta.push({ icon:'list-checks', label: manual + ' سؤال مُختار يدويًا' });
+  meta.push({ icon:'clipboard-list', label: examGroupQuestionCount(g) + ' سؤال تقريبًا' });
+  openInfoModal(g.title, meta, g.description || "");
+};
+window.showQuizInfo = () => {
+  const q = state.quiz;
+  if(!q) return;
+  let desc = "";
+  if(q.sourceType === 'category'){
+    const c = byId(q.sourceNodeId);
+    desc = c ? (c.description || "") : "";
+  } else if(q.sourceType === 'examGroup'){
+    const g = state.examGroups.find(x => x.id === q.sourceGroupId);
+    desc = g ? (g.description || "") : "";
+  } else if(q.sourceType === 'questionSet'){
+    const c = byId(q.sourceCategoryId);
+    desc = c ? (c.description || "") : "";
+  }
+  openInfoModal(q.sourceLabel || "الاختبار", [
+    { icon:'list-checks', label: q.questions.length + ' سؤال' },
+    { icon:'target', label: 'سؤال ' + (q.index+1) + ' من ' + q.questions.length },
+  ], desc);
+};
+window.openDescEditorForCategory = (id) => {
+  const c = byId(id);
+  openDescEditor('category', id, c ? (c.description || "") : "");
+};
+window.openDescEditorForExam = (id) => {
+  const g = state.examGroups.find(x => x.id === id);
+  openDescEditor('exam', id, g ? (g.description || "") : "");
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   اختيار القسم — نافذة بحث احترافية (بديل القائمة الطويلة)
+   ══════════════════════════════════════════════════════════════════ */
+state.catPicker = { open:false, currentValue:null, search:"", onSelect:null, allowNull:false, nullLabel:"" };
+
+function categoryPath(id){
+  const names = [];
+  let cur = byId(id);
+  let guard = 0;
+  while(cur && guard < 60){
+    names.unshift(cur.name);
+    cur = cur.parent_id ? byId(cur.parent_id) : null;
+    guard++;
+  }
+  return names.join(" › ");
+}
+function allCategoriesFlat(){
+  return state.categories.slice().sort((a,b) => categoryPath(a.id).localeCompare(categoryPath(b.id),'ar'));
+}
+window.openCategoryPicker = (currentValue, onSelectCb, opts) => {
+  opts = opts || {};
+  state.catPicker = {
+    open:true, currentValue: currentValue||null, search:"",
+    onSelect: onSelectCb, allowNull: !!opts.allowNull, nullLabel: opts.nullLabel || "بدون قسم",
+  };
+  renderModalRoot();
+};
+window.closeCategoryPicker = () => { state.catPicker.open = false; renderModalRoot(); };
+window.setCatPickerSearch = (val) => { state.catPicker.search = val; renderModalRoot(); };
+window.selectFromCategoryPicker = (id) => {
+  const cb = state.catPicker.onSelect;
+  state.catPicker.open = false;
+  renderModalRoot();
+  if(cb) window[cb](id || null);
+};
+function renderCatPickerModalHtml(){
+  const p = state.catPicker;
+  const q = (p.search || "").trim().toLowerCase();
+  let items = allCategoriesFlat().map(c => ({ id:c.id, name:c.name, path: categoryPath(c.id) }));
+  if(q) items = items.filter(it => it.name.toLowerCase().includes(q) || it.path.toLowerCase().includes(q));
+  return `
+    <div class="modalOverlay" onclick="if(event.target===this) closeCategoryPicker()">
+      <div class="modalBox catPickModal">
+        <div class="modalHead">
+          <div class="mTitle">${icon('folder-search',17)} اختر القسم</div>
+          <button class="modalClose" onclick="closeCategoryPicker()">${icon('x',15)}</button>
+        </div>
+        <input type="text" id="catPickSearch" dir="auto" placeholder="ابحث عن قسم..." value="${escAttr(p.search)}" oninput="setCatPickerSearch(this.value)" style="width:100%;padding:11px 12px;border-radius:6px;border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);font-size:14px;">
+        <div class="catPickList">
+          ${p.allowNull ? `<div class="catPickRow ${!p.currentValue?'sel':''}" onclick="selectFromCategoryPicker('')"><div class="nm">${esc(p.nullLabel)}</div></div>` : ""}
+          ${items.length ? items.map(it => `
+            <div class="catPickRow ${p.currentValue===it.id?'sel':''}" onclick="selectFromCategoryPicker('${it.id}')">
+              <div class="nm" dir="auto">${esc(it.name)}</div>
+              <div class="pth">${esc(it.path)}</div>
+            </div>`).join("") : `<div class="emptyState" style="padding:24px 10px;">لا توجد نتائج مطابقة.</div>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: إدارة الامتحانات الشاملة المخصصة
+   ══════════════════════════════════════════════════════════════════ */
+let examBuilder = { id: null, title: "", description: "", attachTo: null, selected: new Set(), questionIds: new Set(), pickCategory: null };
+let examPickerQuestions = [];
+
+function resetExamBuilder(){
+  examBuilder = { id: null, title: "", description: "", attachTo: null, selected: new Set(), questionIds: new Set(), pickCategory: null };
+  examPickerQuestions = [];
+}
+function loadExamIntoBuilder(id){
+  const g = state.examGroups.find(x => x.id === id);
+  if(!g) return;
+  examBuilder = {
+    id: g.id,
+    title: g.title,
+    description: g.description || "",
+    attachTo: g.attach_to || null,
+    selected: new Set(g.category_ids || []),
+    questionIds: new Set(g.question_ids || []),
+    pickCategory: null,
+  };
+  examPickerQuestions = [];
+  render();
+}
+function toggleExamBuilderCategory(id){
+  if(examBuilder.selected.has(id)) examBuilder.selected.delete(id);
+  else examBuilder.selected.add(id);
+  render();
+}
+async function loadExamPicker(categoryId){
+  examBuilder.pickCategory = categoryId || null;
+  examPickerQuestions = [];
+  render();
+  if(!categoryId) return;
+  const { data, error } = await sb.from('questions').select('id,question_text').eq('category_id', categoryId).order('id',{ascending:true});
+  if(error){ state.notice = error.message; render(); return; }
+  examPickerQuestions = data || [];
+  render();
+}
+function toggleExamBuilderQuestion(id){
+  const key = String(id);
+  if(examBuilder.questionIds.has(key)) examBuilder.questionIds.delete(key);
+  else examBuilder.questionIds.add(key);
+  render();
+}
+window.pickerSelectExamPickCategory = (id) => { loadExamPicker(id || null); };
+window.pickerSelectExamAttach = (id) => { examBuilder.attachTo = id || null; render(); };
+async function saveExamGroup(){
+  const title = (examBuilder.title || "").trim();
+  const description = (examBuilder.description || "").trim();
+  const attachTo = examBuilder.attachTo || null;
+  if(!title){ state.notice = "أدخل اسمًا للامتحان الشامل."; render(); return; }
+  if(!examBuilder.selected.size && !examBuilder.questionIds.size){ state.notice = "اختر قسمًا واحدًا على الأقل أو سؤالًا واحدًا على الأقل."; render(); return; }
+  const category_ids = Array.from(examBuilder.selected);
+  const question_ids = Array.from(examBuilder.questionIds);
+  if(examBuilder.id){
+    const { error } = await sb.from("exam_groups").update({ title, description: description || null, attach_to: attachTo, category_ids, question_ids }).eq("id", examBuilder.id);
+    if(error){ state.notice = error.message; render(); return; }
+  } else {
+    const { error } = await sb.from("exam_groups").insert({ title, description: description || null, attach_to: attachTo, category_ids, question_ids, sort_order: state.examGroups.length });
+    if(error){ state.notice = error.message; render(); return; }
+  }
+  resetExamBuilder();
+  state.notice = "تم حفظ الامتحان الشامل بنجاح.";
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "exams";
+  render();
+}
+async function deleteExamGroup(id){
+  const ok = confirm("سيتم حذف هذا الامتحان الشامل (لن يحذف الأسئلة أو الأقسام نفسها). متابعة؟");
+  if(!ok) return;
+  const { error } = await sb.from("exam_groups").delete().eq("id", id);
+  if(error){ state.notice = error.message; }
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "exams";
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: إدارة الأسئلة الموجودة + حذف مجموعات كاملة
+   ══════════════════════════════════════════════════════════════════ */
+let questionEditor = null;
+
+async function loadQuestionsForCategory(categoryId){
+  state.manageSelectedCategory = categoryId || null;
+  state.manageQuestions = [];
+  state.manageSetFilter = null;
+  questionEditor = null;
+  render();
+  if(!categoryId) return;
+  loadSetCounts(categoryId);
+  const { data, error } = await sb.from("questions")
+    .select("id,category_id,set_id,question_text,options,correct_index,explanation")
+    .eq("category_id", categoryId)
+    .order("id", { ascending: true });
+  if(error){ state.notice = error.message; render(); return; }
+  state.manageQuestions = data || [];
+  render();
+}
+window.pickerSelectManageCategory = (id) => { loadQuestionsForCategory(id || null); };
+
+function setManageSetFilter(setId){
+  state.manageSetFilter = setId; // null = legacy, "" = all, or a set id string
+  render();
+}
+
+async function deleteQuestionSetGroup(categoryId, setId, label){
+  const ok = confirm(`سيتم حذف جميع أسئلة "${label}" نهائيًا من هذا القسم. متابعة؟`);
+  if(!ok) return;
+  let query = sb.from("questions").delete().eq("category_id", categoryId);
+  query = setId ? query.eq("set_id", setId) : query.is("set_id", null);
+  const { error } = await query;
+  if(error){ state.notice = error.message; render(); return; }
+  if(setId){
+    await sb.from("question_sets").delete().eq("id", setId);
+  }
+  state.notice = `تم حذف مجموعة "${label}" بالكامل.`;
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "manage";
+  await loadQuestionsForCategory(categoryId);
+  render();
+}
+window.deleteQuestionSetGroup = deleteQuestionSetGroup;
+
+function startEditQuestionById(id){
+  const q = state.manageQuestions.find(x => String(x.id) === String(id));
+  if(q) startEditQuestion(q);
+}
+function startEditQuestion(q){
+  questionEditor = {
+    id: q.id,
+    category_id: q.category_id,
+    question: q.question_text,
+    options: [...q.options],
+    correct: q.correct_index,
+    explanation: q.explanation || "",
+  };
+  render();
+}
+function cancelEditQuestion(){
+  questionEditor = null;
+  render();
+}
+function editorSetOption(i, val){
+  questionEditor.options[i] = val;
+}
+function editorAddOption(){
+  questionEditor.options.push("");
+  render();
+}
+function editorRemoveOption(i){
+  if(questionEditor.options.length <= 2){ state.notice = "لازم يبقى خيارين على الأقل."; render(); return; }
+  questionEditor.options.splice(i,1);
+  if(questionEditor.correct === i) questionEditor.correct = 0;
+  else if(questionEditor.correct > i) questionEditor.correct--;
+  render();
+}
+function editorSetCorrect(i){
+  questionEditor.correct = i;
+  render();
+}
+window.pickerSelectEditorCategory = (id) => { if(id){ questionEditor.category_id = id; render(); } };
+async function saveQuestionEdit(){
+  const qText = (questionEditor.question || "").trim();
+  const expText = (questionEditor.explanation || "").trim();
+  const newCategoryId = questionEditor.category_id;
+  if(!qText){ state.notice = "نص السؤال لا يمكن أن يكون فارغًا."; render(); return; }
+  const options = questionEditor.options.map(o=>o.trim()).filter(o=>o.length);
+  if(options.length < 2){ state.notice = "لازم يبقى خيارين صالحين على الأقل."; render(); return; }
+  if(questionEditor.correct >= options.length){ state.notice = "حدد الإجابة الصحيحة بشكل صحيح."; render(); return; }
+
+  const { error } = await sb.from("questions").update({
+    question_text: qText,
+    options: options,
+    correct_index: questionEditor.correct,
+    explanation: expText || null,
+    category_id: newCategoryId,
+  }).eq("id", questionEditor.id);
+
+  if(error){ state.notice = error.message; render(); return; }
+  state.notice = "تم حفظ التعديلات بنجاح.";
+  const categoryChanged = newCategoryId !== questionEditor.category_id;
+  questionEditor = null;
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  await loadQuestionsForCategory(categoryChanged ? newCategoryId : state.manageSelectedCategory);
+  state.view = "admin"; state.adminTab = "manage";
+  render();
+}
+async function deleteQuestion(id){
+  const ok = confirm("سيتم حذف هذا السؤال نهائيًا. متابعة؟");
+  if(!ok) return;
+  const { error } = await sb.from("questions").delete().eq("id", id);
+  if(error){ state.notice = error.message; render(); return; }
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  await loadQuestionsForCategory(state.manageSelectedCategory);
+  state.view = "admin"; state.adminTab = "manage";
+  render();
+}
+
+function answerQuestion(optIndex){
+  const q = state.quiz;
+  if(q.answered) return;
+  q.answered = true;
+  q.selected = optIndex;
+  const question = q.questions[q.index];
+  if(!q.userAnswers) q.userAnswers = new Array(q.questions.length).fill(null);
+  q.userAnswers[q.index] = optIndex;
+  if(optIndex === question.correct){
+    q.correct++;
+  } else {
+    q.wrongList.push({ question, chosen: optIndex });
+  }
+  saveProgress();
+  render();
+}
+
+function nextQuestion(){
+  const q = state.quiz;
+  if(q.index+1 < q.questions.length){
+    q.index++; q.answered=false; q.selected=null;
+    saveProgress();
+    render();
+  } else {
+    state.view = "results";
+    clearProgress();
+    render();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: تسجيل الدخول
+   ══════════════════════════════════════════════════════════════════ */
+async function adminLogin(email, password){
+  state.notice = null;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ state.notice = "بيانات الدخول غير صحيحة."; render(); return; }
+  state.adminSession = data.session;
+  state.view = "admin";
+  state.adminTab = "tree";
+  render();
+}
+async function adminLogout(){
+  await sb.auth.signOut();
+  state.adminSession = null;
+  state.view = "home";
+  state.path = [];
+  const wrap = document.getElementById('debugWrap');
+  if(wrap) wrap.remove();
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: إدارة الأقسام
+   ══════════════════════════════════════════════════════════════════ */
+async function addCategory(parentId, name){
+  if(!name || !name.trim()) return;
+  const siblings = childrenOf(parentId);
+  const sort_order = siblings.length;
+  const { error } = await sb.from("categories").insert({ parent_id: parentId, name: name.trim(), sort_order });
+  if(error){ state.notice = error.message; render(); return; }
+  if(parentId) treeExpanded.add(parentId);
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; render();
+}
+async function renameCategory(id, name){
+  if(!name || !name.trim()) return;
+  const { error } = await sb.from("categories").update({ name: name.trim() }).eq("id", id);
+  if(error){ state.notice = error.message; }
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; render();
+}
+async function deleteCategory(id){
+  const ok = confirm("سيتم حذف هذا القسم وكل ما بداخله (أقسام فرعية وأسئلة). متابعة؟");
+  if(!ok) return;
+  const { error } = await sb.from("categories").delete().eq("id", id);
+  if(error){ state.notice = error.message; }
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; render();
+}
+async function moveCategory(id, dir){
+  const cat = byId(id);
+  const siblings = childrenOf(cat.parent_id);
+  const idx = siblings.findIndex(s=>s.id===id);
+  const swapWith = siblings[idx+dir];
+  if(!swapWith) return;
+  await sb.from("categories").update({ sort_order: swapWith.sort_order ?? idx+dir }).eq("id", cat.id);
+  await sb.from("categories").update({ sort_order: cat.sort_order ?? idx }).eq("id", swapWith.id);
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; render();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   أدمن: إضافة أسئلة
+   ══════════════════════════════════════════════════════════════════ */
+let pendingParsed = [];
+let treeExpanded = new Set();
+let examTreeExpanded = new Set();
+let addTab = { categoryId: null, mode: "new", newSetTitle: "", existingSetId: "", quizTitle: "" };
+let savingQuestions = false;
+
+function onAddCategoryChange(id){
+  addTab.categoryId = id || null;
+  addTab.mode = "new";
+  addTab.newSetTitle = "";
+  addTab.existingSetId = "";
+  const cat = id ? byId(id) : null;
+  addTab.quizTitle = cat ? (cat.quiz_title || "") : "";
+  if(id) loadSetCounts(id);
+  render();
+}
+window.pickerSelectAddCategory = (id) => { onAddCategoryChange(id || null); };
+function onAddExistingSetChange(val){
+  addTab.existingSetId = val || "";
+  const cat = addTab.categoryId ? byId(addTab.categoryId) : null;
+  addTab.quizTitle = cat ? (cat.quiz_title || "") : "";
+  render();
+}
+async function saveQuizTitleForCategory(categoryId, title){
+  if(!categoryId){ state.notice = "اختر القسم أولاً."; render(); return; }
+  const text = (title || "").trim();
+  const { error } = await sb.from('categories').update({ quiz_title: text || null }).eq('id', categoryId);
+  if(error){ state.notice = error.message; render(); return; }
+  state.notice = "تم حفظ اسم الاختبار.";
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "add";
+  addTab.categoryId = categoryId;
+  render();
+}
+async function renameQuestionSet(setId, title){
+  const text = (title || "").trim();
+  if(!text){ state.notice = "اسم الاختبار لا يمكن أن يكون فارغًا."; render(); return; }
+  const { error } = await sb.from("question_sets").update({ title: text }).eq("id", setId);
+  if(error){ state.notice = error.message; render(); return; }
+  state.notice = "تم حفظ اسم الاختبار.";
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "add";
+  render();
+}
+
+function runParse(text){
+  pendingParsed = parseQuestionsFromText(text);
+  render();
+}
+function removePendingAt(i){
+  pendingParsed.splice(i,1);
+  render();
+}
+async function savePendingQuestions(categoryId){
+  if(savingQuestions) return;
+  if(!categoryId){ state.notice = "اختر القسم أولاً."; render(); return; }
+  if(!pendingParsed.length){ state.notice = "لا توجد أسئلة مستخرجة للحفظ."; render(); return; }
+
+  savingQuestions = true;
+  render();
+  try{
+    let targetSetId = null;
+    if(addTab.mode === "new"){
+      const title = (addTab.newSetTitle || "").trim();
+      if(!title){ state.notice = "اكتب اسمًا للاختبار الجديد."; return; }
+      const { data: newSet, error: setErr } = await sb.from("question_sets")
+        .insert({ category_id: categoryId, title, sort_order: setsForCategory(categoryId).length })
+        .select("id").single();
+      if(setErr){ state.notice = setErr.message; return; }
+      targetSetId = newSet.id;
+    } else if(addTab.mode === "existing"){
+      if(!addTab.existingSetId){ state.notice = "اختر الاختبار الذي تريد الإضافة إليه."; return; }
+      targetSetId = (addTab.existingSetId !== "__legacy__") ? addTab.existingSetId : null;
+    }
+
+    const rows = pendingParsed.map(q => ({
+      category_id: categoryId,
+      set_id: targetSetId,
+      question_text: q.question,
+      options: q.options,
+      correct_index: q.correct,
+      explanation: q.explanation || null,
+    }));
+    const { error } = await sb.from("questions").insert(rows);
+    if(error){ state.notice = error.message; return; }
+    if(!targetSetId){
+      const titleText = (addTab.quizTitle || "").trim();
+      await sb.from("categories").update({ quiz_title: titleText || null }).eq("id", categoryId);
+    }
+    state.notice = `تم حفظ ${rows.length} سؤال بنجاح.`;
+    pendingParsed = [];
+    addTab.mode = "new";
+    addTab.newSetTitle = "";
+    addTab.existingSetId = "";
+    clearCache();
+    await bumpServerUpdatedAt();
+    await loadAll(true);
+    state.view = "admin"; state.adminTab = "add";
+    addTab.categoryId = categoryId;
+  } finally {
+    savingQuestions = false;
+    render();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   العرض (Render)
+   ══════════════════════════════════════════════════════════════════ */
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function renderTopbar(showAdminGear=true){
+  return `
+    <div class="topbar">
+      <div class="brandmini">Pseudoscience QBank</div>
+      ${showAdminGear ? `<button class="gearBtn" onclick="goAdmin()" title="لوحة الإدارة">${icon('settings',17)}</button>` : `<span></span>`}
+    </div>`;
+}
+
+function renderNoticeBlock(){
+  if(!state.notice) return "";
+  return `<div class="notice info" dir="auto">${icon('info',15)} <span>${esc(state.notice)}</span></div>`;
+}
+
+function renderHome(){
+  const parentId = state.path.length ? state.path[state.path.length-1].id : null;
+  const kids = childrenOf(parentId);
+  const isRoot = state.path.length === 0;
+
+  const resumeBar = (isRoot && state.resumeAvailable) ? `
+    <div class="startBar" style="border-color:var(--sapphire);background:rgba(51,80,122,.1);">
+      <div>
+        <div style="font-weight:700;font-size:14.5px;">لديك اختبار غير مكتمل</div>
+        <div class="count" dir="auto">${esc(state.resumeAvailable.quiz.sourceLabel || "")} — سؤال ${state.resumeAvailable.quiz.index+1} من ${state.resumeAvailable.quiz.questions.length}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn gold sm" onclick="resumeProgress()">متابعة</button>
+        <button class="btn ghost sm" onclick="discardProgress()">تجاهل</button>
+      </div>
+    </div>` : "";
+
+  const crumbs = `
+    <div class="crumbs">
+      <button onclick="goHomeRoot()">${icon('home',13)} الرئيسية</button>
+      ${state.path.map((p,i)=>`<span class="sep">/</span><button onclick="goToCrumb(${i})" dir="auto">${esc(p.name)}</button>`).join("")}
+    </div>`;
+
+  let hero = "";
+  if(isRoot){
+    hero = `
+      <div class="hero">
+        <div class="emblem">${emblemSVG()}</div>
+        <div class="wordmark">Pseudoscience</div>
+        <div class="subtitle">Question Bank — بنك أسئلة الطلبة</div>
+      </div>
+      <div class="divider"><span class="gem"></span></div>`;
+  }
+
+  const directCount = !isRoot ? directQuestionCount(parentId) : 0;
+  const catObj = !isRoot ? byId(parentId) : null;
+
+  let startBar = "";
+  if(!isRoot){
+    const counts = state.setCounts[parentId];
+    if(counts === undefined){
+      loadSetCounts(parentId);
+      startBar = directCount > 0 ? `
+      <div class="startBar" style="justify-content:center;">
+        <span style="color:var(--text-dim);font-size:13px;display:flex;align-items:center;gap:6px;">${icon('loader-2',14)} جارٍ تحميل الاختبارات...</span>
+      </div>` : "";
+    } else {
+      const rows = [];
+      const legacyCount = counts["legacy"] || 0;
+      if(legacyCount > 0){
+        rows.push({ id: null, title: (catObj && catObj.quiz_title) || "الاختبار الرئيسي", count: legacyCount });
+      }
+      setsForCategory(parentId).forEach(s => {
+        const c = counts[s.id] || 0;
+        if(c > 0) rows.push({ id: s.id, title: s.title, count: c });
+      });
+      startBar = rows.map(r => `
+      <div class="startBar">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-weight:700;font-size:14.5px;" dir="auto">${esc(r.title)}</div>
+            <button class="infoBtn" onclick="showSetInfo('${parentId}','${r.id||''}')" title="تفاصيل الاختبار">${icon('info',14)}</button>
+          </div>
+          <div class="count">${r.count} سؤال متاح</div>
+        </div>
+        <button class="btn primary sm" onclick="startSetQuiz('${parentId}', ${r.id?`'${r.id}'`:'null'})">ابدأ الاختبار</button>
+      </div>`).join("");
+    }
+  }
+
+  const groupsHere = examGroupsFor(parentId);
+  const combinedBar = groupsHere.map(g => `
+      <div class="startBar" style="border-style:solid;opacity:.9;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-weight:700;font-size:14.5px;" dir="auto">${esc(g.title)}</div>
+            <button class="infoBtn" onclick="showExamInfo('${g.id}')" title="تفاصيل الاختبار">${icon('info',14)}</button>
+          </div>
+          <div class="count">${examGroupQuestionCount(g)} سؤال</div>
+        </div>
+        <button class="btn gold sm" onclick="startCustomExam('${g.id}')">ابدأ</button>
+      </div>`).join("");
+
+  const list = kids.length ? `
+    <div class="ledger" style="margin-top:14px;">
+      ${kids.map(k => `
+        <div class="plaque clickable" onclick="enterCategory('${k.id}','${escAttr(k.name)}')">
+          <div style="flex:1;">
+            <div class="label" dir="auto">${esc(k.name)}</div>
+            <div class="meta">${
+              directQuestionCount(k.id) > 0 ? directQuestionCount(k.id)+" سؤال"
+              : nodeHasQuestions(k.id) ? "يحتوي على أقسام فرعية بها أسئلة"
+              : "بدون أسئلة بعد"
+            }</div>
+          </div>
+          <button class="infoBtn" onclick="event.stopPropagation(); showCategoryInfo('${k.id}')" title="تفاصيل القسم">${icon('info',14)}</button>
+          <div class="chev">${icon('chevron-left',18)}</div>
+        </div>`).join("")}
+    </div>` : `
+    <div class="emptyState">
+      ${isRoot ? "لا توجد أقسام بعد. سيقوم المشرف بإضافتها قريباً." : "لا توجد أقسام فرعية هنا."}
+    </div>`;
+
+  return `
+    ${renderTopbar()}
+    ${resumeBar}
+    ${crumbs}
+    ${hero}
+    ${renderNoticeBlock()}
+    ${startBar}
+    ${combinedBar}
+    ${list}
+    <div class="footNote">Pseudoscience © — بنك أسئلة الطلاب الجامعيين</div>
+  `;
+}
+
+function escAttr(s){ return String(s).replace(/'/g, "\\'"); }
+
+function emblemSVG(){
+  return `
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#b8923f" stroke-width="1.5">
+      <path d="M50 6 L94 50 L50 94 L6 50 Z"/>
+      <path d="M50 18 L82 50 L50 82 L18 50 Z"/>
+    </g>
+    <circle cx="50" cy="50" r="6" fill="#9c2735"/>
+    <circle cx="26" cy="50" r="3" fill="#33507a"/>
+    <circle cx="74" cy="50" r="3" fill="#33507a"/>
+    <circle cx="50" cy="26" r="3" fill="#9c2735"/>
+    <circle cx="50" cy="74" r="3" fill="#9c2735"/>
+  </svg>`;
+}
+
+function renderQuiz(){
+  const q = state.quiz;
+  const question = q.questions[q.index];
+  const pct = Math.round(((q.index)/q.questions.length)*100);
+
+  const optsHtml = question.options.map((opt,i)=>{
+    let cls = "optionBtn";
+    if(q.answered){
+      if(i===question.correct) cls += " correct";
+      else if(i===q.selected) cls += " wrong";
+    }
+    return `<button class="${cls}" dir="auto" ${q.answered?"disabled":""} onclick="answerQuestion(${i})">${esc(opt)}</button>`;
+  }).join("");
+
+  return `
+    ${renderTopbar(false)}
+    ${q.sourceLabel ? `<div style="font-family:var(--font-head);font-size:14px;color:var(--gold);text-align:center;margin-bottom:12px;letter-spacing:.04em;" dir="auto">${esc(q.sourceLabel)}</div>` : ""}
+    <div class="quizHead">
+      <button class="btn ghost sm" onclick="exitQuizToHome()">${icon('x',14)} خروج</button>
+      <div class="progressWrap"><div class="progressBar" style="width:${pct}%"></div></div>
+      <button class="infoBtn" onclick="showQuizInfo()" title="تفاصيل الاختبار">${icon('info',14)}</button>
+      <div class="qCounter">${q.index+1} / ${q.questions.length}</div>
+    </div>
+    <div class="questionCard">
+      <div class="questionText" dir="auto">${esc(question.question)}</div>
+    </div>
+    <div class="options">${optsHtml}</div>
+    ${q.answered && question.explanation ? `
+      <div class="explainBox" dir="auto">${icon('lightbulb',15)}<span>${esc(question.explanation)}</span></div>` : ""}
+    ${q.answered ? `
+      <div class="quizFooter" style="margin-top:16px;">
+        <button class="btn gold" onclick="nextQuestion()">${q.index+1 < q.questions.length ? "السؤال التالي "+icon('chevron-left',15) : "عرض النتيجة "+icon('chevron-left',15)}</button>
+      </div>` : ""}
+  `;
+}
+
+function renderResults(){
+  const q = state.quiz;
+  const total = q.questions.length;
+  const wrong = q.wrongList.length;
+  return `
+    ${renderTopbar(false)}
+    ${q.sourceLabel ? `<div style="font-family:var(--font-head);font-size:13px;color:var(--gold);text-align:center;letter-spacing:.04em;" dir="auto">${esc(q.sourceLabel)}</div>` : ""}
+    <div class="resultHero">
+      <div class="scoreRing">${q.correct} / ${total}</div>
+      <div class="scoreLabel">إجابات صحيحة</div>
+    </div>
+    <div class="divider"><span class="gem"></span></div>
+    ${wrong ? `
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;">الأخطاء (${wrong})</div>
+      <div class="wrongList">
+        ${q.wrongList.map(w => `
+          <div class="wrongItem">
+            <div class="qt" dir="auto">${esc(w.question.question)}</div>
+            <div class="ans" dir="auto">${icon('check',14)} الإجابة الصحيحة: ${esc(w.question.options[w.question.correct])}</div>
+          </div>`).join("")}
+      </div>` : `<div class="emptyState">${icon('sparkles',22)}<br>إجابات مثالية بلا أخطاء!</div>`}
+    <div class="resultActions">
+      <button class="btn gold block" onclick="enterReviewMode()">مراجعة كل الأسئلة</button>
+      <button class="btn primary block" onclick="exitQuizToHome()">العودة للرئيسية</button>
+    </div>
+  `;
+}
+
+function renderReview(){
+  const q = state.quiz;
+  return `
+    ${renderTopbar(false)}
+    <div class="topbar" style="margin-top:-8px;">
+      <div class="wordmark" style="font-size:20px;">مراجعة الأسئلة</div>
+      <button class="btn ghost sm" onclick="exitReviewToResults()">${icon('chevron-right',15)} رجوع للنتيجة</button>
+    </div>
+    <div class="wrongList">
+      ${q.questions.map((question, i) => {
+        const userIdx = (q.userAnswers || [])[i];
+        const wasCorrect = userIdx === question.correct;
+        return `
+        <div class="wrongItem" style="${wasCorrect ? 'border-color:var(--ok);background:rgba(74,143,92,.07);' : ''}">
+          <div class="qt" dir="auto">${i+1}. ${esc(question.question)}</div>
+          ${question.options.map((opt,j) => {
+            let style = "";
+            let mark = icon('circle',10,'opacity:.4;');
+            if(j === question.correct){ style = "color:var(--ok);font-weight:700;"; mark = icon('check',14); }
+            else if(j === userIdx){ style = "color:var(--danger);font-weight:700;"; mark = icon('x',14); }
+            return `<div style="font-size:13px;padding:3px 0;display:flex;align-items:center;gap:6px;${style}" dir="auto">${mark}<span>${esc(opt)}</span></div>`;
+          }).join("")}
+          ${question.explanation ? `<div class="explainBox" style="margin-top:10px;" dir="auto">${icon('lightbulb',15)}<span>${esc(question.explanation)}</span></div>` : ""}
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="resultActions">
+      <button class="btn primary block" onclick="exitQuizToHome()">العودة للرئيسية</button>
+    </div>
+  `;
+}
+
+function renderAdminLogin(){
+  return `
+    ${renderTopbar(false)}
+    <div class="hero"><div class="wordmark" style="font-size:22px;">لوحة الإدارة</div></div>
+    ${renderNoticeBlock()}
+    <div class="field"><label>البريد الإلكتروني</label><input type="email" id="loginEmail" autocomplete="username"></div>
+    <div class="field"><label>كلمة المرور</label><input type="password" id="loginPass" autocomplete="current-password"></div>
+    <button class="btn primary block" onclick="doAdminLogin()">دخول</button>
+    <div style="margin-top:14px;text-align:center;"><button class="btn ghost sm" onclick="goHomeRoot()">${icon('chevron-right',14)} العودة للتطبيق</button></div>
+  `;
+}
+
+function renderTreeNode(node, depth, visited){
+  visited = visited || new Set();
+  if(visited.has(node.id) || depth > 50){
+    window.__debugLog('تم اكتشاف حلقة دائرية (Circular Reference) في الأقسام عند: ' + node.name + ' (id=' + node.id + ').');
+    return `<div class="treeNode"><div class="treeRow">${icon('alert-triangle',14)}<span class="name" style="color:var(--danger);" dir="auto">${esc(node.name)} — خطأ: هذا القسم جزء من حلقة دائرية في الأقسام (parent_id غير صحيح)</span></div></div>`;
+  }
+  visited = new Set(visited);
+  visited.add(node.id);
+  const kids = childrenOf(node.id);
+  const hasKids = kids.length > 0;
+  const isOpen = treeExpanded.has(node.id);
+  const toggleBtn = hasKids
+    ? `<button class="iconBtn" title="${isOpen?'طي':'فتح'}" onclick="toggleTreeExpand('${node.id}')">${isOpen?icon('chevron-down',15):icon('chevron-left',15)}</button>`
+    : `<span style="width:22px;display:inline-block;"></span>`;
+  return `
+    <div class="treeNode">
+      <div class="treeRow">
+        ${toggleBtn}
+        <span class="name" dir="auto" ${hasKids?`style="cursor:pointer;" onclick="toggleTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
+        <span style="font-size:11px;color:var(--text-dim);">${(()=>{const d=directQuestionCount(node.id),t=nodeQuestionCount(node.id);return t>d? `${d} سؤال مباشر (${t} شاملاً الفروع)` : `${d} سؤال`;})()}</span>
+        <button class="iconBtn" title="الوصف" onclick="openDescEditorForCategory('${node.id}')">${icon('file-text',14)}</button>
+        <button class="iconBtn" title="إضافة قسم فرعي" onclick="promptAddCategory('${node.id}')">${icon('plus',14)}</button>
+        <button class="iconBtn" title="إعادة تسمية" onclick="promptRenameCategory('${node.id}','${escAttr(node.name)}')">${icon('pencil',14)}</button>
+        <button class="iconBtn" title="تحريك لأعلى" onclick="moveCategory('${node.id}',-1)">${icon('chevron-up',14)}</button>
+        <button class="iconBtn" title="تحريك لأسفل" onclick="moveCategory('${node.id}',1)">${icon('chevron-down',14)}</button>
+        <button class="iconBtn danger" title="حذف" onclick="deleteCategory('${node.id}')">${icon('trash-2',14)}</button>
+      </div>
+      ${hasKids && isOpen ? `<div class="treeChildren">${kids.map(k=>renderTreeNode(k, depth+1, visited)).join("")}</div>` : ""}
+    </div>`;
+}
+
+function toggleTreeExpand(id){
+  if(treeExpanded.has(id)) treeExpanded.delete(id);
+  else treeExpanded.add(id);
+  render();
+}
+function toggleExamTreeExpand(id){
+  if(examTreeExpanded.has(id)) examTreeExpanded.delete(id);
+  else examTreeExpanded.add(id);
+  render();
+}
+
+function renderAdminTree(){
+  const roots = childrenOf(null);
+  return `
+    <div class="field" style="display:flex;gap:8px;">
+      <input type="text" id="newRootName" dir="auto" placeholder="اسم قسم رئيسي جديد (مثال: Pre-clinic)">
+      <button class="btn gold sm" onclick="addRootCategory()">${icon('plus',14)} إضافة</button>
+    </div>
+    ${roots.length ? roots.map(r=>renderTreeNode(r,0)).join("") : `<div class="emptyState">لا توجد أقسام بعد. أضف أول قسم رئيسي أعلاه.</div>`}
+  `;
+}
+
+function catOptionsHtml(selectedId){
+  function walk(parentId, depth, visited){
+    visited = visited || new Set();
+    let out = [];
+    for(const c of childrenOf(parentId)){
+      if(visited.has(c.id) || depth > 50){
+        window.__debugLog('تم اكتشاف حلقة دائرية (Circular Reference) في الأقسام عند: ' + c.name + ' (id=' + c.id + ').');
+        continue;
+      }
+      out.push(`<option value="${c.id}" ${c.id===selectedId?"selected":""}>${"— ".repeat(depth)}${esc(c.name)}</option>`);
+      const nextVisited = new Set(visited);
+      nextVisited.add(c.id);
+      out = out.concat(walk(c.id, depth+1, nextVisited));
+    }
+    return out;
+  }
+  return walk(null,0).join("");
+}
+
+function categoryPickerField(label, selectedId, onSelectCbName, opts){
+  opts = opts || {};
+  const name = selectedId ? (byId(selectedId) ? byId(selectedId).name : "") : "";
+  const path = selectedId ? categoryPath(selectedId) : "";
+  return `
+    <div class="field">
+      <label>${icon('folder',14)} ${esc(label)}</label>
+      <button type="button" class="catPickBtn" onclick="openCategoryPicker('${selectedId||''}','${onSelectCbName}', ${opts.allowNull?`{allowNull:true,nullLabel:'${escAttr(opts.nullLabel||'بدون قسم')}'}`:'{}'})">
+        ${name ? `<span><span style="font-weight:700;" dir="auto">${esc(name)}</span> <span style="color:var(--text-dim);font-size:12px;" dir="auto">— ${esc(path)}</span></span>` : `<span class="ph">— اختر القسم —</span>`}
+        ${icon('chevron-left',15)}
+      </button>
+    </div>`;
+}
+
+function renderAdminAdd(){
+  const previewHtml = pendingParsed.length ? `
+    <div class="divider"><span class="gem"></span></div>
+    <div style="font-weight:700;margin-bottom:10px;">معاينة (${pendingParsed.length} سؤال مستخرج)</div>
+    ${pendingParsed.map((q,i)=>`
+      <div class="previewCard">
+        <button class="iconBtn danger rm" onclick="removePendingAt(${i})">${icon('x',14)}</button>
+        <div class="qn" dir="auto">${i+1}. ${esc(q.question)}</div>
+        ${q.options.map((o,j)=>`<div class="op ${j===q.correct?'correct':''}" dir="auto">${j===q.correct?icon('check',13):icon('circle',8,'opacity:.4;')}<span>${esc(o)}</span></div>`).join("")}
+        ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;display:flex;align-items:center;gap:6px;" dir="auto">${icon('lightbulb',13)}<span>${esc(q.explanation)}</span></div>` : ""}
+      </div>`).join("")}
+  ` : "";
+
+  return `
+    ${categoryPickerField("القسم الذي ستُضاف إليه الأسئلة", addTab.categoryId, "pickerSelectAddCategory")}
+    ${addTab.categoryId ? `
+    <div class="field">
+      <label>${icon('layers',14)} هذه الأسئلة تخص:</label>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="radio" name="addMode" ${addTab.mode==='new'?'checked':''} onchange="addTab.mode='new'; render();">
+          اختبار جديد منفصل
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="radio" name="addMode" ${addTab.mode==='existing'?'checked':''} onchange="addTab.mode='existing'; render();">
+          إضافة إلى اختبار موجود
+        </label>
+      </div>
+    </div>
+    ${addTab.mode === 'new' ? `
+    <div class="field">
+      <label>${icon('type',14)} اسم الاختبار الجديد</label>
+      <input type="text" dir="auto" value="${escAttr(addTab.newSetTitle)}" oninput="addTab.newSetTitle=this.value" placeholder="مثال: اختبار الفصل الثالث">
+    </div>` : `
+    <div class="field">
+      <label>${icon('list-checks',14)} اختر الاختبار الذي ستُضاف إليه الأسئلة</label>
+      <select onchange="onAddExistingSetChange(this.value)">
+        <option value="">— اختر —</option>
+        ${(() => {
+          const counts = state.setCounts[addTab.categoryId] || {};
+          const legacyCount = counts["legacy"] || 0;
+          const cat = byId(addTab.categoryId);
+          const legacyLabel = (cat && cat.quiz_title) || "الاختبار الرئيسي";
+          let opts = `<option value="__legacy__" ${addTab.existingSetId==='__legacy__'?'selected':''}>${esc(legacyLabel)} (${legacyCount} سؤال)</option>`;
+          opts += setsForCategory(addTab.categoryId).map(s => `<option value="${s.id}" ${addTab.existingSetId===s.id?'selected':''}>${esc(s.title)} (${counts[s.id]||0} سؤال)</option>`).join("");
+          return opts;
+        })()}
+      </select>
+    </div>
+    ${addTab.existingSetId ? `
+    <div class="field">
+      <label>${icon('pencil',14)} إعادة تسمية هذا الاختبار (اختياري)</label>
+      <div style="display:flex;gap:8px;">
+        ${addTab.existingSetId === '__legacy__' ? `
+          <input type="text" dir="auto" style="flex:1;" value="${escAttr(addTab.quizTitle)}" oninput="addTab.quizTitle=this.value" placeholder="الاختبار الرئيسي">
+          <button class="btn ghost sm" onclick="saveQuizTitleForCategory(addTab.categoryId, addTab.quizTitle)">${icon('check',14)} حفظ</button>
+        ` : `
+          <input type="text" dir="auto" style="flex:1;" id="renameSetInput" value="${escAttr((state.questionSets.find(s=>s.id===addTab.existingSetId)||{}).title||'')}" placeholder="اسم الاختبار">
+          <button class="btn ghost sm" onclick="renameQuestionSet('${addTab.existingSetId}', document.getElementById('renameSetInput').value)">${icon('check',14)} حفظ</button>
+        `}
+      </div>
+    </div>` : ""}
+    `}` : ""}
+    <div class="field">
+      <label>الصق نص الأسئلة هنا (يمكن إضافة سطر Explanation: بعد الإجابة لشرح اختياري)</label>
+      <textarea id="pasteText" dir="auto" placeholder="1. نص السؤال؟&#10;أ. خيار أول&#10;ب. خيار ثاني&#10;ج. خيار ثالث&#10;د. خيار رابع&#10;الإجابة: ب&#10;Explanation: سبب كون ب هي الإجابة الصحيحة"></textarea>
+    </div>
+    <div class="field">
+      <label>أو ارفع ملف نصي (txt)</label>
+      <input type="file" id="fileInput" accept=".txt">
+    </div>
+    <button class="btn gold block" onclick="handleParseClick()">استخراج الأسئلة من النص</button>
+    ${previewHtml}
+    ${pendingParsed.length ? `
+      <button class="btn primary block" style="margin-top:14px;" ${savingQuestions?'disabled':''} onclick="handleSaveClick()">${savingQuestions ? (icon('loader-2',15)+' جارٍ الحفظ...') : (icon('save',15)+' حفظ الأسئلة في القسم المختار')}</button>
+    ` : ""}
+  `;
+}
+
+function renderExamCheckTree(node, depth, visited){
+  visited = visited || new Set();
+  if(visited.has(node.id) || depth > 50) return "";
+  visited = new Set(visited);
+  visited.add(node.id);
+  const kids = childrenOf(node.id);
+  const hasKids = kids.length > 0;
+  const isOpen = examTreeExpanded.has(node.id);
+  const checked = examBuilder.selected.has(node.id);
+  const toggleBtn = hasKids
+    ? `<button class="iconBtn" title="${isOpen?'طي':'فتح'}" onclick="toggleExamTreeExpand('${node.id}')">${isOpen?icon('chevron-down',15):icon('chevron-left',15)}</button>`
+    : `<span style="width:22px;display:inline-block;"></span>`;
+  return `
+    <div class="treeNode">
+      <div class="treeRow">
+        ${toggleBtn}
+        <input type="checkbox" ${checked?"checked":""} onchange="toggleExamBuilderCategory('${node.id}')" style="width:18px;height:18px;">
+        <span class="name" dir="auto" ${hasKids?`style="cursor:pointer;" onclick="toggleExamTreeExpand('${node.id}')"`:""}>${esc(node.name)}</span>
+        <span style="font-size:11px;color:var(--text-dim);">${directQuestionCount(node.id)} سؤال</span>
+      </div>
+      ${hasKids && isOpen ? `<div class="treeChildren">${kids.map(k=>renderExamCheckTree(k, depth+1, visited)).join("")}</div>` : ""}
+    </div>`;
+}
+
+function renderAdminManage(){
+  const searchLower = (state.manageSearch || "").trim().toLowerCase();
+  let filtered = state.manageQuestions;
+  if(state.manageSetFilter !== undefined && state.manageSetFilter !== "" ){
+    filtered = filtered.filter(q => {
+      const sid = q.set_id ? String(q.set_id) : null;
+      return sid === state.manageSetFilter;
+    });
+  }
+  if(searchLower) filtered = filtered.filter(q => (q.question_text||"").toLowerCase().includes(searchLower));
+
+  if(questionEditor){
+    return `
+      <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;">${icon('pencil',16)} تعديل السؤال</div>
+      <div class="field">
+        <label>نص السؤال</label>
+        <textarea dir="auto" oninput="questionEditor.question=this.value" style="min-height:80px;">${esc(questionEditor.question)}</textarea>
+      </div>
+      ${categoryPickerField("نقل السؤال لقسم آخر (اختياري)", questionEditor.category_id, "pickerSelectEditorCategory")}
+      <div class="field">
+        <label>الخيارات (حدد الإجابة الصحيحة)</label>
+        ${questionEditor.options.map((opt,i)=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <input type="radio" name="correctOpt" ${questionEditor.correct===i?"checked":""} onchange="editorSetCorrect(${i})" style="width:18px;height:18px;flex:none;">
+            <input type="text" dir="auto" value="${escAttr(opt)}" oninput="editorSetOption(${i}, this.value)" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);">
+            <button class="iconBtn danger" title="حذف الخيار" onclick="editorRemoveOption(${i})">${icon('x',14)}</button>
+          </div>`).join("")}
+        <button class="btn ghost sm" onclick="editorAddOption()">${icon('plus',14)} إضافة خيار</button>
+      </div>
+      <div class="field">
+        <label>الشرح (اختياري)</label>
+        <textarea dir="auto" oninput="questionEditor.explanation=this.value" placeholder="اتركه فارغًا لعدم عرض شرح">${esc(questionEditor.explanation)}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn primary block" onclick="saveQuestionEdit()">${icon('check',15)} حفظ التعديلات</button>
+        <button class="btn ghost sm" onclick="cancelEditQuestion()">إلغاء</button>
+      </div>
+    `;
+  }
+
+  let setsBlock = "";
+  if(state.manageSelectedCategory){
+    const counts = state.setCounts[state.manageSelectedCategory];
+    if(counts === undefined){
+      setsBlock = `<div class="emptyState" style="padding:16px;">${icon('loader-2',14)} جارٍ تحميل المجموعات...</div>`;
+    } else {
+      const cat = byId(state.manageSelectedCategory);
+      const rows = [];
+      const legacyCount = counts["legacy"] || 0;
+      if(legacyCount > 0) rows.push({ id: null, title: (cat && cat.quiz_title) || "الاختبار الرئيسي", count: legacyCount });
+      setsForCategory(state.manageSelectedCategory).forEach(s => {
+        const c = counts[s.id] || 0;
+        if(c > 0) rows.push({ id: s.id, title: s.title, count: c });
+      });
+      if(rows.length){
+        setsBlock = `
+          <div style="font-weight:700;font-size:13.5px;margin-bottom:8px;">${icon('layers',15)} مجموعات هذا القسم</div>
+          <div class="setRow ${(!state.manageSetFilter)?'':''}" style="cursor:pointer;border-color:${!state.manageSetFilter?'var(--gold)':'var(--gold-dim)'};" onclick="setManageSetFilter('')">
+            <span class="nm">عرض الكل</span><span class="cnt">${state.manageQuestions.length} سؤال</span>
+          </div>
+          ${rows.map(r => `
+            <div class="setRow">
+              <span class="nm" dir="auto" style="cursor:pointer;" onclick="setManageSetFilter('${r.id||''}')">${esc(r.title)}</span>
+              <span class="cnt">${r.count} سؤال</span>
+              <button class="iconBtn danger" title="حذف كل أسئلة هذه المجموعة" onclick="deleteQuestionSetGroup('${state.manageSelectedCategory}', ${r.id?`'${r.id}'`:'null'}, '${escAttr(r.title)}')">${icon('trash-2',14)}</button>
+            </div>`).join("")}
+          <div class="divider"><span class="gem"></span></div>
+        `;
+      }
+    }
+  }
+
+  return `
+    ${categoryPickerField("اختر القسم لعرض أسئلته", state.manageSelectedCategory, "pickerSelectManageCategory")}
+    ${state.manageSelectedCategory ? `
+      ${setsBlock}
+      <div class="field">
+        <label>بحث ضمن أسئلة هذا القسم</label>
+        <input type="text" dir="auto" value="${escAttr(state.manageSearch)}" oninput="state.manageSearch=this.value; render();" placeholder="اكتب جزءًا من نص السؤال...">
+      </div>
+      <div style="font-size:12.5px;color:var(--text-dim);margin-bottom:10px;">${filtered.length} من ${state.manageQuestions.length} سؤال</div>
+      ${filtered.length ? filtered.map(q => `
+        <div class="previewCard">
+          <div class="qn" dir="auto">${esc(q.question_text)}</div>
+          ${q.options.map((o,j)=>`<div class="op ${j===q.correct_index?'correct':''}" dir="auto">${j===q.correct_index?icon('check',13):icon('circle',8,'opacity:.4;')}<span>${esc(o)}</span></div>`).join("")}
+          ${q.explanation ? `<div style="font-size:12px;color:var(--sapphire);margin-top:6px;display:flex;align-items:center;gap:6px;" dir="auto">${icon('lightbulb',13)}<span>${esc(q.explanation)}</span></div>` : ""}
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn ghost sm" onclick="startEditQuestionById('${q.id}')">${icon('pencil',13)} تعديل</button>
+            <button class="btn danger sm" onclick="deleteQuestion('${q.id}')">${icon('trash-2',13)} حذف</button>
+          </div>
+        </div>`).join("") : `<div class="emptyState">لا توجد أسئلة تطابق البحث.</div>`}
+    ` : `<div class="emptyState">اختر قسمًا من الأعلى لعرض أسئلته.</div>`}
+  `;
+}
+
+function renderAdminExams(){
+  const roots = childrenOf(null);
+  const builderTitle = examBuilder.id ? "تعديل الامتحان الشامل" : "إنشاء امتحان شامل جديد";
+  const groupsList = state.examGroups.length ? `
+    <div class="ledger" style="margin-bottom:20px;">
+      ${state.examGroups.map(g => {
+        const attachName = g.attach_to ? (byId(g.attach_to)?.name || "قسم محذوف") : "الصفحة الرئيسية";
+        const manual = (g.question_ids||[]).length;
+        return `
+        <div class="plaque">
+          <div style="flex:1;">
+            <div class="label" dir="auto">${esc(g.title)}</div>
+            <div class="meta" dir="auto">يظهر في: ${esc(attachName)} — ${examGroupQuestionCount(g)} سؤال من ${(g.category_ids||[]).length} قسم${manual ? ' + '+manual+' سؤال يدوي' : ''}</div>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="iconBtn" title="الوصف" onclick="openDescEditorForExam('${g.id}')">${icon('file-text',14)}</button>
+            <button class="iconBtn" title="تعديل" onclick="loadExamIntoBuilder('${g.id}')">${icon('pencil',14)}</button>
+            <button class="iconBtn danger" title="حذف" onclick="deleteExamGroup('${g.id}')">${icon('trash-2',14)}</button>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>` : `<div class="emptyState" style="padding:20px 16px;">لا توجد امتحانات شاملة بعد.</div>`;
+
+  return `
+    <div style="font-weight:700;font-size:14.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">${icon('clipboard-list',16)} الامتحانات الشاملة الحالية</div>
+    ${groupsList}
+    <div class="divider"><span class="gem"></span></div>
+    <div style="font-weight:700;font-size:14.5px;margin-bottom:14px;">${builderTitle}</div>
+    <div class="field">
+      <label>اسم الامتحان الشامل (يظهر للطالب)</label>
+      <input type="text" id="examTitle" dir="auto" value="${escAttr(examBuilder.title)}" oninput="examBuilder.title=this.value" placeholder="مثال: امتحان شامل - أنظمة الجسم">
+    </div>
+    <div class="field">
+      <label>${icon('file-text',14)} وصف الامتحان (اختياري — يظهر للطالب عبر زر التفاصيل)</label>
+      <textarea dir="auto" style="min-height:80px;" oninput="examBuilder.description=this.value" placeholder="مثال: يغطي هذا الامتحان أهم مواضيع الفصل الأول...">${esc(examBuilder.description)}</textarea>
+    </div>
+    ${categoryPickerField("أين يظهر زر هذا الامتحان؟", examBuilder.attachTo, "pickerSelectExamAttach", { allowNull:true, nullLabel:"— الصفحة الرئيسية —" })}
+    <div class="field">
+      <label>${icon('layers',14)} اختر أقساماً كاملة يشملها هذا الامتحان (اختياري، أي عدد حتى لو غير مرتبطة ببعضها)</label>
+      ${roots.length ? roots.map(r=>renderExamCheckTree(r,0)).join("") : `<div class="emptyState">لا توجد أقسام بعد.</div>`}
+    </div>
+    ${categoryPickerField("أو اختر أسئلة محددة فقط من أي قسم (بجانب أو بدلاً من الأقسام الكاملة أعلاه)", examBuilder.pickCategory, "pickerSelectExamPickCategory")}
+    ${examBuilder.pickCategory ? `
+      <div class="pickerBox">
+        ${examPickerQuestions.length ? examPickerQuestions.map(q=>`
+          <label class="pickerRow">
+            <input type="checkbox" ${examBuilder.questionIds.has(String(q.id))?'checked':''} onchange="toggleExamBuilderQuestion('${q.id}')">
+            <span dir="auto">${esc(q.question_text)}</span>
+          </label>`).join("") : `<div class="emptyState" style="padding:14px;">لا توجد أسئلة في هذا القسم.</div>`}
+      </div>` : ""}
+    ${examBuilder.questionIds.size ? `<div class="notice info">${icon('list-checks',14)} <span>تم اختيار ${examBuilder.questionIds.size} سؤال يدويًا (بالإضافة لأي أقسام كاملة مختارة أعلاه).</span></div>` : ""}
+    <div style="display:flex;gap:8px;">
+      <button class="btn primary block" onclick="saveExamGroup()">${icon('check',15)} ${examBuilder.id ? "حفظ التعديلات" : "إنشاء الامتحان الشامل"}</button>
+      ${examBuilder.id ? `<button class="btn ghost sm" onclick="cancelExamBuilder()">إلغاء</button>` : ""}
+    </div>
+  `;
+}
+
+
+function renderAdmin(){
+  return `
+    ${renderTopbar(false)}
+    <div class="topbar" style="margin-top:-8px;">
+      <div class="wordmark" style="font-size:20px;">لوحة الإدارة</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost sm" onclick="goHomeRoot()">عرض التطبيق</button>
+        <button class="btn danger sm" onclick="adminLogout()">${icon('log-out',14)} خروج</button>
+      </div>
+    </div>
+    ${renderNoticeBlock()}
+    <div class="tabs">
+      <button class="tabBtn ${state.adminTab==='tree'?'active':''}" onclick="setAdminTab('tree')">${icon('folder',14)} الأقسام</button>
+      <button class="tabBtn ${state.adminTab==='add'?'active':''}" onclick="setAdminTab('add')">${icon('plus',14)} إضافة أسئلة</button>
+      <button class="tabBtn ${state.adminTab==='manage'?'active':''}" onclick="setAdminTab('manage')">${icon('list-checks',14)} إدارة الأسئلة</button>
+      <button class="tabBtn ${state.adminTab==='exams'?'active':''}" onclick="setAdminTab('exams')">${icon('clipboard-list',14)} الامتحانات الشاملة</button>
+    </div>
+    ${state.adminTab==='tree' ? renderAdminTree() : state.adminTab==='add' ? renderAdminAdd() : state.adminTab==='manage' ? renderAdminManage() : renderAdminExams()}
+  `;
+}
+
+function renderConnectionError(){
+  return `
+    ${renderTopbar(false)}
+    <div class="notice err">
+      ${icon('alert-triangle',15)}
+      <span>
+        تعذّر الاتصال بقاعدة البيانات.<br>
+        تأكد من ضبط SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الكود، ومن اتصالك بالإنترنت.<br>
+        <span style="opacity:.7;font-size:12px;" dir="auto">${esc(state.notice||"")}</span>
+      </span>
+    </div>
+    <button class="btn primary" onclick="loadAll(true)">إعادة المحاولة</button>
+  `;
+}
+
+function render(){
+  const app = document.getElementById("app");
+  let html = "";
+  switch(state.view){
+    case "loading": html = `${renderTopbar(false)}<div class="loadingDots">...جارٍ التحميل</div>`; break;
+    case "connectionError": html = renderConnectionError(); break;
+    case "home": html = renderHome(); break;
+    case "quiz": html = renderQuiz(); break;
+    case "results": html = renderResults(); break;
+    case "review": html = renderReview(); break;
+    case "adminLogin": html = renderAdminLogin(); break;
+    case "admin": html = renderAdmin(); break;
+  }
+  app.innerHTML = html;
+  renderModalRoot();
+  refreshIcons();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   معالجات أحداث onclick
+   ══════════════════════════════════════════════════════════════════ */
+window.enterCategory = (id, name) => {
+  state.path.push({ id, name });
+  state.notice = null;
+  render();
+};
+window.goToCrumb = (i) => {
+  state.path = state.path.slice(0, i+1);
+  state.notice = null;
+  render();
+};
+window.goHomeRoot = () => {
+  state.path = [];
+  state.view = "home";
+  state.notice = null;
+  render();
+};
+window.startQuiz = startQuiz;
+window.startSetQuiz = startSetQuiz;
+window.answerQuestion = answerQuestion;
+window.nextQuestion = nextQuestion;
+window.exitQuizToHome = () => {
+  state.quiz = null;
+  state.view = "home";
+  state.resumeAvailable = readProgress();
+  render();
+};
+window.enterReviewMode = () => {
+  state.view = "review";
+  render();
+};
+window.exitReviewToResults = () => {
+  state.view = "results";
+  render();
+};
+window.goAdmin = async () => {
+  const { data } = await sb.auth.getSession();
+  if(data.session){
+    state.adminSession = data.session;
+    state.view = "admin";
+  } else {
+    state.view = "adminLogin";
+  }
+  state.notice = null;
+  render();
+};
+window.doAdminLogin = () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  adminLogin(email, pass);
+};
+window.adminLogout = adminLogout;
+window.setAdminTab = (tab) => {
+  state.adminTab = tab;
+  pendingParsed = [];
+  addTab = { categoryId: null, mode: "new", newSetTitle: "", existingSetId: "", quizTitle: "" };
+  resetExamBuilder();
+  questionEditor = null;
+  state.manageSelectedCategory = null;
+  state.manageQuestions = [];
+  state.manageSearch = "";
+  state.manageSetFilter = null;
+  render();
+};
+window.startCustomExam = startCustomExam;
+window.loadExamIntoBuilder = loadExamIntoBuilder;
+window.toggleExamBuilderCategory = toggleExamBuilderCategory;
+window.loadExamPicker = loadExamPicker;
+window.toggleExamBuilderQuestion = toggleExamBuilderQuestion;
+window.saveExamGroup = saveExamGroup;
+window.deleteExamGroup = deleteExamGroup;
+window.loadQuestionsForCategory = loadQuestionsForCategory;
+window.setManageSetFilter = setManageSetFilter;
+window.startEditQuestionById = startEditQuestionById;
+window.cancelEditQuestion = cancelEditQuestion;
+window.editorSetOption = editorSetOption;
+window.editorAddOption = editorAddOption;
+window.editorRemoveOption = editorRemoveOption;
+window.editorSetCorrect = editorSetCorrect;
+window.saveQuestionEdit = saveQuestionEdit;
+window.deleteQuestion = deleteQuestion;
+window.cancelExamBuilder = () => { resetExamBuilder(); render(); };
+
+window.addRootCategory = () => {
+  const val = document.getElementById("newRootName").value;
+  addCategory(null, val);
+};
+window.promptAddCategory = (parentId) => {
+  const name = prompt("اسم القسم الفرعي الجديد:");
+  if(name) addCategory(parentId, name);
+};
+window.promptRenameCategory = (id, current) => {
+  const name = prompt("الاسم الجديد:", current);
+  if(name) renameCategory(id, name);
+};
+window.deleteCategory = deleteCategory;
+window.moveCategory = moveCategory;
+window.toggleTreeExpand = toggleTreeExpand;
+window.toggleExamTreeExpand = toggleExamTreeExpand;
+
+window.handleParseClick = () => {
+  const fileInput = document.getElementById("fileInput");
+  const textArea = document.getElementById("pasteText");
+  if(fileInput.files && fileInput.files[0]){
+    const reader = new FileReader();
+    reader.onload = (e) => runParse(e.target.result);
+    reader.readAsText(fileInput.files[0], "UTF-8");
+  } else {
+    runParse(textArea.value);
+  }
+};
+window.removePendingAt = removePendingAt;
+window.onAddCategoryChange = onAddCategoryChange;
+window.onAddExistingSetChange = onAddExistingSetChange;
+window.saveQuizTitleForCategory = saveQuizTitleForCategory;
+window.renameQuestionSet = renameQuestionSet;
+window.handleSaveClick = () => {
+  if(savingQuestions) return;
+  savePendingQuestions(addTab.categoryId || null);
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   بدء التشغيل
+   ══════════════════════════════════════════════════════════════════ */
+loadAll();
+</script>
+</body>
+</html>
