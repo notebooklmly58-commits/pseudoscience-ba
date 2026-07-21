@@ -232,6 +232,25 @@
   .pickerRow:last-child{border-bottom:none;}
   .pickerRow input{margin-top:3px;flex:none;width:16px;height:16px;}
 
+  /* ============ category picker (new) ============ */
+  .catPickBtn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:11px 12px;border-radius:var(--radius);border:1px solid var(--gold-dim);
+    background:var(--panel-2);color:var(--parchment);font-size:14px;text-align:start;}
+  .catPickBtn:hover{border-color:var(--gold);}
+  .catPickBtn .ph{color:var(--text-dim);}
+  .catPickModal{max-width:480px;}
+  .catPickList{max-height:52vh;overflow:auto;border:1px solid var(--gold-dim);border-radius:6px;margin-top:10px;}
+  .catPickRow{padding:11px 12px;border-bottom:1px solid rgba(184,146,63,.15);cursor:pointer;font-size:13.5px;}
+  .catPickRow:last-child{border-bottom:none;}
+  .catPickRow:hover{background:rgba(184,146,63,.08);}
+  .catPickRow.sel{background:rgba(184,146,63,.15);}
+  .catPickRow .pth{font-size:11px;color:var(--text-dim);margin-top:2px;unicode-bidi:plaintext;}
+  .catPickRow .nm{font-weight:700;unicode-bidi:plaintext;}
+  .setRow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gold-dim);
+    border-radius:var(--radius);background:var(--panel-2);margin-bottom:8px;}
+  .setRow .nm{flex:1;font-weight:700;font-size:14px;unicode-bidi:plaintext;}
+  .setRow .cnt{font-size:12px;color:var(--text-dim);}
+
   /* focus visibility for keyboard/accessibility */
   button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
     outline:2px solid var(--gold-bright);outline-offset:2px;
@@ -1010,6 +1029,14 @@ function renderModalRoot(){
     return;
   }
 
+  if(state.catPicker && state.catPicker.open){
+    root.innerHTML = renderCatPickerModalHtml();
+    refreshIcons();
+    const inp = document.getElementById('catPickSearch');
+    if(inp) inp.focus();
+    return;
+  }
+
   if(!state.modal){ root.innerHTML = ""; return; }
   const m = state.modal;
   root.innerHTML = `
@@ -1096,6 +1123,66 @@ window.openDescEditorForExam = (id) => {
 };
 
 /* ══════════════════════════════════════════════════════════════════
+   اختيار القسم — نافذة بحث احترافية (بديل القائمة الطويلة)
+   ══════════════════════════════════════════════════════════════════ */
+state.catPicker = { open:false, currentValue:null, search:"", onSelect:null, allowNull:false, nullLabel:"" };
+
+function categoryPath(id){
+  const names = [];
+  let cur = byId(id);
+  let guard = 0;
+  while(cur && guard < 60){
+    names.unshift(cur.name);
+    cur = cur.parent_id ? byId(cur.parent_id) : null;
+    guard++;
+  }
+  return names.join(" › ");
+}
+function allCategoriesFlat(){
+  return state.categories.slice().sort((a,b) => categoryPath(a.id).localeCompare(categoryPath(b.id),'ar'));
+}
+window.openCategoryPicker = (currentValue, onSelectCb, opts) => {
+  opts = opts || {};
+  state.catPicker = {
+    open:true, currentValue: currentValue||null, search:"",
+    onSelect: onSelectCb, allowNull: !!opts.allowNull, nullLabel: opts.nullLabel || "بدون قسم",
+  };
+  renderModalRoot();
+};
+window.closeCategoryPicker = () => { state.catPicker.open = false; renderModalRoot(); };
+window.setCatPickerSearch = (val) => { state.catPicker.search = val; renderModalRoot(); };
+window.selectFromCategoryPicker = (id) => {
+  const cb = state.catPicker.onSelect;
+  state.catPicker.open = false;
+  renderModalRoot();
+  if(cb) window[cb](id || null);
+};
+function renderCatPickerModalHtml(){
+  const p = state.catPicker;
+  const q = (p.search || "").trim().toLowerCase();
+  let items = allCategoriesFlat().map(c => ({ id:c.id, name:c.name, path: categoryPath(c.id) }));
+  if(q) items = items.filter(it => it.name.toLowerCase().includes(q) || it.path.toLowerCase().includes(q));
+  return `
+    <div class="modalOverlay" onclick="if(event.target===this) closeCategoryPicker()">
+      <div class="modalBox catPickModal">
+        <div class="modalHead">
+          <div class="mTitle">${icon('folder-search',17)} اختر القسم</div>
+          <button class="modalClose" onclick="closeCategoryPicker()">${icon('x',15)}</button>
+        </div>
+        <input type="text" id="catPickSearch" dir="auto" placeholder="ابحث عن قسم..." value="${escAttr(p.search)}" oninput="setCatPickerSearch(this.value)" style="width:100%;padding:11px 12px;border-radius:6px;border:1px solid var(--gold-dim);background:var(--panel-2);color:var(--parchment);font-size:14px;">
+        <div class="catPickList">
+          ${p.allowNull ? `<div class="catPickRow ${!p.currentValue?'sel':''}" onclick="selectFromCategoryPicker('')"><div class="nm">${esc(p.nullLabel)}</div></div>` : ""}
+          ${items.length ? items.map(it => `
+            <div class="catPickRow ${p.currentValue===it.id?'sel':''}" onclick="selectFromCategoryPicker('${it.id}')">
+              <div class="nm" dir="auto">${esc(it.name)}</div>
+              <div class="pth">${esc(it.path)}</div>
+            </div>`).join("") : `<div class="emptyState" style="padding:24px 10px;">لا توجد نتائج مطابقة.</div>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
    أدمن: إدارة الامتحانات الشاملة المخصصة
    ══════════════════════════════════════════════════════════════════ */
 let examBuilder = { id: null, title: "", description: "", attachTo: null, selected: new Set(), questionIds: new Set(), pickCategory: null };
@@ -1141,6 +1228,8 @@ function toggleExamBuilderQuestion(id){
   else examBuilder.questionIds.add(key);
   render();
 }
+window.pickerSelectExamPickCategory = (id) => { loadExamPicker(id || null); };
+window.pickerSelectExamAttach = (id) => { examBuilder.attachTo = id || null; render(); };
 async function saveExamGroup(){
   const title = (examBuilder.title || "").trim();
   const description = (examBuilder.description || "").trim();
@@ -1177,24 +1266,52 @@ async function deleteExamGroup(id){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   أدمن: إدارة الأسئلة الموجودة
+   أدمن: إدارة الأسئلة الموجودة + حذف مجموعات كاملة
    ══════════════════════════════════════════════════════════════════ */
 let questionEditor = null;
 
 async function loadQuestionsForCategory(categoryId){
   state.manageSelectedCategory = categoryId || null;
   state.manageQuestions = [];
+  state.manageSetFilter = null;
   questionEditor = null;
   render();
   if(!categoryId) return;
+  loadSetCounts(categoryId);
   const { data, error } = await sb.from("questions")
-    .select("id,category_id,question_text,options,correct_index,explanation")
+    .select("id,category_id,set_id,question_text,options,correct_index,explanation")
     .eq("category_id", categoryId)
     .order("id", { ascending: true });
   if(error){ state.notice = error.message; render(); return; }
   state.manageQuestions = data || [];
   render();
 }
+window.pickerSelectManageCategory = (id) => { loadQuestionsForCategory(id || null); };
+
+function setManageSetFilter(setId){
+  state.manageSetFilter = setId; // null = legacy, "" = all, or a set id string
+  render();
+}
+
+async function deleteQuestionSetGroup(categoryId, setId, label){
+  const ok = confirm(`سيتم حذف جميع أسئلة "${label}" نهائيًا من هذا القسم. متابعة؟`);
+  if(!ok) return;
+  let query = sb.from("questions").delete().eq("category_id", categoryId);
+  query = setId ? query.eq("set_id", setId) : query.is("set_id", null);
+  const { error } = await query;
+  if(error){ state.notice = error.message; render(); return; }
+  if(setId){
+    await sb.from("question_sets").delete().eq("id", setId);
+  }
+  state.notice = `تم حذف مجموعة "${label}" بالكامل.`;
+  clearCache();
+  await bumpServerUpdatedAt();
+  await loadAll(true);
+  state.view = "admin"; state.adminTab = "manage";
+  await loadQuestionsForCategory(categoryId);
+  render();
+}
+window.deleteQuestionSetGroup = deleteQuestionSetGroup;
 
 function startEditQuestionById(id){
   const q = state.manageQuestions.find(x => String(x.id) === String(id));
@@ -1233,6 +1350,7 @@ function editorSetCorrect(i){
   questionEditor.correct = i;
   render();
 }
+window.pickerSelectEditorCategory = (id) => { if(id){ questionEditor.category_id = id; render(); } };
 async function saveQuestionEdit(){
   const qText = (questionEditor.question || "").trim();
   const expText = (questionEditor.explanation || "").trim();
@@ -1381,6 +1499,7 @@ let pendingParsed = [];
 let treeExpanded = new Set();
 let examTreeExpanded = new Set();
 let addTab = { categoryId: null, mode: "new", newSetTitle: "", existingSetId: "", quizTitle: "" };
+let savingQuestions = false;
 
 function onAddCategoryChange(id){
   addTab.categoryId = id || null;
@@ -1392,6 +1511,7 @@ function onAddCategoryChange(id){
   if(id) loadSetCounts(id);
   render();
 }
+window.pickerSelectAddCategory = (id) => { onAddCategoryChange(id || null); };
 function onAddExistingSetChange(val){
   addTab.existingSetId = val || "";
   const cat = addTab.categoryId ? byId(addTab.categoryId) : null;
@@ -1433,44 +1553,55 @@ function removePendingAt(i){
   render();
 }
 async function savePendingQuestions(categoryId){
+  if(savingQuestions) return;
   if(!categoryId){ state.notice = "اختر القسم أولاً."; render(); return; }
   if(!pendingParsed.length){ state.notice = "لا توجد أسئلة مستخرجة للحفظ."; render(); return; }
 
-  let targetSetId = null;
-  if(addTab.mode === "new"){
-    const title = (addTab.newSetTitle || "").trim();
-    if(!title){ state.notice = "اكتب اسمًا للاختبار الجديد."; render(); return; }
-    const { data: newSet, error: setErr } = await sb.from("question_sets")
-      .insert({ category_id: categoryId, title, sort_order: setsForCategory(categoryId).length })
-      .select("id").single();
-    if(setErr){ state.notice = setErr.message; render(); return; }
-    targetSetId = newSet.id;
-  } else if(addTab.mode === "existing"){
-    if(!addTab.existingSetId){ state.notice = "اختر الاختبار الذي تريد الإضافة إليه."; render(); return; }
-    targetSetId = (addTab.existingSetId !== "__legacy__") ? addTab.existingSetId : null;
-  }
-
-  const rows = pendingParsed.map(q => ({
-    category_id: categoryId,
-    set_id: targetSetId,
-    question_text: q.question,
-    options: q.options,
-    correct_index: q.correct,
-    explanation: q.explanation || null,
-  }));
-  const { error } = await sb.from("questions").insert(rows);
-  if(error){ state.notice = error.message; render(); return; }
-  if(!targetSetId){
-    const titleText = (addTab.quizTitle || "").trim();
-    await sb.from("categories").update({ quiz_title: titleText || null }).eq("id", categoryId);
-  }
-  state.notice = `تم حفظ ${rows.length} سؤال بنجاح.`;
-  pendingParsed = [];
-  clearCache();
-  await bumpServerUpdatedAt();
-  await loadAll(true);
-  state.view = "admin"; state.adminTab = "add";
+  savingQuestions = true;
   render();
+  try{
+    let targetSetId = null;
+    if(addTab.mode === "new"){
+      const title = (addTab.newSetTitle || "").trim();
+      if(!title){ state.notice = "اكتب اسمًا للاختبار الجديد."; return; }
+      const { data: newSet, error: setErr } = await sb.from("question_sets")
+        .insert({ category_id: categoryId, title, sort_order: setsForCategory(categoryId).length })
+        .select("id").single();
+      if(setErr){ state.notice = setErr.message; return; }
+      targetSetId = newSet.id;
+    } else if(addTab.mode === "existing"){
+      if(!addTab.existingSetId){ state.notice = "اختر الاختبار الذي تريد الإضافة إليه."; return; }
+      targetSetId = (addTab.existingSetId !== "__legacy__") ? addTab.existingSetId : null;
+    }
+
+    const rows = pendingParsed.map(q => ({
+      category_id: categoryId,
+      set_id: targetSetId,
+      question_text: q.question,
+      options: q.options,
+      correct_index: q.correct,
+      explanation: q.explanation || null,
+    }));
+    const { error } = await sb.from("questions").insert(rows);
+    if(error){ state.notice = error.message; return; }
+    if(!targetSetId){
+      const titleText = (addTab.quizTitle || "").trim();
+      await sb.from("categories").update({ quiz_title: titleText || null }).eq("id", categoryId);
+    }
+    state.notice = `تم حفظ ${rows.length} سؤال بنجاح.`;
+    pendingParsed = [];
+    addTab.mode = "new";
+    addTab.newSetTitle = "";
+    addTab.existingSetId = "";
+    clearCache();
+    await bumpServerUpdatedAt();
+    await loadAll(true);
+    state.view = "admin"; state.adminTab = "add";
+    addTab.categoryId = categoryId;
+  } finally {
+    savingQuestions = false;
+    render();
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1806,6 +1937,20 @@ function catOptionsHtml(selectedId){
   return walk(null,0).join("");
 }
 
+function categoryPickerField(label, selectedId, onSelectCbName, opts){
+  opts = opts || {};
+  const name = selectedId ? (byId(selectedId) ? byId(selectedId).name : "") : "";
+  const path = selectedId ? categoryPath(selectedId) : "";
+  return `
+    <div class="field">
+      <label>${icon('folder',14)} ${esc(label)}</label>
+      <button type="button" class="catPickBtn" onclick="openCategoryPicker('${selectedId||''}','${onSelectCbName}', ${opts.allowNull?`{allowNull:true,nullLabel:'${escAttr(opts.nullLabel||'بدون قسم')}'}`:'{}'})">
+        ${name ? `<span><span style="font-weight:700;" dir="auto">${esc(name)}</span> <span style="color:var(--text-dim);font-size:12px;" dir="auto">— ${esc(path)}</span></span>` : `<span class="ph">— اختر القسم —</span>`}
+        ${icon('chevron-left',15)}
+      </button>
+    </div>`;
+}
+
 function renderAdminAdd(){
   const previewHtml = pendingParsed.length ? `
     <div class="divider"><span class="gem"></span></div>
@@ -1820,13 +1965,7 @@ function renderAdminAdd(){
   ` : "";
 
   return `
-    <div class="field">
-      <label>${icon('folder',14)} القسم الذي ستُضاف إليه الأسئلة</label>
-      <select id="targetCategory" onchange="onAddCategoryChange(this.value)">
-        <option value="">— اختر القسم —</option>
-        ${catOptionsHtml(addTab.categoryId)}
-      </select>
-    </div>
+    ${categoryPickerField("القسم الذي ستُضاف إليه الأسئلة", addTab.categoryId, "pickerSelectAddCategory")}
     ${addTab.categoryId ? `
     <div class="field">
       <label>${icon('layers',14)} هذه الأسئلة تخص:</label>
@@ -1886,7 +2025,7 @@ function renderAdminAdd(){
     <button class="btn gold block" onclick="handleParseClick()">استخراج الأسئلة من النص</button>
     ${previewHtml}
     ${pendingParsed.length ? `
-      <button class="btn primary block" style="margin-top:14px;" onclick="handleSaveClick()">${icon('save',15)} حفظ الأسئلة في القسم المختار</button>
+      <button class="btn primary block" style="margin-top:14px;" ${savingQuestions?'disabled':''} onclick="handleSaveClick()">${savingQuestions ? (icon('loader-2',15)+' جارٍ الحفظ...') : (icon('save',15)+' حفظ الأسئلة في القسم المختار')}</button>
     ` : ""}
   `;
 }
@@ -1917,9 +2056,14 @@ function renderExamCheckTree(node, depth, visited){
 
 function renderAdminManage(){
   const searchLower = (state.manageSearch || "").trim().toLowerCase();
-  const filtered = searchLower
-    ? state.manageQuestions.filter(q => (q.question_text||"").toLowerCase().includes(searchLower))
-    : state.manageQuestions;
+  let filtered = state.manageQuestions;
+  if(state.manageSetFilter !== undefined && state.manageSetFilter !== "" ){
+    filtered = filtered.filter(q => {
+      const sid = q.set_id ? String(q.set_id) : null;
+      return sid === state.manageSetFilter;
+    });
+  }
+  if(searchLower) filtered = filtered.filter(q => (q.question_text||"").toLowerCase().includes(searchLower));
 
   if(questionEditor){
     return `
@@ -1928,12 +2072,7 @@ function renderAdminManage(){
         <label>نص السؤال</label>
         <textarea dir="auto" oninput="questionEditor.question=this.value" style="min-height:80px;">${esc(questionEditor.question)}</textarea>
       </div>
-      <div class="field">
-        <label>نقل السؤال لقسم آخر (اختياري)</label>
-        <select onchange="questionEditor.category_id=this.value">
-          ${catOptionsHtml(questionEditor.category_id)}
-        </select>
-      </div>
+      ${categoryPickerField("نقل السؤال لقسم آخر (اختياري)", questionEditor.category_id, "pickerSelectEditorCategory")}
       <div class="field">
         <label>الخيارات (حدد الإجابة الصحيحة)</label>
         ${questionEditor.options.map((opt,i)=>`
@@ -1955,15 +2094,42 @@ function renderAdminManage(){
     `;
   }
 
+  let setsBlock = "";
+  if(state.manageSelectedCategory){
+    const counts = state.setCounts[state.manageSelectedCategory];
+    if(counts === undefined){
+      setsBlock = `<div class="emptyState" style="padding:16px;">${icon('loader-2',14)} جارٍ تحميل المجموعات...</div>`;
+    } else {
+      const cat = byId(state.manageSelectedCategory);
+      const rows = [];
+      const legacyCount = counts["legacy"] || 0;
+      if(legacyCount > 0) rows.push({ id: null, title: (cat && cat.quiz_title) || "الاختبار الرئيسي", count: legacyCount });
+      setsForCategory(state.manageSelectedCategory).forEach(s => {
+        const c = counts[s.id] || 0;
+        if(c > 0) rows.push({ id: s.id, title: s.title, count: c });
+      });
+      if(rows.length){
+        setsBlock = `
+          <div style="font-weight:700;font-size:13.5px;margin-bottom:8px;">${icon('layers',15)} مجموعات هذا القسم</div>
+          <div class="setRow ${(!state.manageSetFilter)?'':''}" style="cursor:pointer;border-color:${!state.manageSetFilter?'var(--gold)':'var(--gold-dim)'};" onclick="setManageSetFilter('')">
+            <span class="nm">عرض الكل</span><span class="cnt">${state.manageQuestions.length} سؤال</span>
+          </div>
+          ${rows.map(r => `
+            <div class="setRow">
+              <span class="nm" dir="auto" style="cursor:pointer;" onclick="setManageSetFilter('${r.id||''}')">${esc(r.title)}</span>
+              <span class="cnt">${r.count} سؤال</span>
+              <button class="iconBtn danger" title="حذف كل أسئلة هذه المجموعة" onclick="deleteQuestionSetGroup('${state.manageSelectedCategory}', ${r.id?`'${r.id}'`:'null'}, '${escAttr(r.title)}')">${icon('trash-2',14)}</button>
+            </div>`).join("")}
+          <div class="divider"><span class="gem"></span></div>
+        `;
+      }
+    }
+  }
+
   return `
-    <div class="field">
-      <label>${icon('search',14)} اختر القسم لعرض أسئلته</label>
-      <select onchange="loadQuestionsForCategory(this.value)">
-        <option value="">— اختر القسم —</option>
-        ${catOptionsHtml(state.manageSelectedCategory)}
-      </select>
-    </div>
+    ${categoryPickerField("اختر القسم لعرض أسئلته", state.manageSelectedCategory, "pickerSelectManageCategory")}
     ${state.manageSelectedCategory ? `
+      ${setsBlock}
       <div class="field">
         <label>بحث ضمن أسئلة هذا القسم</label>
         <input type="text" dir="auto" value="${escAttr(state.manageSearch)}" oninput="state.manageSearch=this.value; render();" placeholder="اكتب جزءًا من نص السؤال...">
@@ -2019,24 +2185,12 @@ function renderAdminExams(){
       <label>${icon('file-text',14)} وصف الامتحان (اختياري — يظهر للطالب عبر زر التفاصيل)</label>
       <textarea dir="auto" style="min-height:80px;" oninput="examBuilder.description=this.value" placeholder="مثال: يغطي هذا الامتحان أهم مواضيع الفصل الأول...">${esc(examBuilder.description)}</textarea>
     </div>
-    <div class="field">
-      <label>أين يظهر زر هذا الامتحان؟</label>
-      <select id="examAttachTo" onchange="examBuilder.attachTo=this.value||null">
-        <option value="">— الصفحة الرئيسية —</option>
-        ${catOptionsHtml(examBuilder.attachTo)}
-      </select>
-    </div>
+    ${categoryPickerField("أين يظهر زر هذا الامتحان؟", examBuilder.attachTo, "pickerSelectExamAttach", { allowNull:true, nullLabel:"— الصفحة الرئيسية —" })}
     <div class="field">
       <label>${icon('layers',14)} اختر أقساماً كاملة يشملها هذا الامتحان (اختياري، أي عدد حتى لو غير مرتبطة ببعضها)</label>
       ${roots.length ? roots.map(r=>renderExamCheckTree(r,0)).join("") : `<div class="emptyState">لا توجد أقسام بعد.</div>`}
     </div>
-    <div class="field">
-      <label>${icon('list-checks',14)} أو اختر أسئلة محددة فقط من أي قسم (بجانب أو بدلاً من الأقسام الكاملة أعلاه)</label>
-      <select onchange="loadExamPicker(this.value)">
-        <option value="">— اختر قسمًا لعرض أسئلته —</option>
-        ${catOptionsHtml(examBuilder.pickCategory)}
-      </select>
-    </div>
+    ${categoryPickerField("أو اختر أسئلة محددة فقط من أي قسم (بجانب أو بدلاً من الأقسام الكاملة أعلاه)", examBuilder.pickCategory, "pickerSelectExamPickCategory")}
     ${examBuilder.pickCategory ? `
       <div class="pickerBox">
         ${examPickerQuestions.length ? examPickerQuestions.map(q=>`
@@ -2069,169 +2223,4 @@ function renderAdmin(){
       <button class="tabBtn ${state.adminTab==='tree'?'active':''}" onclick="setAdminTab('tree')">${icon('folder',14)} الأقسام</button>
       <button class="tabBtn ${state.adminTab==='add'?'active':''}" onclick="setAdminTab('add')">${icon('plus',14)} إضافة أسئلة</button>
       <button class="tabBtn ${state.adminTab==='manage'?'active':''}" onclick="setAdminTab('manage')">${icon('list-checks',14)} إدارة الأسئلة</button>
-      <button class="tabBtn ${state.adminTab==='exams'?'active':''}" onclick="setAdminTab('exams')">${icon('clipboard-list',14)} الامتحانات الشاملة</button>
-    </div>
-    ${state.adminTab==='tree' ? renderAdminTree() : state.adminTab==='add' ? renderAdminAdd() : state.adminTab==='manage' ? renderAdminManage() : renderAdminExams()}
-  `;
-}
-
-function renderConnectionError(){
-  return `
-    ${renderTopbar(false)}
-    <div class="notice err">
-      ${icon('alert-triangle',15)}
-      <span>
-        تعذّر الاتصال بقاعدة البيانات.<br>
-        تأكد من ضبط SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الكود، ومن اتصالك بالإنترنت.<br>
-        <span style="opacity:.7;font-size:12px;" dir="auto">${esc(state.notice||"")}</span>
-      </span>
-    </div>
-    <button class="btn primary" onclick="loadAll(true)">إعادة المحاولة</button>
-  `;
-}
-
-function render(){
-  const app = document.getElementById("app");
-  let html = "";
-  switch(state.view){
-    case "loading": html = `${renderTopbar(false)}<div class="loadingDots">...جارٍ التحميل</div>`; break;
-    case "connectionError": html = renderConnectionError(); break;
-    case "home": html = renderHome(); break;
-    case "quiz": html = renderQuiz(); break;
-    case "results": html = renderResults(); break;
-    case "review": html = renderReview(); break;
-    case "adminLogin": html = renderAdminLogin(); break;
-    case "admin": html = renderAdmin(); break;
-  }
-  app.innerHTML = html;
-  renderModalRoot();
-  refreshIcons();
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   معالجات أحداث onclick
-   ══════════════════════════════════════════════════════════════════ */
-window.enterCategory = (id, name) => {
-  state.path.push({ id, name });
-  state.notice = null;
-  render();
-};
-window.goToCrumb = (i) => {
-  state.path = state.path.slice(0, i+1);
-  state.notice = null;
-  render();
-};
-window.goHomeRoot = () => {
-  state.path = [];
-  state.view = "home";
-  state.notice = null;
-  render();
-};
-window.startQuiz = startQuiz;
-window.startSetQuiz = startSetQuiz;
-window.answerQuestion = answerQuestion;
-window.nextQuestion = nextQuestion;
-window.exitQuizToHome = () => {
-  state.quiz = null;
-  state.view = "home";
-  state.resumeAvailable = readProgress();
-  render();
-};
-window.enterReviewMode = () => {
-  state.view = "review";
-  render();
-};
-window.exitReviewToResults = () => {
-  state.view = "results";
-  render();
-};
-window.goAdmin = async () => {
-  const { data } = await sb.auth.getSession();
-  if(data.session){
-    state.adminSession = data.session;
-    state.view = "admin";
-  } else {
-    state.view = "adminLogin";
-  }
-  state.notice = null;
-  render();
-};
-window.doAdminLogin = () => {
-  const email = document.getElementById("loginEmail").value.trim();
-  const pass = document.getElementById("loginPass").value;
-  adminLogin(email, pass);
-};
-window.adminLogout = adminLogout;
-window.setAdminTab = (tab) => {
-  state.adminTab = tab;
-  pendingParsed = [];
-  addTab = { categoryId: null, mode: "new", newSetTitle: "", existingSetId: "", quizTitle: "" };
-  resetExamBuilder();
-  questionEditor = null;
-  state.manageSelectedCategory = null;
-  state.manageQuestions = [];
-  state.manageSearch = "";
-  render();
-};
-window.startCustomExam = startCustomExam;
-window.loadExamIntoBuilder = loadExamIntoBuilder;
-window.toggleExamBuilderCategory = toggleExamBuilderCategory;
-window.loadExamPicker = loadExamPicker;
-window.toggleExamBuilderQuestion = toggleExamBuilderQuestion;
-window.saveExamGroup = saveExamGroup;
-window.deleteExamGroup = deleteExamGroup;
-window.loadQuestionsForCategory = loadQuestionsForCategory;
-window.startEditQuestionById = startEditQuestionById;
-window.cancelEditQuestion = cancelEditQuestion;
-window.editorSetOption = editorSetOption;
-window.editorAddOption = editorAddOption;
-window.editorRemoveOption = editorRemoveOption;
-window.editorSetCorrect = editorSetCorrect;
-window.saveQuestionEdit = saveQuestionEdit;
-window.deleteQuestion = deleteQuestion;
-window.cancelExamBuilder = () => { resetExamBuilder(); render(); };
-
-window.addRootCategory = () => {
-  const val = document.getElementById("newRootName").value;
-  addCategory(null, val);
-};
-window.promptAddCategory = (parentId) => {
-  const name = prompt("اسم القسم الفرعي الجديد:");
-  if(name) addCategory(parentId, name);
-};
-window.promptRenameCategory = (id, current) => {
-  const name = prompt("الاسم الجديد:", current);
-  if(name) renameCategory(id, name);
-};
-window.deleteCategory = deleteCategory;
-window.moveCategory = moveCategory;
-window.toggleTreeExpand = toggleTreeExpand;
-window.toggleExamTreeExpand = toggleExamTreeExpand;
-
-window.handleParseClick = () => {
-  const fileInput = document.getElementById("fileInput");
-  const textArea = document.getElementById("pasteText");
-  if(fileInput.files && fileInput.files[0]){
-    const reader = new FileReader();
-    reader.onload = (e) => runParse(e.target.result);
-    reader.readAsText(fileInput.files[0], "UTF-8");
-  } else {
-    runParse(textArea.value);
-  }
-};
-window.removePendingAt = removePendingAt;
-window.onAddCategoryChange = onAddCategoryChange;
-window.onAddExistingSetChange = onAddExistingSetChange;
-window.saveQuizTitleForCategory = saveQuizTitleForCategory;
-window.renameQuestionSet = renameQuestionSet;
-window.handleSaveClick = () => {
-  savePendingQuestions(addTab.categoryId || null);
-};
-
-/* ══════════════════════════════════════════════════════════════════
-   بدء التشغيل
-   ══════════════════════════════════════════════════════════════════ */
-loadAll();
-</script>
-</body>
-</html>
+      <button class="tabBtn ${state.adminTab==='exams'?'active':''}" 
