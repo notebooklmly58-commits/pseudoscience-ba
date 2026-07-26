@@ -1,50 +1,702 @@
 [
   {
+    "id": "01cd2ce7-e97c-46f3-ab88-4a541ddf38cb",
+    "parent_id": "c54d9b94-1075-4848-b92b-32d9fbe342a5",
+    "name": "Final",
+    "sort_order": 2,
+    "created_at": "2026-07-20T09:34:30.136426+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "06f39d60-1e7d-469d-accb-ea5a3b6e3733",
+    "parent_id": "2cfca497-8c8f-471e-807b-80043df68650",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:39:26.832358+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "0a6395e3-3c42-4408-83cc-f5203015c014",
+    "parent_id": "49976dec-c011-404c-b6b1-98286e82c49b",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:38:55.891829+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "0b0ab660-7317-4065-982b-b605459d0972",
+    "parent_id": "0f892d19-5c85-43b8-8087-8c865bb93877",
+    "name": "Final",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:36:07.170759+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "0b0df3a7-2a55-4ef8-8eb2-cfc853e9bd0b",
+    "parent_id": "01cd2ce7-e97c-46f3-ab88-4a541ddf38cb",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:34:56.131321+00:00",
+    "direct_question_count": 395,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "0ded952c-7f60-4c56-b9d9-f4a1f7b661ab",
+    "parent_id": "0f892d19-5c85-43b8-8087-8c865bb93877",
+    "name": "Midterm",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:35:06.952276+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "0f892d19-5c85-43b8-8087-8c865bb93877",
+    "parent_id": "b9039e32-3227-4677-85e6-7931176fce79",
+    "name": "Anatomy 2",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:21:50.934464+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "12fbf2a6-9bde-4b45-9525-ab62dd1d9436",
+    "parent_id": "c54d9b94-1075-4848-b92b-32d9fbe342a5",
+    "name": "Midterm",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:33:29.737303+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "145e7b4b-a461-46eb-ab21-0b2471603e3f",
+    "parent_id": "b1d33753-2ca5-42be-9988-0992e5bcae29",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:37:34.829361+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "17bed9d3-c11b-4045-92d9-a9126099d91d",
+    "parent_id": "45c2a10f-3ac8-4855-86fa-11fd53a33705",
+    "name": "اسئلة سنوات",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:38:02.872686+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "197be3c9-0c7d-459e-9097-c62256dc4150",
+    "parent_id": "12fbf2a6-9bde-4b45-9525-ab62dd1d9436",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:33:49.961842+00:00",
+    "direct_question_count": 100,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "1b5aa0cb-d274-43bd-a0c9-535d5c11d264",
+    "parent_id": "b9039e32-3227-4677-85e6-7931176fce79",
+    "name": "Physiology 2",
+    "sort_order": 3,
+    "created_at": "2026-07-20T09:22:22.965531+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
     "id": "1ed00f23-9997-47f2-bd54-4bd570690435",
     "parent_id": null,
     "name": "Pre-clinic",
     "sort_order": 0,
     "created_at": "2026-07-08T22:14:35.832211+00:00",
-    "direct_question_count": 0
+    "direct_question_count": 0,
+    "description": "بخ",
+    "quiz_title": null
   },
   {
-    "id": "438e8d2e-4d94-4e0b-8319-d739e3aa3f63",
-    "parent_id": "5cfb1811-1165-48b1-b69a-bce9a0bf726c",
-    "name": "دفعا",
+    "id": "245c6fd2-9748-4924-ac27-59eab1ff4e81",
+    "parent_id": "01cd2ce7-e97c-46f3-ab88-4a541ddf38cb",
+    "name": "اسئلة دكاترة",
     "sort_order": 0,
-    "created_at": "2026-07-08T22:15:14.496238+00:00",
-    "direct_question_count": 0
+    "created_at": "2026-07-20T09:34:42.353668+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
   },
   {
-    "id": "5cfb1811-1165-48b1-b69a-bce9a0bf726c",
-    "parent_id": "6ba0d168-0aa7-45f2-b0f9-22a81cf4571d",
-    "name": "hs",
-    "sort_order": 0,
-    "created_at": "2026-07-08T22:15:07.862957+00:00",
-    "direct_question_count": 0
-  },
-  {
-    "id": "6361710c-bd2f-486d-b6ec-f7db89eb7da8",
-    "parent_id": "438e8d2e-4d94-4e0b-8319-d739e3aa3f63",
-    "name": "59",
+    "id": "2c499403-e4c0-4a8d-84bf-d9776c0079ba",
+    "parent_id": "d3ed29a6-a277-4da9-8e4f-04713ef4c4a3",
+    "name": "اسئلة سنوات",
     "sort_order": 1,
-    "created_at": "2026-07-09T00:05:51.012591+00:00",
-    "direct_question_count": 20
+    "created_at": "2026-07-20T09:37:18.471825+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "2cfca497-8c8f-471e-807b-80043df68650",
+    "parent_id": "1b5aa0cb-d274-43bd-a0c9-535d5c11d264",
+    "name": "Practical",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:39:12.830066+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "345cceae-20e0-420b-ab45-e2d72a01ea62",
+    "parent_id": "eda7e0df-fae1-4b41-a496-8fe70401f8f6",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:29:18.558247+00:00",
+    "direct_question_count": 209,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "34ba1634-ac2e-44f2-9082-a5f17ed9c14f",
+    "parent_id": "cfb140f5-67c6-42ec-8749-d82c82d0802a",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:38:38.393499+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "361b77ce-23be-4a80-934f-4effab285ed5",
+    "parent_id": "e83de1ac-f377-4530-8ad8-8948ca8b222d",
+    "name": "Midterm",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:22:49.362132+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "37b2afd0-4f34-4bcf-92d2-d5f303b71708",
+    "parent_id": "48e0d621-1970-4491-8a40-d5bd38dd7514",
+    "name": "Practical",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:29:30.711766+00:00",
+    "direct_question_count": 53,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "456d1d50-0804-4c51-be92-99e812193143",
+    "parent_id": "669656a5-01c0-4ed3-8524-66e55dc70ce2",
+    "name": "Final",
+    "sort_order": 2,
+    "created_at": "2026-07-20T09:31:37.433793+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "45c2a10f-3ac8-4855-86fa-11fd53a33705",
+    "parent_id": "bde3ca57-e0aa-403e-b4b4-0980b395dc12",
+    "name": "Midterm",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:37:55.53401+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "48e0d621-1970-4491-8a40-d5bd38dd7514",
+    "parent_id": "862c098f-739c-4e75-966d-7b94c4e6782f",
+    "name": "Biochemistry 3",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:20:55.946736+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "49976dec-c011-404c-b6b1-98286e82c49b",
+    "parent_id": "1b5aa0cb-d274-43bd-a0c9-535d5c11d264",
+    "name": "Midterm",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:38:49.205449+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "4c161f5c-c869-44f4-bb32-9b68c20f6058",
+    "parent_id": "0ded952c-7f60-4c56-b9d9-f4a1f7b661ab",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:35:23.217355+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "5665faa6-6e8b-4420-be60-b53bcea283dc",
+    "parent_id": "1b5aa0cb-d274-43bd-a0c9-535d5c11d264",
+    "name": "Final",
+    "sort_order": 2,
+    "created_at": "2026-07-20T09:39:38.110037+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "5c43ee6f-2d0f-4e4b-9a16-6245c0a260a8",
+    "parent_id": "cfb140f5-67c6-42ec-8749-d82c82d0802a",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:38:30.525356+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "669656a5-01c0-4ed3-8524-66e55dc70ce2",
+    "parent_id": "862c098f-739c-4e75-966d-7b94c4e6782f",
+    "name": "Physiology 3",
+    "sort_order": 2,
+    "created_at": "2026-07-20T09:21:10.707123+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
   },
   {
     "id": "6ba0d168-0aa7-45f2-b0f9-22a81cf4571d",
     "parent_id": "1ed00f23-9997-47f2-bd54-4bd570690435",
-    "name": "sem1",
+    "name": "Semesters",
     "sort_order": 0,
     "created_at": "2026-07-08T22:14:55.018247+00:00",
-    "direct_question_count": 0
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
   },
   {
-    "id": "c40c143b-d54e-4d2d-850c-e6f7784d2885",
-    "parent_id": "438e8d2e-4d94-4e0b-8319-d739e3aa3f63",
-    "name": "60",
+    "id": "6d93489c-f971-4eb4-8555-4b3d70fc51a5",
+    "parent_id": "b1d33753-2ca5-42be-9988-0992e5bcae29",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:37:42.159031+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "77250d3e-ce4a-4540-a367-b00029e76939",
+    "parent_id": "5665faa6-6e8b-4420-be60-b53bcea283dc",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:39:53.525648+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "815390f8-44e8-4970-a65d-852780e3538b",
+    "parent_id": "d1320aa6-fde1-4938-afe4-0a929f72a186",
+    "name": "Midterm",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:36:36.16883+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "82af038b-d120-4bbc-9c64-b296ee3f6bec",
+    "parent_id": "902151a0-eec8-4fa5-b1a4-4d68146b58ac",
+    "name": "اسئلة سنوات",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:30:10.963499+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "862c098f-739c-4e75-966d-7b94c4e6782f",
+    "parent_id": "6ba0d168-0aa7-45f2-b0f9-22a81cf4571d",
+    "name": "Sem | 4",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:20:08.697884+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "893d1735-3f99-4ece-bf86-f9caede5f2c4",
+    "parent_id": "902151a0-eec8-4fa5-b1a4-4d68146b58ac",
+    "name": "اسئلة دكاترة",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:30:21.763258+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "8a90427e-e17d-4c80-825d-dd223418e208",
+    "parent_id": "bfbf8dc4-8f91-489f-8ee8-997dcee48153",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:30:47.488069+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "902151a0-eec8-4fa5-b1a4-4d68146b58ac",
+    "parent_id": "48e0d621-1970-4491-8a40-d5bd38dd7514",
+    "name": "Final",
     "sort_order": 2,
-    "created_at": "2026-07-09T00:06:04.18735+00:00",
-    "direct_question_count": 50
+    "created_at": "2026-07-20T09:29:59.096085+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "935fa9a3-d077-4a26-9b40-8ca349c9d126",
+    "parent_id": "5665faa6-6e8b-4420-be60-b53bcea283dc",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:39:45.715922+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "976263cc-75f9-46b9-a14e-9fdc60bf7237",
+    "parent_id": "0b0ab660-7317-4065-982b-b605459d0972",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:36:14.597525+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "977409d3-e83f-4621-bd26-92512aaa5ff9",
+    "parent_id": "12fbf2a6-9bde-4b45-9525-ab62dd1d9436",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:33:39.332465+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "a94c53ce-a1ed-457f-a676-810552ec54ae",
+    "parent_id": "361b77ce-23be-4a80-934f-4effab285ed5",
+    "name": "اسئلة سنوات",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:23:13.293088+00:00",
+    "direct_question_count": 116,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "b1d33753-2ca5-42be-9988-0992e5bcae29",
+    "parent_id": "d1320aa6-fde1-4938-afe4-0a929f72a186",
+    "name": "Final",
+    "sort_order": 2,
+    "created_at": "2026-07-20T09:37:28.124879+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "b2639d92-88db-41be-a3f1-8749f28f638b",
+    "parent_id": "361b77ce-23be-4a80-934f-4effab285ed5",
+    "name": "اسئلة دكاترة",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:23:01.698045+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "b8d2f071-8ae0-42cf-9c27-979b728c4af1",
+    "parent_id": "e83de1ac-f377-4530-8ad8-8948ca8b222d",
+    "name": "Final",
+    "sort_order": 2,
+    "created_at": "2026-07-20T09:28:20.5441+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "b9039e32-3227-4677-85e6-7931176fce79",
+    "parent_id": "6ba0d168-0aa7-45f2-b0f9-22a81cf4571d",
+    "name": "Sem | 3",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:19:15.585483+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "bae88a37-0bcb-44f0-86b7-34faef7bbd33",
+    "parent_id": "b8d2f071-8ae0-42cf-9c27-979b728c4af1",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:28:36.345757+00:00",
+    "direct_question_count": 451,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "bde3ca57-e0aa-403e-b4b4-0980b395dc12",
+    "parent_id": "b9039e32-3227-4677-85e6-7931176fce79",
+    "name": "Histology 2",
+    "sort_order": 2,
+    "created_at": "2026-07-20T09:22:13.205362+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "bfbf8dc4-8f91-489f-8ee8-997dcee48153",
+    "parent_id": "669656a5-01c0-4ed3-8524-66e55dc70ce2",
+    "name": "Midterm",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:30:35.513636+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "c54d9b94-1075-4848-b92b-32d9fbe342a5",
+    "parent_id": "862c098f-739c-4e75-966d-7b94c4e6782f",
+    "name": "Micro",
+    "sort_order": 3,
+    "created_at": "2026-07-20T09:21:42.925273+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "c6aecc74-ea3d-43d9-83db-d580752ec53f",
+    "parent_id": "456d1d50-0804-4c51-be92-99e812193143",
+    "name": "أسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:31:52.636136+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "c768e527-1c23-4444-b4a6-adb6e48d11b8",
+    "parent_id": "b8d2f071-8ae0-42cf-9c27-979b728c4af1",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:28:27.99515+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "ca779981-9e19-4eef-b1e1-98ed0ae42428",
+    "parent_id": "0ded952c-7f60-4c56-b9d9-f4a1f7b661ab",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:35:16.068247+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "cb55ed0d-d796-4eb6-99fa-f38c6892ccfb",
+    "parent_id": "49976dec-c011-404c-b6b1-98286e82c49b",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:39:04.486305+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "cfb140f5-67c6-42ec-8749-d82c82d0802a",
+    "parent_id": "bde3ca57-e0aa-403e-b4b4-0980b395dc12",
+    "name": "Final",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:38:23.813232+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "d1320aa6-fde1-4938-afe4-0a929f72a186",
+    "parent_id": "b9039e32-3227-4677-85e6-7931176fce79",
+    "name": "Biochemistry 2",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:21:58.314828+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "d3ed29a6-a277-4da9-8e4f-04713ef4c4a3",
+    "parent_id": "d1320aa6-fde1-4938-afe4-0a929f72a186",
+    "name": "Practical",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:37:01.532442+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "d89af8ef-328c-41af-90ef-fa919d52dc7e",
+    "parent_id": "0b0ab660-7317-4065-982b-b605459d0972",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:36:22.767529+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "parent_id": "456d1d50-0804-4c51-be92-99e812193143",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:31:45.264377+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "deeabd46-994e-4ff2-ae1f-5590b41e3fcf",
+    "parent_id": "eda7e0df-fae1-4b41-a496-8fe70401f8f6",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:28:58.053584+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "e40aebe6-5777-46a6-826c-17d33a0a29fa",
+    "parent_id": "bfbf8dc4-8f91-489f-8ee8-997dcee48153",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:30:57.054343+00:00",
+    "direct_question_count": 120,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "e83de1ac-f377-4530-8ad8-8948ca8b222d",
+    "parent_id": "862c098f-739c-4e75-966d-7b94c4e6782f",
+    "name": "Anatomy 3",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:20:42.948147+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "e9acab34-2c6a-4f65-8304-fa8d3e070f02",
+    "parent_id": "eaadcc28-dc68-43e6-87ba-79bc5e2e7ea8",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:34:19.319293+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "e9f3e092-1cfa-4d0e-97be-fb063d1d2382",
+    "parent_id": "815390f8-44e8-4970-a65d-852780e3538b",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:36:44.155611+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "eaadcc28-dc68-43e6-87ba-79bc5e2e7ea8",
+    "parent_id": "c54d9b94-1075-4848-b92b-32d9fbe342a5",
+    "name": "Practical",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:34:01.855981+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "eb99b8c1-c5ed-41f9-b2fc-31f50791c033",
+    "parent_id": "2cfca497-8c8f-471e-807b-80043df68650",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:39:20.203942+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "ed0e5f3a-31d2-4608-bab8-8aa59f2c24df",
+    "parent_id": "45c2a10f-3ac8-4855-86fa-11fd53a33705",
+    "name": "اسئلة دكاترة",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:38:12.999486+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "eda7e0df-fae1-4b41-a496-8fe70401f8f6",
+    "parent_id": "48e0d621-1970-4491-8a40-d5bd38dd7514",
+    "name": "Midterm",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:28:48.583471+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "eed336d4-52ed-43c2-974f-f521f4e0aeff",
+    "parent_id": "669656a5-01c0-4ed3-8524-66e55dc70ce2",
+    "name": "Practical",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:31:06.258422+00:00",
+    "direct_question_count": 133,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "f40e2e6b-e4a8-4fb1-a24f-284452ae77b0",
+    "parent_id": "815390f8-44e8-4970-a65d-852780e3538b",
+    "name": "اسئلة سنوات",
+    "sort_order": 1,
+    "created_at": "2026-07-20T09:36:52.56615+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
+  },
+  {
+    "id": "fb75d9c7-98b7-4443-8752-85c49fe1cd6e",
+    "parent_id": "eaadcc28-dc68-43e6-87ba-79bc5e2e7ea8",
+    "name": "اسئلة دكاترة",
+    "sort_order": 0,
+    "created_at": "2026-07-20T09:34:11.001627+00:00",
+    "direct_question_count": 0,
+    "description": null,
+    "quiz_title": null
   }
 ]
