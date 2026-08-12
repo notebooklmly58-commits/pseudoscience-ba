@@ -2,7 +2,7 @@ name: Supabase Keepalive
 
 on:
   schedule:
-    - cron: '0 6 * * 1,4'
+    - cron: '0 6 * * *'
   workflow_dispatch: {}
 
 jobs:
@@ -12,19 +12,21 @@ jobs:
       - name: Ping Supabase REST API
         run: |
           CLEAN_URL="${SUPABASE_URL%/}"
-          RESP=$(curl -s -w "\n%{http_code}" \
-            "${CLEAN_URL}/rest/v1/categories?select=id&limit=1" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
-          STATUS=$(echo "$RESP" | tail -n1)
-          BODY=$(echo "$RESP" | sed '$d')
-          echo "Requested URL: ${CLEAN_URL}/rest/v1/categories?select=id&limit=1"
-          echo "HTTP status: $STATUS"
-          echo "Response body: $BODY"
-          if [ "$STATUS" -ge 400 ]; then
-            echo "::error::Supabase ping failed with status $STATUS. تحقق أولاً هل مشروع Supabase متوقف (Paused) من لوحة التحكم، ثم تحقق من صحة SUPABASE_URL."
-            exit 1
-          fi
+          for i in 1 2 3; do
+            RESP=$(curl -s -w "\n%{http_code}" \
+              "${CLEAN_URL}/rest/v1/categories?select=id&limit=1" \
+              -H "apikey: ${SUPABASE_ANON_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+            STATUS=$(echo "$RESP" | tail -n1)
+            if [ "$STATUS" -lt 400 ]; then
+              echo "نجح الاتصال، الحالة: $STATUS"
+              exit 0
+            fi
+            echo "محاولة $i فشلت بالحالة $STATUS"
+            sleep 15
+          done
+          echo "::error::فشلت كل المحاولات."
+          exit 1
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
