@@ -429,6 +429,17 @@
     "shuffle_questions": true
   },
   {
+    "id": "529c6302-c727-4a00-8228-851ea0d5100c",
+    "parent_id": "675da0cd-7810-44af-99e0-4c6a8afac143",
+    "name": "كوزات الشيتات",
+    "sort_order": 2,
+    "created_at": "2026-10-13T18:19:01.78708+00:00",
+    "direct_question_count": 246,
+    "description": null,
+    "quiz_title": null,
+    "shuffle_questions": true
+  },
+  {
     "id": "5665faa6-6e8b-4420-be60-b53bcea283dc",
     "parent_id": "1b5aa0cb-d274-43bd-a0c9-535d5c11d264",
     "name": "Final",
@@ -555,7 +566,7 @@
     "name": "أسئلة دكاترة",
     "sort_order": 1,
     "created_at": "2026-09-06T21:37:32.634294+00:00",
-    "direct_question_count": 0,
+    "direct_question_count": 481,
     "description": null,
     "quiz_title": null,
     "shuffle_questions": true
@@ -896,7 +907,7 @@
     "name": "كوزات الشيتات",
     "sort_order": 2,
     "created_at": "2026-09-27T22:07:32.890793+00:00",
-    "direct_question_count": 34,
+    "direct_question_count": 141,
     "description": null,
     "quiz_title": null,
     "shuffle_questions": true
@@ -973,7 +984,7 @@
     "name": "اسئلة دكاترة",
     "sort_order": 0,
     "created_at": "2026-07-20T09:35:16.068247+00:00",
-    "direct_question_count": 88,
+    "direct_question_count": 208,
     "description": null,
     "quiz_title": null,
     "shuffle_questions": true
@@ -1061,7 +1072,7 @@
     "name": "كوزات الشيتات",
     "sort_order": 2,
     "created_at": "2026-10-07T13:22:10.226193+00:00",
-    "direct_question_count": 178,
+    "direct_question_count": 180,
     "description": null,
     "quiz_title": null,
     "shuffle_questions": true
@@ -1072,7 +1083,7 @@
     "name": "اسئلة دكاترة",
     "sort_order": 0,
     "created_at": "2026-07-20T09:28:58.053584+00:00",
-    "direct_question_count": 100,
+    "direct_question_count": 516,
     "description": null,
     "quiz_title": null,
     "shuffle_questions": true
@@ -1094,7 +1105,7 @@
     "name": "أسئلة دكاترة",
     "sort_order": 1,
     "created_at": "2026-09-06T21:36:38.925762+00:00",
-    "direct_question_count": 0,
+    "direct_question_count": 159,
     "description": null,
     "quiz_title": null,
     "shuffle_questions": true
