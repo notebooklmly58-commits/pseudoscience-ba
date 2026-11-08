@@ -594,6 +594,17 @@
     "shuffle_questions": true
   },
   {
+    "id": "74a982ad-f52c-4783-a287-1cb6153b638b",
+    "parent_id": "c54d9b94-1075-4848-b92b-32d9fbe342a5",
+    "name": "Practical",
+    "sort_order": 2,
+    "created_at": "2026-11-04T12:36:59.595065+00:00",
+    "direct_question_count": 140,
+    "description": null,
+    "quiz_title": null,
+    "shuffle_questions": true
+  },
+  {
     "id": "77250d3e-ce4a-4540-a367-b00029e76939",
     "parent_id": "5665faa6-6e8b-4420-be60-b53bcea283dc",
     "name": "اسئلة سنوات",
@@ -676,7 +687,7 @@
     "name": "كويزات الشيتات",
     "sort_order": 2,
     "created_at": "2026-10-27T14:59:29.526553+00:00",
-    "direct_question_count": 180,
+    "direct_question_count": 506,
     "description": null,
     "quiz_title": null,
     "shuffle_questions": true
