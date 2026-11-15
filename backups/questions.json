@@ -60090,6 +60090,347 @@
     "set_id": 233
   },
   {
+    "id": "01a1d05d-e1cd-7000-8866-03e424a57e25",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 25-year-old male presents with infertility. Semen analysis reveals low sperm count. Serum levels of FSH are elevated. Which of the following is the most likely site of pathology?",
+    "options": [
+      "Leydig cells",
+      "Sertoli cells",
+      "Epididymis",
+      "Seminal vesicles"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:26:16.866195+00:00",
+    "explanation": "FSH stimulates Sertoli cells for spermatogenesis. Elevated FSH suggests Sertoli cell",
+    "set_id": 237
+  },
+  {
+    "id": "01a1d05d-e1cd-7001-a6ed-fb753e107cfa",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 30-year-old man is found to have low testosterone levels. LH and FSH levels are elevated. Which of the following is the most likely diagnosis?",
+    "options": [
+      "Kallmann syndrome",
+      "Androgen insensitivity syndrome",
+      "Primary hypogonadism",
+      "Secondary hypogonadism"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-11-12T15:26:16.866195+00:00",
+    "explanation": "Elevated gonadotropins with low testosterone indicate primary testicular failure.",
+    "set_id": 237
+  },
+  {
+    "id": "01a1d05d-e1cd-7002-a686-0a6fa06e9c1a",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "Which of the following hormones is secreted by Leydig cells in response to LH stimulation?",
+    "options": [
+      "Inhibin B",
+      "Testosterone",
+      "Estradiol",
+      "Dihydrotestosterone"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:26:16.866195+00:00",
+    "explanation": "LH stimulates Leydig cells to produce testosterone.",
+    "set_id": 237
+  },
+  {
+    "id": "01a1d05d-e1cd-7003-9578-40132ac6e9b8",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 22-year-old male has normal testosterone levels but is infertile. FSH and LH levels are normal. Which of the following is most likely impaired?",
+    "options": [
+      "Leydig cell function",
+      "GnRH secretion",
+      "Sertoli cell function",
+      "Hypothalamic-pituitary axis"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-11-12T15:26:16.866195+00:00",
+    "explanation": "Sertoli cells are essential for sperm maturation. Normal hormones but infertility suggest",
+    "set_id": 237
+  },
+  {
+    "id": "01a1d05d-e1cd-7004-aa71-ec6e55939bf0",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "Which of the following best describes the role of the epididymis in male reproduction?",
+    "options": [
+      "Testosterone production",
+      "Sperm storage and maturation",
+      "Sperm production",
+      "Seminal fluid secretion"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:26:16.866195+00:00",
+    "explanation": "The epididymis stores and matures sperm before ejaculation.",
+    "set_id": 237
+  },
+  {
+    "id": "01a1d05d-e1cd-7005-80dc-09d6b281884f",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "2. A 35-year-old man is being treated with exogenous testosterone for hypogonadism. After 6 months, his sperm count is nearly zero. What is the most likely explanation?",
+    "options": [
+      "Increased FSH secretion",
+      "Inhibition of Leydig cells",
+      "Suppression of GnRH and FSH",
+      "Direct toxicity to Sertoli cells"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-11-12T15:26:16.866195+00:00",
+    "explanation": "Exogenous testosterone suppresses the hypothalamic-pituitary-gonadal",
+    "set_id": 237
+  },
+  {
+    "id": "01a1d05d-e1cd-7006-aef5-7bd56459025e",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 40-year-old man with a history of anabolic steroid use presents with testicular atrophy and infertility. Which of the following lab findings is most consistent with his condition?",
+    "options": [
+      "High LH, high FSH, low testosterone",
+      "Low LH, low FSH, high testosterone",
+      "High LH, high FSH, high testosterone",
+      "Low LH, high FSH, low testosterone"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:26:16.866195+00:00",
+    "explanation": "Anabolic steroids mimic testosterone, suppressing endogenous LH/FSH and leading to testicular",
+    "set_id": 237
+  },
+  {
+    "id": "01a1d05d-e1cd-7007-aef4-0d29cc5bf980",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 29-year-old man with infertility is found to have normal testosterone and LH levels but low FSH. Which of the following is most likely elevated in this patient?",
+    "options": [
+      "Estradiol",
+      "- Inhibin B",
+      "- DHT",
+      "- GnRH"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:26:16.866195+00:00",
+    "explanation": "Inhibin B from Sertoli cells selectively inhibits FSH secretion. Elevated levels can suppress FSH",
+    "set_id": 237
+  },
+  {
+    "id": "01a1d05f-7238-7000-ae9e-3efdc55460d4",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 28-year-old woman has regular 28-day menstrual cycles. On which day of the cycle is the dominant ovarian follicle most likely to undergo ovulation, and which hormone surge triggers ovulation?",
+    "options": [
+      "Day 10; FSH surge",
+      "Day 14; LH surge",
+      "Day 21; estrogen surge",
+      "Day 7; progesterone surge"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "Ovulation typically occurs midcycle around day 14 in a 28-day cycle and is triggered by the LH surge produced by the anterior pituitary following positive feedback from rising estradiol.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7001-bb6d-9bc2b5fc77f3",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "Which of the following is the main mechanism by which combined estrogen-progestin oral contraceptives prevent pregnancy?",
+    "options": [
+      "Blocking sperm capacitation",
+      "Preventing ovulation by suppressing GnRH and gonadotropins",
+      "Increasing cervical mucus penetration by sperm",
+      "Causing permanent ovarian follicle depletion"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "Combined OCPs exert negative feedback on the hypothalamic-pituitary axis, suppressing GnRH, LH, and FSH and preventing follicular maturation and ovulation; progestin also thickens cervical mucus.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7002-8834-4925131548a4",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 25-year-old woman has regular 28-day menstrual cycles. Around day 14, a sharp increase in luteinizing hormone (LH) occurs. Which of the following mechanisms is primarily responsible for triggering this LH surge?",
+    "options": [
+      "Negative feedback of estrogen on the anterior pituitary",
+      "Positive feedback of estrogen on the hypothalamus and pituitary",
+      "Increased secretion of progesterone from the corpus luteum",
+      "Inhibition of GnRH secretionE. Inhibition of FSH by inhibin"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "High estrogen levels during the late follicular phase switch feedback from negative to positive, stimulating LH surge → ovulation.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7003-a25c-c6d8919388a9",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "which of the following hormones is secreted in greatest amounts by the corpus luteum?",
+    "options": [
+      "Estrogen",
+      "Progesterone",
+      "FSH",
+      "LH",
+      "Inhibin"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "The corpus luteum secretes progesterone predominantly to maintain the endometrium and inhibit LH/FSH release.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7004-bbef-bab2ecb49379",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "During the proliferative (follicular) phase of the menstrual cycle, which of the following occurs?",
+    "options": [
+      "Increase in basal body temperature",
+      "High progesterone levels",
+      "Proliferation of endometrial glands",
+      "Decrease in estrogen secretion",
+      "Thickening of cervical mucus"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "Estrogen from developing follicles stimulates endometrial proliferation before ovulation.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7005-952a-7337b0f26a8f",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 50-year-old woman reports cessation of menstruation for 1 year. Which of the following hormonal changes is most likely present?",
+    "options": [
+      "↓ FSH, LH,↓ estrogen",
+      "FSH, LH,↓ estrogen",
+      "↓ FSH, LH, ↑ estrogen",
+      "↑ FSH, LH, ↑ estrogen",
+      "Normal FSH, ↑ estrogen"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "Ovarian follicles are depleted → estrogen loss of negative feedback ↑FSH and LH.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7006-aea9-54dfb4f55ee8",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 27-year-old woman is evaluated for infertility. Examination shows thick, viscous cervical mucus during midcycle. Which hormone deficiency best explains this finding?",
+    "options": [
+      "Estrogen",
+      "Progesterone",
+      "LH",
+      "FSH",
+      "Prolactin"
+    ],
+    "correct_index": 0,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "Estrogen makes cervical mucus thin and watery at midcycle to facilitate sperm passage. Lack of estrogen thick mucus → infertility.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7007-a68f-813b6e891f9b",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 29-year-old woman monitors her basal body temperature for fertility tracking. She notes a sustained rise in temperature beginning in the middle of her cycle. Which hormone is responsible for this change?",
+    "options": [
+      "Estradiol",
+      "LH",
+      "FSH",
+      "Progesterone",
+      "Prolactin"
+    ],
+    "correct_index": 3,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "After ovulation, progesterone from the corpus luteum increases hypothalamic set-point temperature, causing a rise that persists during the luteal phase.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7008-8403-6e9a38156bdc",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "Histologic examination of an endometrial biopsy shows tortuous glands with secretions and stromal edema. Which phase of the menstrual cycle does this represent?",
+    "options": [
+      "Menstrual",
+      "Proliferative",
+      "Secretory",
+      "Follicular",
+      "Ovulatory"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "The secretory phase follows ovulation and is dominated by progesterone, preparing the endometrium for implantation.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-7009-b3d5-fafbb10fbf8a",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 26-year-old woman receives an estrogen patch. After several weeks, her LH and FSH levels are suppressed. What explains this observation?",
+    "options": [
+      "Estrogen stimulates GnRH release",
+      "Estrogen increases FSH secretion",
+      "Estrogen suppresses GnRH, LH, and FSH via negative feedback",
+      "Estrogen blocks pituitary receptors for GnRH",
+      "Estrogen directly inhibits ovarian follicle development"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "At normal physiological levels, estrogen exerts negative feedback on the hypothalamus and anterior pituitary, decreasing gonadotropin secretion.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-700a-a211-4939acdba8ae",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A researcher measures hormone concentrations over a 28-day cycle. At day 14, LH peaks dramatically. Which of the following also peaks at this time?",
+    "options": [
+      "Progesterone",
+      "FSH",
+      "Estrogen",
+      "Inhibin",
+      "GnRH"
+    ],
+    "correct_index": 2,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "Estrogen peaks just before the LH surge, triggering the surge through positive feedback.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-700b-8813-2e73cf705fe5",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 10-week pregnant woman has elevated levels of hCG. What is the most important function of this hormone early in pregnancy?",
+    "options": [
+      "Stimulates milk secretion",
+      "Maintains the corpus luteum",
+      "Inhibits uterine contractions",
+      "Promotes fetal surfactant production",
+      "Increases maternal insulin resistance"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "hCG mimics LH to sustain the corpus luteum and progesterone secretion until the placenta assumes this role.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-700c-95ed-7ea0260a0419",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 12-year-old girl begins to develop breast tissue and pubic hair. Which hormone initiates these pubertal changes?",
+    "options": [
+      "Prolactin",
+      "Estrogen",
+      "Progesterone",
+      "Inhibin",
+      "Oxytocin"
+    ],
+    "correct_index": 1,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "Estrogen, produced by developing ovarian follicles, stimulates breast development and growth of secondary sexual characteristics.",
+    "set_id": 238
+  },
+  {
+    "id": "01a1d05f-7238-700d-8440-f206e861101a",
+    "category_id": "d9b8c4d7-b484-42ab-9ef2-28ada6b24764",
+    "question_text": "A 52-year-old woman has hot flashes, vaginal dryness, and elevated FSH levels. Which change is the primary cause of her symptoms?",
+    "options": [
+      "Ovarian follicle depletion → decreased estrogen production",
+      "Increased LH sensitivity → increased progesterone",
+      "Pituitary failure → decreased gonadotropin release",
+      "Decreased GnRH secretion → reduced FSH and LH",
+      "Increased ovarian sensitivity to FSH"
+    ],
+    "correct_index": 0,
+    "created_at": "2026-11-12T15:27:59.295034+00:00",
+    "explanation": "Menopause occurs when ovarian follicles are exhausted, estrogen falls, and loss of negative feedback occurs.",
+    "set_id": 238
+  },
+  {
     "id": "01aecb5d-5aac-4996-8df7-b58d2a46ae0a",
     "category_id": "893d1735-3f99-4ece-bf86-f9caede5f2c4",
     "question_text": "How are nucleotides mainly present in foods?",
