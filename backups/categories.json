@@ -484,6 +484,17 @@
     "shuffle_questions": true
   },
   {
+    "id": "61ae7ef0-de0d-439c-841d-42257ab469de",
+    "parent_id": null,
+    "name": "PSEUDO CHALLENGE",
+    "sort_order": 1,
+    "created_at": "2026-11-22T07:17:08.30751+00:00",
+    "direct_question_count": 10,
+    "description": null,
+    "quiz_title": null,
+    "shuffle_questions": true
+  },
+  {
     "id": "62220a49-0edf-4b55-b008-e11e1e926a90",
     "parent_id": "af8f1528-6429-49a8-a04c-cc230ff6ab77",
     "name": "أسئلة دكاترة",
@@ -638,6 +649,17 @@
     "shuffle_questions": true
   },
   {
+    "id": "82d8f984-754d-4c13-8e92-6794bf0dab06",
+    "parent_id": "456d1d50-0804-4c51-be92-99e812193143",
+    "name": "كويزات الشيتات",
+    "sort_order": 2,
+    "created_at": "2026-11-17T18:31:56.508792+00:00",
+    "direct_question_count": 261,
+    "description": null,
+    "quiz_title": null,
+    "shuffle_questions": true
+  },
+  {
     "id": "862c098f-739c-4e75-966d-7b94c4e6782f",
     "parent_id": "6ba0d168-0aa7-45f2-b0f9-22a81cf4571d",
     "name": "Sem | 4",
@@ -709,7 +731,7 @@
     "name": "أسئلة دكاترة",
     "sort_order": 1,
     "created_at": "2026-09-06T21:37:01.910524+00:00",
-    "direct_question_count": 0,
+    "direct_question_count": 463,
     "description": null,
     "quiz_title": null,
     "shuffle_questions": true
